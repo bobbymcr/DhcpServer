@@ -27,7 +27,11 @@ namespace DhcpServer
         /// </summary>
         /// <param name="start">The start index within the buffer.</param>
         /// <returns>The value read from the buffer.</returns>
-        public byte ReadUInt8(int start) => this.buffer.Span[start];
+        public byte ReadUInt8(int start)
+        {
+            Span<byte> span = this.buffer.Span;
+            return span[start];
+        }
 
         /// <summary>
         /// Writes an unsigned 8-bit integer.
@@ -36,7 +40,8 @@ namespace DhcpServer
         /// <param name="value">The value to write.</param>
         public void WriteUInt8(int start, byte value)
         {
-            this.buffer.Span[start] = value;
+            Span<byte> span = this.buffer.Span;
+            span[start] = value;
         }
 
         /// <summary>
@@ -46,8 +51,9 @@ namespace DhcpServer
         /// <returns>The value read from the buffer.</returns>
         public ushort ReadUInt16(int start)
         {
-            ushort value = (ushort)(this.ReadUInt8(start) << 8);
-            value |= this.ReadUInt8(start + 1);
+            Span<byte> span = this.buffer.Span;
+            ushort value = (ushort)(span[start] << 8);
+            value |= span[start + 1];
             return value;
         }
 
@@ -58,8 +64,9 @@ namespace DhcpServer
         /// <param name="value">The value to write.</param>
         public void WriteUInt16(int start, ushort value)
         {
-            this.WriteUInt8(start, (byte)(value >> 8));
-            this.WriteUInt8(start + 1, (byte)(value & 0xFF));
+            Span<byte> span = this.buffer.Span;
+            span[start] = (byte)(value >> 8);
+            span[start + 1] = (byte)(value & 0xFF);
         }
     }
 }

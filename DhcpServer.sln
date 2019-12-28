@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DhcpServer.Core", "DhcpServer.Core\DhcpServer.Core.csproj", "{CC8CE31B-D98C-4A83-B9F4-DE200ED3FB1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DhcpServer.Test", "DhcpServer.Test\DhcpServer.Test.csproj", "{E15C10D2-447F-4F32-BAFE-AD16A70C23F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DhcpServer.Perf", "DhcpServer.Perf\DhcpServer.Perf.csproj", "{1A74B711-E5F8-43BA-9A91-07827837A56A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC8CE31B-D98C-4A83-B9F4-DE200ED3FB1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC8CE31B-D98C-4A83-B9F4-DE200ED3FB1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC8CE31B-D98C-4A83-B9F4-DE200ED3FB1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC8CE31B-D98C-4A83-B9F4-DE200ED3FB1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E15C10D2-447F-4F32-BAFE-AD16A70C23F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E15C10D2-447F-4F32-BAFE-AD16A70C23F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E15C10D2-447F-4F32-BAFE-AD16A70C23F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E15C10D2-447F-4F32-BAFE-AD16A70C23F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A74B711-E5F8-43BA-9A91-07827837A56A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A74B711-E5F8-43BA-9A91-07827837A56A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A74B711-E5F8-43BA-9A91-07827837A56A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A74B711-E5F8-43BA-9A91-07827837A56A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

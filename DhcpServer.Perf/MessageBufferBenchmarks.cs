@@ -67,5 +67,35 @@ namespace DhcpServer.Perf
             sum += this.buffer.ReadUInt8(15);
             return sum;
         }
+
+        [Benchmark]
+        public int WriteUInt16()
+        {
+            int current = -2;
+            this.buffer.WriteUInt16(current += 2, 0x0102);
+            this.buffer.WriteUInt16(current += 2, 0x0408);
+            this.buffer.WriteUInt16(current += 2, 0x1020);
+            this.buffer.WriteUInt16(current += 2, 0x4080);
+            this.buffer.WriteUInt16(current += 2, 0x0102);
+            this.buffer.WriteUInt16(current += 2, 0x0408);
+            this.buffer.WriteUInt16(current += 2, 0x1020);
+            this.buffer.WriteUInt16(current += 2, 0x4080);
+            return current;
+        }
+
+        [Benchmark]
+        public int ReadUInt16()
+        {
+            int sum = 0;
+            sum += this.buffer.ReadUInt16(0);
+            sum += this.buffer.ReadUInt16(2);
+            sum += this.buffer.ReadUInt16(4);
+            sum += this.buffer.ReadUInt16(6);
+            sum += this.buffer.ReadUInt16(8);
+            sum += this.buffer.ReadUInt16(10);
+            sum += this.buffer.ReadUInt16(12);
+            sum += this.buffer.ReadUInt16(14);
+            return sum;
+        }
     }
 }

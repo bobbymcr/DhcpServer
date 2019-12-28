@@ -46,9 +46,9 @@ namespace DhcpServer.Perf
         }
 
         [Benchmark]
-        public int ReadUInt8()
+        public ulong ReadUInt8()
         {
-            int sum = 0;
+            ulong sum = 0;
             sum += this.buffer.ReadUInt8(0);
             sum += this.buffer.ReadUInt8(1);
             sum += this.buffer.ReadUInt8(2);
@@ -84,9 +84,9 @@ namespace DhcpServer.Perf
         }
 
         [Benchmark]
-        public int ReadUInt16()
+        public ulong ReadUInt16()
         {
-            int sum = 0;
+            ulong sum = 0;
             sum += this.buffer.ReadUInt16(0);
             sum += this.buffer.ReadUInt16(2);
             sum += this.buffer.ReadUInt16(4);
@@ -95,6 +95,28 @@ namespace DhcpServer.Perf
             sum += this.buffer.ReadUInt16(10);
             sum += this.buffer.ReadUInt16(12);
             sum += this.buffer.ReadUInt16(14);
+            return sum;
+        }
+
+        [Benchmark]
+        public int WriteUInt32()
+        {
+            int current = -4;
+            this.buffer.WriteUInt32(current += 4, 0x01020408);
+            this.buffer.WriteUInt32(current += 4, 0x10204080);
+            this.buffer.WriteUInt32(current += 4, 0x01020408);
+            this.buffer.WriteUInt32(current += 4, 0x10204080);
+            return current;
+        }
+
+        [Benchmark]
+        public ulong ReadUInt32()
+        {
+            ulong sum = 0;
+            sum += this.buffer.ReadUInt32(0);
+            sum += this.buffer.ReadUInt32(4);
+            sum += this.buffer.ReadUInt32(8);
+            sum += this.buffer.ReadUInt32(12);
             return sum;
         }
     }

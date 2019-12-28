@@ -68,5 +68,34 @@ namespace DhcpServer
             span[start] = (byte)(value >> 8);
             span[start + 1] = (byte)(value & 0xFF);
         }
+
+        /// <summary>
+        /// Reads an unsigned 32-bit integer.
+        /// </summary>
+        /// <param name="start">The start index within the buffer.</param>
+        /// <returns>The value read from the buffer.</returns>
+        public uint ReadUInt32(int start)
+        {
+            Span<byte> span = this.buffer.Span;
+            uint value = (uint)(span[start] << 24);
+            value |= (uint)(span[start + 1] << 16);
+            value |= (uint)(span[start + 2] << 8);
+            value |= span[start + 3];
+            return value;
+        }
+
+        /// <summary>
+        /// Writes an unsigned 32-bit integer.
+        /// </summary>
+        /// <param name="start">The start index within the buffer.</param>
+        /// <param name="value">The value to write.</param>
+        public void WriteUInt32(int start, uint value)
+        {
+            Span<byte> span = this.buffer.Span;
+            span[start] = (byte)(value >> 24);
+            span[start + 1] = (byte)(value >> 16);
+            span[start + 2] = (byte)(value >> 8);
+            span[start + 3] = (byte)(value & 0xFF);
+        }
     }
 }

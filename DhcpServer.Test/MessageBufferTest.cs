@@ -44,5 +44,22 @@ namespace DhcpServer.Test
             buffer.ReadUInt16(0).Should().Be((ushort)0);
             buffer.ReadUInt16(2).Should().Be((ushort)0xABCD);
         }
+
+        [TestMethod]
+        public void ReadWriteUInt32()
+        {
+            byte[] raw = new byte[] { 0xFC, 0x22, 0x33, 0x44, 0x00, 0xFF, 0x78, 0x00 };
+            MessageBuffer buffer = new MessageBuffer(new Memory<byte>(raw));
+
+            buffer.ReadUInt32(0).Should().Be(0xFC223344);
+            buffer.ReadUInt32(4).Should().Be(0xFF7800U);
+
+            buffer.WriteUInt32(0, 0);
+            buffer.WriteUInt32(4, 0xABCDEF11);
+
+            raw.Should().ContainInOrder(0, 0, 0, 0, 0xAB, 0xCD, 0xEF, 0x11);
+            buffer.ReadUInt32(0).Should().Be(0U);
+            buffer.ReadUInt32(4).Should().Be(0xABCDEF11);
+        }
     }
 }

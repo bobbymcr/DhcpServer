@@ -9,7 +9,7 @@ namespace DhcpServer.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class MessageBufferTest
+    public sealed class MessageBufferTest
     {
         [TestMethod]
         public void ReadWriteUInt8()

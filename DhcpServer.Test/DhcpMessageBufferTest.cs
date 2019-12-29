@@ -9,7 +9,7 @@ namespace DhcpServer.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class DhcpMessageBufferTest
+    public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
         public void LoadRequest()
@@ -27,6 +27,7 @@ namespace DhcpServer.Test
             buffer.TransactionId.Should().Be(0x00003D1D);
             buffer.Seconds.Should().Be(258);
             buffer.Flags.Should().Be(DhcpFlags.Broadcast);
+            buffer.ClientIPAddress.Should().Be(new IPAddressV4(1, 2, 3, 4));
         }
 
         [TestMethod]
@@ -45,6 +46,7 @@ namespace DhcpServer.Test
             buffer.TransactionId.Should().Be(0x3903F326);
             buffer.Seconds.Should().Be(0);
             buffer.Flags.Should().Be(DhcpFlags.None);
+            buffer.ClientIPAddress.Should().Be(default(IPAddressV4));
         }
     }
 }

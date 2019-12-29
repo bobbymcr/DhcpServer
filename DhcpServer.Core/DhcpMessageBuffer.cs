@@ -63,6 +63,11 @@ namespace DhcpServer
         public DhcpFlags Flags { get; set; }
 
         /// <summary>
+        /// Gets or sets the client-specified IP address.
+        /// </summary>
+        public IPAddressV4 ClientIPAddress { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -76,6 +81,7 @@ namespace DhcpServer
             this.TransactionId = this.NextUInt32(ref current);
             this.Seconds = this.NextUInt16(ref current);
             this.Flags = (DhcpFlags)this.NextUInt16(ref current);
+            this.ClientIPAddress = this.NextIP(ref current);
         }
 
         private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);
@@ -93,5 +99,7 @@ namespace DhcpServer
             current += 4;
             return value;
         }
+
+        private IPAddressV4 NextIP(ref int current) => new IPAddressV4(this.NextUInt32(ref current));
     }
 }

@@ -31,6 +31,18 @@ namespace DhcpServer.Test
             zero.GetHashCode().Should().NotBe(one1.GetHashCode());
         }
 
+        [TestMethod]
+        public void WriteToWithPadding()
+        {
+            MacAddress address = new MacAddress(0xFFFF123456789ABC);
+            byte[] raw = new byte[9];
+            Span<byte> span = new Span<byte>(raw);
+
+            address.WriteTo(span);
+
+            raw.Should().ContainInOrder(0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0, 0, 0);
+        }
+
         private static void CheckEquality<T>(bool areEqual, T x, T y)
             where T : IEquatable<T>
         {

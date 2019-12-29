@@ -17,7 +17,7 @@ namespace DhcpServer
         /// Initializes a new instance of the <see cref="MacAddress"/> struct.
         /// </summary>
         /// <param name="span">The span containing the address bytes.</param>
-        public MacAddress(Span<byte> span)
+        public MacAddress(ReadOnlySpan<byte> span)
             : this(span[0], span[1], span[2], span[3], span[4], span[5])
         {
         }
@@ -49,6 +49,21 @@ namespace DhcpServer
         public MacAddress(ulong value)
         {
             this.value = value;
+        }
+
+        /// <summary>
+        /// Writes the address to the specified buffer with trailing zero padding.
+        /// </summary>
+        /// <param name="destination">The destination buffer.</param>
+        public void WriteTo(Span<byte> destination)
+        {
+            destination[0] = (byte)(this.value >> 40);
+            destination[1] = (byte)(this.value >> 32);
+            destination[2] = (byte)(this.value >> 24);
+            destination[3] = (byte)(this.value >> 16);
+            destination[4] = (byte)(this.value >> 8);
+            destination[5] = (byte)(this.value & 0xFF);
+            destination.Slice(6).Clear();
         }
 
         /// <inheritdoc/>

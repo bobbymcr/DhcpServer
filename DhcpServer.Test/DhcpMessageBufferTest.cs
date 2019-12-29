@@ -83,6 +83,24 @@ End={}
         }
 
         [TestMethod]
+        public void LoadOverload1()
+        {
+            const string ExpectedOptions =
+@"DhcpMsgType={01}
+DhcpMaxMsgSize={024E}
+ParameterList={011C032B}
+AddressTime={00000E10}
+Overload={01}
+DhcpMessage={50616464696E67}
+ClientId={0100006C82DC4E}
+End={}
+DhcpMessage={66696C65206E616D65206669656C64206F7665726C6F6164}
+End={}
+";
+            TestOverload("Overload1", ExpectedOptions);
+        }
+
+        [TestMethod]
         public void LoadOverload2()
         {
             const string ExpectedOptions =

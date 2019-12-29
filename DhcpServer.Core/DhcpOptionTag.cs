@@ -11,6 +11,11 @@ namespace DhcpServer
     public enum DhcpOptionTag : byte
     {
         /// <summary>
+        /// Zero-value options buffer padding.
+        /// </summary>
+        Pad = 0,
+
+        /// <summary>
         /// Subnet Mask Value
         /// </summary>
         SubnetMask = 1,
@@ -36,6 +41,11 @@ namespace DhcpServer
         AddressTime = 51,
 
         /// <summary>
+        /// Overload "sname" or "file"
+        /// </summary>
+        Overload = 52,
+
+        /// <summary>
         /// DHCP Message Type
         /// </summary>
         DhcpMsgType = 53,
@@ -49,6 +59,16 @@ namespace DhcpServer
         /// Parameter Request List
         /// </summary>
         ParameterList = 55,
+
+        /// <summary>
+        /// DHCP Error Message
+        /// </summary>
+        DhcpMessage = 56,
+
+        /// <summary>
+        /// DHCP Maximum Message Size
+        /// </summary>
+        DhcpMaxMsgSize = 57,
 
         /// <summary>
         /// Client Identifier

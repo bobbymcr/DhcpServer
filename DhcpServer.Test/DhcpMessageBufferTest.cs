@@ -83,6 +83,47 @@ End={}
         }
 
         [TestMethod]
+        public void LoadOverload3()
+        {
+            const string ExpectedOptions =
+@"DhcpMsgType={01}
+DhcpMaxMsgSize={024E}
+ParameterList={011C032B}
+AddressTime={00000E10}
+Overload={03}
+DhcpMessage={50616464696E67}
+ClientId={0100006C82DC4E}
+End={}
+DhcpMessage={66696C65206E616D65206669656C64206F7665726C6F6164}
+End={}
+DhcpMessage={736E616D65206669656C64206F7665726C6F6164}
+End={}
+";
+            byte[] raw = new byte[500];
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = PacketResource.Read("Overload3", buffer.Span);
+
+            buffer.Load(length).Should().BeTrue();
+
+            buffer.Opcode.Should().Be(DhcpOpcode.Request);
+            buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
+            buffer.HardwareAddressLength.Should().Be(6);
+            buffer.Hops.Should().Be(0);
+            buffer.TransactionId.Should().Be(0xAC2EFFFF);
+            buffer.Seconds.Should().Be(0);
+            buffer.Flags.Should().Be(DhcpFlags.None);
+            buffer.ClientIPAddress.Should().Be(default(IPAddressV4));
+            buffer.YourIPAddress.Should().Be(default(IPAddressV4));
+            buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
+            buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
+            HexString(buffer.ClientHardwareAddress).Should().Be("00006C82DC4E");
+            buffer.ServerHostName[0].Should().Be((byte)DhcpOptionTag.DhcpMessage);
+            buffer.BootFileName[0].Should().Be((byte)DhcpOptionTag.DhcpMessage);
+            buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
+            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
         public void LoadReply()
         {
             const string ExpectedOptions =

@@ -12,6 +12,10 @@ namespace DhcpServer
     public sealed class DhcpMessageBuffer
     {
         private const int HeaderSize = 240;
+        private const int ServerHostNameStart = 44;
+        private const int ServerHostNameLength = 64;
+        private const int BootFileNameStart = 108;
+        private const int BootFileNameLength = 128;
 
         private readonly MessageBuffer buffer;
 
@@ -98,12 +102,12 @@ namespace DhcpServer
         /// <summary>
         /// Gets a span for the server host name bytes.
         /// </summary>
-        public Span<byte> ServerHostName => this.Span.Slice(44, 64);
+        public Span<byte> ServerHostName => this.Span.Slice(ServerHostNameStart, ServerHostNameLength);
 
         /// <summary>
         /// Gets a span for the boot file name bytes.
         /// </summary>
-        public Span<byte> BootFileName => this.Span.Slice(108, 128);
+        public Span<byte> BootFileName => this.Span.Slice(BootFileNameStart, BootFileNameLength);
 
         /// <summary>
         /// Gets or sets the magic cookie.
@@ -139,7 +143,10 @@ namespace DhcpServer
             this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
             this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
-            this.Options = new DhcpOptionsBuffer(this.buffer.Slice(HeaderSize, length - HeaderSize));
+            this.Options = new DhcpOptionsBuffer(
+                this.buffer.Slice(HeaderSize, length - HeaderSize),
+                this.buffer.Slice(BootFileNameStart, BootFileNameLength),
+                this.buffer.Slice(ServerHostNameStart, ServerHostNameLength));
             return true;
         }
 

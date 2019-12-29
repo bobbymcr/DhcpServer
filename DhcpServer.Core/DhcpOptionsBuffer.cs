@@ -11,15 +11,21 @@ namespace DhcpServer
     /// </summary>
     public readonly struct DhcpOptionsBuffer
     {
-        private readonly Memory<byte> buffer;
+        private readonly Memory<byte> options;
+        private readonly Memory<byte> file;
+        private readonly Memory<byte> sname;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpOptionsBuffer"/> struct.
         /// </summary>
-        /// <param name="buffer">The underlying buffer.</param>
-        public DhcpOptionsBuffer(Memory<byte> buffer)
+        /// <param name="options">The options buffer.</param>
+        /// <param name="file">The 'file' buffer (for option overload).</param>
+        /// <param name="sname">The 'sname' buffer (for option overload).</param>
+        public DhcpOptionsBuffer(Memory<byte> options, Memory<byte> file, Memory<byte> sname)
         {
-            this.buffer = buffer;
+            this.options = options;
+            this.file = file;
+            this.sname = sname;
         }
 
         /// <summary>
@@ -33,15 +39,32 @@ namespace DhcpServer
         /// <param name="read">The user-defined callback.</param>
         public void ReadAll<T>(T obj, Action<DhcpOption, T> read)
         {
-            Span<byte> span = this.buffer.Span;
+            DhcpOptionOverloads overloads = Read(this.options, obj, read);
+
+            if (overloads.HasFlag(DhcpOptionOverloads.File))
+            {
+                Read(this.file, obj, read);
+            }
+
+            if (overloads.HasFlag(DhcpOptionOverloads.SName))
+            {
+                Read(this.sname, obj, read);
+            }
+        }
+
+        private static DhcpOptionOverloads Read<T>(Memory<byte> buffer, T obj, Action<DhcpOption, T> read)
+        {
+            Span<byte> span = buffer.Span;
             int pos = 0;
             int end = span.Length;
+            DhcpOptionOverloads overloads = DhcpOptionOverloads.None;
             while (pos < end)
             {
                 DhcpOptionTag tag = (DhcpOptionTag)span[pos++];
                 byte length;
                 switch (tag)
                 {
+                    case DhcpOptionTag.Pad:
                     case DhcpOptionTag.End:
                         length = 0;
                         break;
@@ -50,16 +73,25 @@ namespace DhcpServer
                         break;
                 }
 
-                DhcpOption option = new DhcpOption(tag, this.buffer.Slice(pos, length));
-                read(option, obj);
-
-                if (option.Tag == DhcpOptionTag.End)
+                if (tag != DhcpOptionTag.Pad)
                 {
-                    return;
+                    DhcpOption option = new DhcpOption(tag, buffer.Slice(pos, length));
+                    read(option, obj);
+                    if (tag == DhcpOptionTag.Overload)
+                    {
+                        overloads = (DhcpOptionOverloads)option.Data[0];
+                    }
+                }
+
+                if (tag == DhcpOptionTag.End)
+                {
+                    break;
                 }
 
                 pos += length;
             }
+
+            return overloads;
         }
     }
 }

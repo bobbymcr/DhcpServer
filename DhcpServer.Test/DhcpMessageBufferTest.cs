@@ -186,6 +186,27 @@ End={}
             TestSaveAndLoad(raw, output);
         }
 
+        [TestMethod]
+        public void Option1()
+        {
+            TestOption(
+                o => o.WriteSubnetMaskOption(new IPAddressV4(1, 2, 3, 4)),
+                "SubnetMask={01020304}");
+        }
+
+        private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
+        {
+            byte[] raw = new byte[256];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            act(output);
+            output.WriteEndOption();
+
+            OptionsString(output).Should().Be(
+                expectedOption + Environment.NewLine +
+                "End={}" + Environment.NewLine);
+        }
+
         private static void TestOverload(string name, string expectedOptions)
         {
             byte[] raw = new byte[500];

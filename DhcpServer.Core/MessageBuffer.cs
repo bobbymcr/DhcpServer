@@ -28,6 +28,14 @@ namespace DhcpServer
         public Span<byte> Span => this.buffer.Span;
 
         /// <summary>
+        /// Forms a slice from the underlying buffer.
+        /// </summary>
+        /// <param name="start">The start index.</param>
+        /// <param name="length">The length of the slice.</param>
+        /// <returns>The buffer slice.</returns>
+        public Memory<byte> Slice(int start, int length) => this.buffer.Slice(start, length);
+
+        /// <summary>
         /// Reads an unsigned 8-bit integer.
         /// </summary>
         /// <param name="start">The start index within the buffer.</param>

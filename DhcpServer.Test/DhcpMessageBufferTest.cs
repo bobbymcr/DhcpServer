@@ -44,11 +44,19 @@ namespace DhcpServer.Test
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.None);
+            OptionsString(buffer.Options).Should().BeEmpty();
         }
 
         [TestMethod]
         public void LoadRequest()
         {
+            const string ExpectedOptions =
+@"DhcpMsgType={01}
+ClientId={01000B8201FC42}
+AddressRequest={00000000}
+ParameterList={0103062A}
+End={}
+";
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             int length = PacketResource.Read("Request1", buffer.Span);
@@ -71,11 +79,21 @@ namespace DhcpServer.Test
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
+            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
         }
 
         [TestMethod]
         public void LoadReply()
         {
+            const string ExpectedOptions =
+@"DhcpMsgType={02}
+SubnetMask={FFFFFF00}
+Router={C0A80101}
+AddressTime={00015180}
+DhcpServerId={C0A80101}
+DomainServer={09070A0F09070A1009070A12}
+End={}
+";
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             int length = PacketResource.Read("Reply1", buffer.Span);
@@ -98,6 +116,7 @@ namespace DhcpServer.Test
             AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
             AsciiString(buffer.BootFileName).Should().Be(@"Some\Boot\File.xyz");
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
+            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
         }
 
         [TestMethod]
@@ -169,6 +188,23 @@ namespace DhcpServer.Test
                 sb.Append((char)b);
             }
 
+            return sb.ToString();
+        }
+
+        private static string OptionsString(DhcpOptionsBuffer options)
+        {
+            StringBuilder sb = new StringBuilder();
+            options.ReadAll(sb, (o, s) => s.AppendLine(OptionString(o)));
+            return sb.ToString();
+        }
+
+        private static string OptionString(DhcpOption option)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(option.Tag);
+            sb.Append("={");
+            sb.Append(HexString(option.Data));
+            sb.Append("}");
             return sb.ToString();
         }
     }

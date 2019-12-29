@@ -111,6 +111,11 @@ namespace DhcpServer
         public MagicCookie MagicCookie { get; set; }
 
         /// <summary>
+        /// Gets the options buffer.
+        /// </summary>
+        public DhcpOptionsBuffer Options { get; private set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -134,6 +139,7 @@ namespace DhcpServer
             this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
             this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
+            this.Options = new DhcpOptionsBuffer(this.buffer.Slice(HeaderSize, length - HeaderSize));
             return true;
         }
 

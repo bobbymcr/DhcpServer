@@ -17,8 +17,14 @@ namespace DhcpServer
         /// Initializes a new instance of the <see cref="DhcpMessageBuffer"/> class.
         /// </summary>
         /// <param name="buffer">The underlying buffer.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message.</exception>
         public DhcpMessageBuffer(Memory<byte> buffer)
         {
+            if (buffer.Length < 240)
+            {
+                throw new ArgumentOutOfRangeException(nameof(buffer));
+            }
+
             this.buffer = new MessageBuffer(buffer);
         }
 

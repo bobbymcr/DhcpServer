@@ -13,6 +13,14 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TooSmall()
+        {
+            Action act = () => new DhcpMessageBuffer(new Memory<byte>(new byte[239]));
+
+            act.Should().Throw<ArgumentOutOfRangeException>().Which.ParamName.Should().Be("buffer");
+        }
+
+        [TestMethod]
         public void LoadRequest()
         {
             byte[] raw = new byte[500];

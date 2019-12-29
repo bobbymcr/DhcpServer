@@ -48,6 +48,11 @@ namespace DhcpServer
         public byte Hops { get; set; }
 
         /// <summary>
+        /// Gets or sets the transaction ID.
+        /// </summary>
+        public uint TransactionId { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -58,6 +63,8 @@ namespace DhcpServer
             this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(current++);
             this.HardwareAddressLength = this.buffer.ReadUInt8(current++);
             this.Hops = this.buffer.ReadUInt8(current++);
+            this.TransactionId = this.buffer.ReadUInt32(current);
+            current += 4;
         }
     }
 }

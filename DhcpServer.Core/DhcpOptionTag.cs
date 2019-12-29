@@ -31,6 +31,11 @@ namespace DhcpServer
         TimeServer = 4,
 
         /// <summary>
+        /// IEN-116 server addresses
+        /// </summary>
+        NameServer = 5,
+
+        /// <summary>
         /// DNS Server addresses
         /// </summary>
         DomainServer = 6,

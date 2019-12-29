@@ -131,5 +131,61 @@ namespace DhcpServer
             ip3.WriteTo(option.Data.Slice(8));
             ip4.WriteTo(option.Data.Slice(12));
         }
+
+        /// <summary>
+        /// Writes data for the name server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first name server IP.</param>
+        public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 4);
+            ip1.WriteTo(option.Data);
+        }
+
+        /// <summary>
+        /// Writes data for the name server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first name server IP.</param>
+        /// <param name="ip2">The second name server IP.</param>
+        public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 8);
+            ip1.WriteTo(option.Data);
+            ip2.WriteTo(option.Data.Slice(4));
+        }
+
+        /// <summary>
+        /// Writes data for the name server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first name server IP.</param>
+        /// <param name="ip2">The second name server IP.</param>
+        /// <param name="ip3">The third name server IP.</param>
+        public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 12);
+            ip1.WriteTo(option.Data);
+            ip2.WriteTo(option.Data.Slice(4));
+            ip3.WriteTo(option.Data.Slice(8));
+        }
+
+        /// <summary>
+        /// Writes data for the name server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first name server IP.</param>
+        /// <param name="ip2">The second name server IP.</param>
+        /// <param name="ip3">The third name server IP.</param>
+        /// <param name="ip4">The fourth name server IP.</param>
+        public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 16);
+            ip1.WriteTo(option.Data);
+            ip2.WriteTo(option.Data.Slice(4));
+            ip3.WriteTo(option.Data.Slice(8));
+            ip4.WriteTo(option.Data.Slice(12));
+        }
     }
 }

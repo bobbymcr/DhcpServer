@@ -30,6 +30,7 @@ namespace DhcpServer.Test
             buffer.ClientIPAddress.Should().Be(new IPAddressV4(1, 2, 3, 4));
             buffer.YourIPAddress.Should().Be(default(IPAddressV4));
             buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
+            buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
         }
 
         [TestMethod]
@@ -51,6 +52,7 @@ namespace DhcpServer.Test
             buffer.ClientIPAddress.Should().Be(default(IPAddressV4));
             buffer.YourIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 100));
             buffer.ServerIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 1));
+            buffer.GatewayIPAddress.Should().Be(new IPAddressV4(153, 152, 151, 150));
         }
     }
 }

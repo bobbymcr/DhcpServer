@@ -78,6 +78,11 @@ namespace DhcpServer
         public IPAddressV4 ServerIPAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the gateway IP address.
+        /// </summary>
+        public IPAddressV4 GatewayIPAddress { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -94,6 +99,7 @@ namespace DhcpServer
             this.ClientIPAddress = this.NextIP(ref current);
             this.YourIPAddress = this.NextIP(ref current);
             this.ServerIPAddress = this.NextIP(ref current);
+            this.GatewayIPAddress = this.NextIP(ref current);
         }
 
         private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);

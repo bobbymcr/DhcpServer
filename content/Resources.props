@@ -1,5 +1,8 @@
 <Project>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Overload2.bin">
+      <Link>Overload2.bin</Link>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Overload3.bin">
       <Link>Overload3.bin</Link>
     </EmbeddedResource>

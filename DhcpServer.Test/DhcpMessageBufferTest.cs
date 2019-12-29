@@ -26,6 +26,7 @@ namespace DhcpServer.Test
             buffer.Hops.Should().Be(0);
             buffer.TransactionId.Should().Be(0x00003D1D);
             buffer.Seconds.Should().Be(258);
+            buffer.Flags.Should().Be(DhcpFlags.Broadcast);
         }
 
         [TestMethod]
@@ -43,6 +44,7 @@ namespace DhcpServer.Test
             buffer.Hops.Should().Be(3);
             buffer.TransactionId.Should().Be(0x3903F326);
             buffer.Seconds.Should().Be(0);
+            buffer.Flags.Should().Be(DhcpFlags.None);
         }
     }
 }

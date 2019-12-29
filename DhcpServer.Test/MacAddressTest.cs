@@ -43,6 +43,18 @@ namespace DhcpServer.Test
             raw.Should().ContainInOrder(0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0, 0, 0);
         }
 
+        [TestMethod]
+        public void WriteToExact()
+        {
+            MacAddress address = new MacAddress(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
+            byte[] raw = new byte[6];
+            Span<byte> span = new Span<byte>(raw);
+
+            address.WriteTo(span);
+
+            raw.Should().ContainInOrder(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
+        }
+
         private static void CheckEquality<T>(bool areEqual, T x, T y)
             where T : IEquatable<T>
         {

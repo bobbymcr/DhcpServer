@@ -14,14 +14,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\content\Request1.bin">
-      <Link>Request1.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\content\Reply1.bin">
-      <Link>Reply1.bin</Link>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DhcpServer.Core\DhcpServer.Core.csproj" />
   </ItemGroup>
+  <Import Project="..\content\Resources.props" />
 </Project>

@@ -9,4 +9,5 @@
   <ItemGroup>
     <ProjectReference Include="..\DhcpServer.Core\DhcpServer.Core.csproj" />
   </ItemGroup>
+  <Import Project="..\content\Resources.props" />
 </Project>

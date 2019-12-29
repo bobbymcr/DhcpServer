@@ -5,9 +5,6 @@
 namespace DhcpServer.Test
 {
     using System;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,7 +16,7 @@ namespace DhcpServer.Test
         {
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = ReadResource("Request1.bin", buffer.Span);
+            int length = PacketResource.Read("Request1", buffer.Span);
 
             buffer.Load(length);
 
@@ -35,7 +32,7 @@ namespace DhcpServer.Test
         {
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = ReadResource("Reply1.bin", buffer.Span);
+            int length = PacketResource.Read("Reply1", buffer.Span);
 
             buffer.Load(length);
 
@@ -44,14 +41,6 @@ namespace DhcpServer.Test
             buffer.HardwareAddressLength.Should().Be(6);
             buffer.Hops.Should().Be(3);
             buffer.TransactionId.Should().Be(0x3903F326);
-        }
-
-        private static int ReadResource(string name, Span<byte> destination)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string fullName = assembly.GetManifestResourceNames().First(n => n.EndsWith("." + name));
-            using Stream stream = assembly.GetManifestResourceStream(fullName);
-            return stream.Read(destination);
         }
     }
 }

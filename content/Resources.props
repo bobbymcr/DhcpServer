@@ -1,0 +1,15 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Request1.bin">
+      <Link>Request1.bin</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Reply1.bin">
+      <Link>Reply1.bin</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PacketResource.cs">
+      <Link>PacketResource.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

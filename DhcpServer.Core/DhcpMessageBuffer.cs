@@ -11,6 +11,8 @@ namespace DhcpServer
     /// </summary>
     public sealed class DhcpMessageBuffer
     {
+        private const int HeaderSize = 240;
+
         private readonly MessageBuffer buffer;
 
         /// <summary>
@@ -20,7 +22,7 @@ namespace DhcpServer
         /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message.</exception>
         public DhcpMessageBuffer(Memory<byte> buffer)
         {
-            if (buffer.Length < 240)
+            if (buffer.Length < HeaderSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(buffer));
             }
@@ -112,8 +114,14 @@ namespace DhcpServer
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
-        public void Load(int length)
+        /// <returns><c>true</c> if the length is enough to contain a valid message, <c>false</c> otherwise.</returns>
+        public bool Load(int length)
         {
+            if (length < HeaderSize)
+            {
+                return false;
+            }
+
             this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(0);
             this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(1);
             this.HardwareAddressLength = this.buffer.ReadUInt8(2);
@@ -126,6 +134,7 @@ namespace DhcpServer
             this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
             this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
+            return true;
         }
     }
 }

@@ -21,13 +21,39 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void LoadRequestTooSmall()
+        {
+            byte[] raw = new byte[500];
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            PacketResource.Read("Request1", buffer.Span);
+
+            buffer.Load(239).Should().BeFalse();
+
+            buffer.Opcode.Should().Be(DhcpOpcode.None);
+            buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.None);
+            buffer.HardwareAddressLength.Should().Be(0);
+            buffer.Hops.Should().Be(0);
+            buffer.TransactionId.Should().Be(0);
+            buffer.Seconds.Should().Be(0);
+            buffer.Flags.Should().Be(DhcpFlags.None);
+            buffer.ClientIPAddress.Should().Be(default(IPAddressV4));
+            buffer.YourIPAddress.Should().Be(default(IPAddressV4));
+            buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
+            buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
+            HexString(buffer.ClientHardwareAddress).Should().BeEmpty();
+            AsciiString(buffer.ServerHostName).Should().BeEmpty();
+            AsciiString(buffer.BootFileName).Should().BeEmpty();
+            buffer.MagicCookie.Should().Be(MagicCookie.None);
+        }
+
+        [TestMethod]
         public void LoadRequest()
         {
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             int length = PacketResource.Read("Request1", buffer.Span);
 
-            buffer.Load(length);
+            buffer.Load(length).Should().BeTrue();
 
             buffer.Opcode.Should().Be(DhcpOpcode.Request);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
@@ -54,7 +80,7 @@ namespace DhcpServer.Test
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             int length = PacketResource.Read("Reply1", buffer.Span);
 
-            buffer.Load(length);
+            buffer.Load(length).Should().BeTrue();
 
             buffer.Opcode.Should().Be(DhcpOpcode.Reply);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);

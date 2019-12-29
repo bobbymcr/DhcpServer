@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Text;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,6 +32,7 @@ namespace DhcpServer.Test
             buffer.YourIPAddress.Should().Be(default(IPAddressV4));
             buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
             buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
+            HexString(buffer.ClientHardwareAddress).Should().Be("000B8201FC42");
         }
 
         [TestMethod]
@@ -53,6 +55,18 @@ namespace DhcpServer.Test
             buffer.YourIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 100));
             buffer.ServerIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 1));
             buffer.GatewayIPAddress.Should().Be(new IPAddressV4(153, 152, 151, 150));
+            HexString(buffer.ClientHardwareAddress).Should().Be("0013204E06D3");
+        }
+
+        private static string HexString(Span<byte> span)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in span)
+            {
+                sb.Append(b.ToString("X2"));
+            }
+
+            return sb.ToString();
         }
     }
 }

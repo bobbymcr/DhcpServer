@@ -83,6 +83,11 @@ namespace DhcpServer
         public IPAddressV4 GatewayIPAddress { get; set; }
 
         /// <summary>
+        /// Gets a span for the client hardware address bytes.
+        /// </summary>
+        public Span<byte> ClientHardwareAddress => this.Span.Slice(28, this.HardwareAddressLength);
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>

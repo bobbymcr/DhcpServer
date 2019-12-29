@@ -26,6 +26,18 @@ namespace DhcpServer.Test
             buffer.Opcode.Should().Be(DhcpOpcode.BootRequest);
         }
 
+        [TestMethod]
+        public void LoadReply()
+        {
+            byte[] raw = new byte[500];
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = ReadResource("Reply1.bin", buffer.Span);
+
+            buffer.Load(length);
+
+            buffer.Opcode.Should().Be(DhcpOpcode.BootReply);
+        }
+
         private static int ReadResource(string name, Span<byte> destination)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();

@@ -18,5 +18,10 @@ namespace DhcpServer
         /// Specifies a BOOTREQUEST packet.
         /// </summary>
         BootRequest = 1,
+
+        /// <summary>
+        /// Specifies a BOOTREPLY packet.
+        /// </summary>
+        BootReply = 2,
     }
 }

@@ -31,6 +31,18 @@ namespace DhcpServer.Test
             zero.GetHashCode().Should().NotBe(one1.GetHashCode());
         }
 
+        [TestMethod]
+        public void WriteToExact()
+        {
+            IPAddressV4 address = new IPAddressV4(1, 2, 3, 4);
+            byte[] raw = new byte[4];
+            Span<byte> span = new Span<byte>(raw);
+
+            address.WriteTo(span);
+
+            raw.Should().ContainInOrder(1, 2, 3, 4);
+        }
+
         private static void CheckEquality<T>(bool areEqual, T x, T y)
             where T : IEquatable<T>
         {

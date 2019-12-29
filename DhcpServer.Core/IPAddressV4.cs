@@ -38,6 +38,18 @@ namespace DhcpServer
             this.value = value;
         }
 
+        /// <summary>
+        /// Writes the address to the specified buffer.
+        /// </summary>
+        /// <param name="destination">The destination buffer.</param>
+        public void WriteTo(Span<byte> destination)
+        {
+            destination[0] = (byte)(this.value >> 24);
+            destination[1] = (byte)(this.value >> 16);
+            destination[2] = (byte)(this.value >> 8);
+            destination[3] = (byte)(this.value & 0xFF);
+        }
+
         /// <inheritdoc/>
         public bool Equals(IPAddressV4 other) => this.value == other.value;
 

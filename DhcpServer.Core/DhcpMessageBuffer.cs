@@ -53,6 +53,11 @@ namespace DhcpServer
         public uint TransactionId { get; set; }
 
         /// <summary>
+        /// Gets or sets the seconds elapsed since client boot.
+        /// </summary>
+        public ushort Seconds { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -64,9 +69,17 @@ namespace DhcpServer
             this.HardwareAddressLength = this.NextUInt8(ref current);
             this.Hops = this.NextUInt8(ref current);
             this.TransactionId = this.NextUInt32(ref current);
+            this.Seconds = this.NextUInt16(ref current);
         }
 
         private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);
+
+        private ushort NextUInt16(ref int current)
+        {
+            ushort value = this.buffer.ReadUInt16(current);
+            current += 2;
+            return value;
+        }
 
         private uint NextUInt32(ref int current)
         {

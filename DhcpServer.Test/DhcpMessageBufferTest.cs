@@ -25,6 +25,7 @@ namespace DhcpServer.Test
             buffer.HardwareAddressLength.Should().Be(6);
             buffer.Hops.Should().Be(0);
             buffer.TransactionId.Should().Be(0x00003D1D);
+            buffer.Seconds.Should().Be(258);
         }
 
         [TestMethod]
@@ -41,6 +42,7 @@ namespace DhcpServer.Test
             buffer.HardwareAddressLength.Should().Be(6);
             buffer.Hops.Should().Be(3);
             buffer.TransactionId.Should().Be(0x3903F326);
+            buffer.Seconds.Should().Be(0);
         }
     }
 }

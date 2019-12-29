@@ -59,12 +59,20 @@ namespace DhcpServer
         public void Load(int length)
         {
             int current = 0;
-            this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(current++);
-            this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(current++);
-            this.HardwareAddressLength = this.buffer.ReadUInt8(current++);
-            this.Hops = this.buffer.ReadUInt8(current++);
-            this.TransactionId = this.buffer.ReadUInt32(current);
+            this.Opcode = (DhcpOpcode)this.NextUInt8(ref current);
+            this.HardwareAddressType = (DhcpHardwareAddressType)this.NextUInt8(ref current);
+            this.HardwareAddressLength = this.NextUInt8(ref current);
+            this.Hops = this.NextUInt8(ref current);
+            this.TransactionId = this.NextUInt32(ref current);
+        }
+
+        private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);
+
+        private uint NextUInt32(ref int current)
+        {
+            uint value = this.buffer.ReadUInt32(current);
             current += 4;
+            return value;
         }
     }
 }

@@ -68,9 +68,14 @@ namespace DhcpServer
         public IPAddressV4 ClientIPAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the IP address assigned by the server.
+        /// Gets or sets the IP address assigned by the server to the client.
         /// </summary>
         public IPAddressV4 YourIPAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server's IP address.
+        /// </summary>
+        public IPAddressV4 ServerIPAddress { get; set; }
 
         /// <summary>
         /// Loads and parses message data from the underlying buffer.
@@ -88,6 +93,7 @@ namespace DhcpServer
             this.Flags = (DhcpFlags)this.NextUInt16(ref current);
             this.ClientIPAddress = this.NextIP(ref current);
             this.YourIPAddress = this.NextIP(ref current);
+            this.ServerIPAddress = this.NextIP(ref current);
         }
 
         private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);

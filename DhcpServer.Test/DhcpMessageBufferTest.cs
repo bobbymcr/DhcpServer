@@ -33,6 +33,7 @@ namespace DhcpServer.Test
             buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
             buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
             HexString(buffer.ClientHardwareAddress).Should().Be("000B8201FC42");
+            new MacAddress(buffer.ClientHardwareAddress).Should().Be(new MacAddress(0x00, 0x0B, 0x82, 0x01, 0xFC, 0x42));
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
@@ -59,6 +60,7 @@ namespace DhcpServer.Test
             buffer.ServerIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 1));
             buffer.GatewayIPAddress.Should().Be(new IPAddressV4(153, 152, 151, 150));
             HexString(buffer.ClientHardwareAddress).Should().Be("0013204E06D3");
+            new MacAddress(buffer.ClientHardwareAddress).Should().Be(new MacAddress(0x00, 0x13, 0x20, 0x4E, 0x06, 0xD3));
             AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
             AsciiString(buffer.BootFileName).Should().Be(@"Some\Boot\File.xyz");
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);

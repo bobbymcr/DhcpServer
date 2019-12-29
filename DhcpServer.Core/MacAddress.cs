@@ -16,6 +16,15 @@ namespace DhcpServer
         /// <summary>
         /// Initializes a new instance of the <see cref="MacAddress"/> struct.
         /// </summary>
+        /// <param name="span">The span containing the address bytes.</param>
+        public MacAddress(Span<byte> span)
+            : this(span[0], span[1], span[2], span[3], span[4], span[5])
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MacAddress"/> struct.
+        /// </summary>
         /// <param name="b1">The first byte (most significant).</param>
         /// <param name="b2">The second byte.</param>
         /// <param name="b3">The third byte.</param>

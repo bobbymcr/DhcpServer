@@ -108,38 +108,18 @@ namespace DhcpServer
         /// <param name="length">The length of the message.</param>
         public void Load(int length)
         {
-            int current = 0;
-            this.Opcode = (DhcpOpcode)this.NextUInt8(ref current);
-            this.HardwareAddressType = (DhcpHardwareAddressType)this.NextUInt8(ref current);
-            this.HardwareAddressLength = this.NextUInt8(ref current);
-            this.Hops = this.NextUInt8(ref current);
-            this.TransactionId = this.NextUInt32(ref current);
-            this.Seconds = this.NextUInt16(ref current);
-            this.Flags = (DhcpFlags)this.NextUInt16(ref current);
-            this.ClientIPAddress = this.NextIP(ref current);
-            this.YourIPAddress = this.NextIP(ref current);
-            this.ServerIPAddress = this.NextIP(ref current);
-            this.GatewayIPAddress = this.NextIP(ref current);
-            current = 236;
-            this.MagicCookie = (MagicCookie)this.NextUInt32(ref current);
+            this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(0);
+            this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(1);
+            this.HardwareAddressLength = this.buffer.ReadUInt8(2);
+            this.Hops = this.buffer.ReadUInt8(3);
+            this.TransactionId = this.buffer.ReadUInt32(4);
+            this.Seconds = this.buffer.ReadUInt16(8);
+            this.Flags = (DhcpFlags)this.buffer.ReadUInt16(10);
+            this.ClientIPAddress = new IPAddressV4(this.buffer.ReadUInt32(12));
+            this.YourIPAddress = new IPAddressV4(this.buffer.ReadUInt32(16));
+            this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
+            this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
+            this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
         }
-
-        private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);
-
-        private ushort NextUInt16(ref int current)
-        {
-            ushort value = this.buffer.ReadUInt16(current);
-            current += 2;
-            return value;
-        }
-
-        private uint NextUInt32(ref int current)
-        {
-            uint value = this.buffer.ReadUInt32(current);
-            current += 4;
-            return value;
-        }
-
-        private IPAddressV4 NextIP(ref int current) => new IPAddressV4(this.NextUInt32(ref current));
     }
 }

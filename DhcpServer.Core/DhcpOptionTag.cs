@@ -26,6 +26,11 @@ namespace DhcpServer
         Router = 3,
 
         /// <summary>
+        /// Time server addresses
+        /// </summary>
+        TimeServer = 4,
+
+        /// <summary>
         /// DNS Server addresses
         /// </summary>
         DomainServer = 6,

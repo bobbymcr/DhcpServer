@@ -33,6 +33,11 @@ namespace DhcpServer
         public DhcpOpcode Opcode { get; set; }
 
         /// <summary>
+        /// Gets or sets the hardware address type.
+        /// </summary>
+        public DhcpHardwareAddressType HardwareAddressType { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -40,6 +45,7 @@ namespace DhcpServer
         {
             int current = 0;
             this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(current++);
+            this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(current++);
         }
     }
 }

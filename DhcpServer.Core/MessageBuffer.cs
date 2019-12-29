@@ -23,6 +23,11 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Gets a span for the underlying buffer.
+        /// </summary>
+        public Span<byte> Span => this.buffer.Span;
+
+        /// <summary>
         /// Reads an unsigned 8-bit integer.
         /// </summary>
         /// <param name="start">The start index within the buffer.</param>

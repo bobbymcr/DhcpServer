@@ -70,7 +70,7 @@ End={}
             buffer.TransactionId.Should().Be(0x00003D1D);
             buffer.Seconds.Should().Be(258);
             buffer.Flags.Should().Be(DhcpFlags.Broadcast);
-            buffer.ClientIPAddress.Should().Be(new IPAddressV4(1, 2, 3, 4));
+            buffer.ClientIPAddress.Should().Be(IP(1, 2, 3, 4));
             buffer.YourIPAddress.Should().Be(default(IPAddressV4));
             buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
             buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
@@ -164,9 +164,9 @@ End={}
             buffer.Seconds.Should().Be(0);
             buffer.Flags.Should().Be(DhcpFlags.None);
             buffer.ClientIPAddress.Should().Be(default(IPAddressV4));
-            buffer.YourIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 100));
-            buffer.ServerIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 1));
-            buffer.GatewayIPAddress.Should().Be(new IPAddressV4(153, 152, 151, 150));
+            buffer.YourIPAddress.Should().Be(IP(192, 168, 1, 100));
+            buffer.ServerIPAddress.Should().Be(IP(192, 168, 1, 1));
+            buffer.GatewayIPAddress.Should().Be(IP(153, 152, 151, 150));
             HexString(buffer.ClientHardwareAddress).Should().Be("0013204E06D3");
             new MacAddress(buffer.ClientHardwareAddress).Should().Be(new MacAddress(0x00, 0x13, 0x20, 0x4E, 0x06, 0xD3));
             AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
@@ -190,13 +190,30 @@ End={}
         public void Option1()
         {
             TestOption(
-                o => o.WriteSubnetMaskOption(new IPAddressV4(1, 2, 3, 4)),
+                o => o.WriteSubnetMaskOption(IP(1, 2, 3, 4)),
                 "SubnetMask={01020304}");
+        }
+
+        [TestMethod]
+        public void Option3()
+        {
+            TestOption(
+                o => o.WriteRouterOption(IP(1, 2, 3, 4)),
+                "Router={01020304}");
+            TestOption(
+                o => o.WriteRouterOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "Router={0102030405060708}");
+            TestOption(
+                o => o.WriteRouterOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6)),
+                "Router={010203040506070809080706}");
+            TestOption(
+                o => o.WriteRouterOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "Router={01020304050607080908070605040302}");
         }
 
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
-            byte[] raw = new byte[256];
+            byte[] raw = new byte[300];
             DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
 
             act(output);
@@ -248,10 +265,10 @@ End={}
             output.TransactionId = 0x12345678;
             output.Seconds = 34;
             output.Flags = DhcpFlags.Broadcast;
-            output.ClientIPAddress = new IPAddressV4(1, 2, 3, 4);
-            output.YourIPAddress = new IPAddressV4(5, 6, 7, 8);
-            output.ServerIPAddress = new IPAddressV4(9, 10, 11, 12);
-            output.GatewayIPAddress = new IPAddressV4(13, 14, 15, 16);
+            output.ClientIPAddress = IP(1, 2, 3, 4);
+            output.YourIPAddress = IP(5, 6, 7, 8);
+            output.ServerIPAddress = IP(9, 10, 11, 12);
+            output.GatewayIPAddress = IP(13, 14, 15, 16);
             output.MagicCookie = MagicCookie.Dhcp;
             output.ClientHardwareAddress[0] = 0xAA;
             output.ServerHostName[0] = (byte)'S';
@@ -259,7 +276,7 @@ End={}
             DhcpOption msgType = output.WriteOption(DhcpOptionTag.DhcpMsgType, 1);
             msgType.Data[0] = (byte)DhcpMessageType.Offer;
             DhcpOption serverId = output.WriteOption(DhcpOptionTag.DhcpServerId, 4);
-            new IPAddressV4(10, 20, 30, 40).WriteTo(serverId.Data);
+            IP(10, 20, 30, 40).WriteTo(serverId.Data);
             output.WritePadding(5);
             output.WriteEndOption();
 
@@ -274,10 +291,10 @@ End={}
             buffer.TransactionId.Should().Be(0x12345678);
             buffer.Seconds.Should().Be(34);
             buffer.Flags.Should().Be(DhcpFlags.Broadcast);
-            buffer.ClientIPAddress.Should().Be(new IPAddressV4(1, 2, 3, 4));
-            buffer.YourIPAddress.Should().Be(new IPAddressV4(5, 6, 7, 8));
-            buffer.ServerIPAddress.Should().Be(new IPAddressV4(9, 10, 11, 12));
-            buffer.GatewayIPAddress.Should().Be(new IPAddressV4(13, 14, 15, 16));
+            buffer.ClientIPAddress.Should().Be(IP(1, 2, 3, 4));
+            buffer.YourIPAddress.Should().Be(IP(5, 6, 7, 8));
+            buffer.ServerIPAddress.Should().Be(IP(9, 10, 11, 12));
+            buffer.GatewayIPAddress.Should().Be(IP(13, 14, 15, 16));
             HexString(buffer.ClientHardwareAddress).Should().Be("AA0000000000");
             new MacAddress(buffer.ClientHardwareAddress).Should().Be(new MacAddress(0xAA, 0x00, 0x00, 0x00, 0x00, 0x00));
             AsciiString(buffer.ServerHostName).Should().Be("S");
@@ -285,6 +302,8 @@ End={}
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
             OptionsString(buffer).Should().Be(ExpectedOptions);
         }
+
+        private static IPAddressV4 IP(byte b1, byte b2, byte b3, byte b4) => new IPAddressV4(b1, b2, b3, b4);
 
         private static string HexString(Span<byte> span)
         {

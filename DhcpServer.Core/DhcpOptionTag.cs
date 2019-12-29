@@ -31,6 +31,11 @@ namespace DhcpServer
         DomainServer = 6,
 
         /// <summary>
+        /// NTP Server Addresses
+        /// </summary>
+        NtpServers = 42,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

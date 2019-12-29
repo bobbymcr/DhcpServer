@@ -19,6 +19,9 @@ namespace DhcpServer
 
         private readonly MessageBuffer buffer;
 
+        private DhcpOptionsBuffer options;
+        private int nextOption;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpMessageBuffer"/> class.
         /// </summary>
@@ -26,12 +29,11 @@ namespace DhcpServer
         /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message.</exception>
         public DhcpMessageBuffer(Memory<byte> buffer)
         {
-            if (buffer.Length < HeaderSize)
+            this.buffer = new MessageBuffer(buffer);
+            if (!this.SetOptions(buffer.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(buffer));
             }
-
-            this.buffer = new MessageBuffer(buffer);
         }
 
         /// <summary>
@@ -115,18 +117,13 @@ namespace DhcpServer
         public MagicCookie MagicCookie { get; set; }
 
         /// <summary>
-        /// Gets the options buffer.
-        /// </summary>
-        public DhcpOptionsBuffer Options { get; private set; }
-
-        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
         /// <returns><c>true</c> if the length is enough to contain a valid message, <c>false</c> otherwise.</returns>
         public bool Load(int length)
         {
-            if (length < HeaderSize)
+            if (!this.SetOptions(length))
             {
                 return false;
             }
@@ -143,17 +140,14 @@ namespace DhcpServer
             this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
             this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
-            this.Options = new DhcpOptionsBuffer(
-                this.buffer.Slice(HeaderSize, length - HeaderSize),
-                this.buffer.Slice(BootFileNameStart, BootFileNameLength),
-                this.buffer.Slice(ServerHostNameStart, ServerHostNameLength));
             return true;
         }
 
         /// <summary>
-        /// Saves message data to the underlying buffer.
+        /// Saves message data to the underlying buffer and resets the cursor.
         /// </summary>
-        public void Save()
+        /// <returns>The total message size.</returns>
+        public int Save()
         {
             this.buffer.WriteUInt8(0, (byte)this.Opcode);
             this.buffer.WriteUInt8(1, (byte)this.HardwareAddressType);
@@ -167,6 +161,63 @@ namespace DhcpServer
             this.ServerIPAddress.WriteTo(this.buffer.Span.Slice(20, 4));
             this.GatewayIPAddress.WriteTo(this.buffer.Span.Slice(24, 4));
             this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
+            int totalSize = this.nextOption + HeaderSize;
+            this.nextOption = 0;
+            return totalSize;
+        }
+
+        /// <summary>
+        /// Reads options in sequential order and passes each one to a user-defined callback.
+        /// </summary>
+        /// <remarks>The Pad option is processed internally but not passed to the <paramref name="read"/> function.
+        /// Reading stops after the first End option is read; this option is passed to the <paramref name="read"/> function.
+        /// </remarks>
+        /// <typeparam name="T">The user-defined object type.</typeparam>
+        /// <param name="obj">A user-defined parameter object.</param>
+        /// <param name="read">The user-defined callback.</param>
+        public void ReadOptions<T>(T obj, Action<DhcpOption, T> read) => this.options.ReadAll(obj, read);
+
+        /// <summary>
+        /// Writes an option header to the buffer, slices out a data segment, and advances the cursor.
+        /// </summary>
+        /// <param name="tag">The option tag.</param>
+        /// <param name="length">The length of the option data.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpOption WriteNextOption(DhcpOptionTag tag, byte length)
+        {
+            DhcpOption option = this.options.Slice(this.nextOption, tag, length);
+            this.nextOption += 2 + length;
+            return option;
+        }
+
+        /// <summary>
+        /// Writes option padding (zero-value) bytes and advances the cursor.
+        /// </summary>
+        /// <param name="length">The number of padding bytes.</param>
+        public void WritePadding(byte length)
+        {
+            this.options.Pad(this.nextOption, length);
+            this.nextOption += length;
+        }
+
+        /// <summary>
+        /// Writes an option end marker and advances the cursor.
+        /// </summary>
+        public void WriteEndOption() => this.options.End(this.nextOption++);
+
+        private bool SetOptions(int length)
+        {
+            if (length >= HeaderSize)
+            {
+                this.options = new DhcpOptionsBuffer(
+                    this.buffer.Slice(HeaderSize, length - HeaderSize),
+                    this.buffer.Slice(BootFileNameStart, BootFileNameLength),
+                    this.buffer.Slice(ServerHostNameStart, ServerHostNameLength));
+                return true;
+            }
+
+            this.options = default;
+            return false;
         }
     }
 }

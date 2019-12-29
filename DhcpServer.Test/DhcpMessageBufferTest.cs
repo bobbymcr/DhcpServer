@@ -44,7 +44,7 @@ namespace DhcpServer.Test
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.None);
-            OptionsString(buffer.Options).Should().BeEmpty();
+            OptionsString(buffer).Should().BeEmpty();
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ End={}
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
-            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
+            OptionsString(buffer).Should().Be(ExpectedOptions);
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@ End={}
             buffer.ServerHostName[0].Should().Be((byte)DhcpOptionTag.DhcpMessage);
             buffer.BootFileName[0].Should().Be((byte)DhcpOptionTag.DhcpMessage);
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
-            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
+            OptionsString(buffer).Should().Be(ExpectedOptions);
         }
 
         [TestMethod]
@@ -157,35 +157,53 @@ End={}
             AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
             AsciiString(buffer.BootFileName).Should().Be(@"Some\Boot\File.xyz");
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
-            OptionsString(buffer.Options).Should().Be(ExpectedOptions);
+            OptionsString(buffer).Should().Be(ExpectedOptions);
         }
 
         [TestMethod]
         public void SaveAndLoad()
         {
-            byte[] raw = new byte[500];
-            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw))
-            {
-                Opcode = DhcpOpcode.Reply,
-                HardwareAddressType = DhcpHardwareAddressType.Ethernet10Mb,
-                HardwareAddressLength = 6,
-                Hops = 1,
-                TransactionId = 0x12345678,
-                Seconds = 34,
-                Flags = DhcpFlags.Broadcast,
-                ClientIPAddress = new IPAddressV4(1, 2, 3, 4),
-                YourIPAddress = new IPAddressV4(5, 6, 7, 8),
-                ServerIPAddress = new IPAddressV4(9, 10, 11, 12),
-                GatewayIPAddress = new IPAddressV4(13, 14, 15, 16),
-                MagicCookie = MagicCookie.Dhcp,
-            };
+            byte[] raw = new byte[256];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            TestSaveAndLoad(raw, output);
+            TestSaveAndLoad(raw, output);
+            TestSaveAndLoad(raw, output);
+        }
+
+        private static void TestSaveAndLoad(byte[] raw, DhcpMessageBuffer output)
+        {
+            const string ExpectedOptions =
+@"DhcpMsgType={02}
+DhcpServerId={0A141E28}
+End={}
+";
+
+            output.Opcode = DhcpOpcode.Reply;
+            output.HardwareAddressType = DhcpHardwareAddressType.Ethernet10Mb;
+            output.HardwareAddressLength = 6;
+            output.Hops = 1;
+            output.TransactionId = 0x12345678;
+            output.Seconds = 34;
+            output.Flags = DhcpFlags.Broadcast;
+            output.ClientIPAddress = new IPAddressV4(1, 2, 3, 4);
+            output.YourIPAddress = new IPAddressV4(5, 6, 7, 8);
+            output.ServerIPAddress = new IPAddressV4(9, 10, 11, 12);
+            output.GatewayIPAddress = new IPAddressV4(13, 14, 15, 16);
+            output.MagicCookie = MagicCookie.Dhcp;
             output.ClientHardwareAddress[0] = 0xAA;
             output.ServerHostName[0] = (byte)'S';
             output.BootFileName[0] = (byte)'B';
-            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            DhcpOption msgType = output.WriteNextOption(DhcpOptionTag.DhcpMsgType, 1);
+            msgType.Data[0] = (byte)DhcpMessageType.Offer;
+            DhcpOption serverId = output.WriteNextOption(DhcpOptionTag.DhcpServerId, 4);
+            new IPAddressV4(10, 20, 30, 40).WriteTo(serverId.Data);
+            output.WritePadding(5);
+            output.WriteEndOption();
 
-            output.Save();
-            buffer.Load(500);
+            int length = output.Save();
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            buffer.Load(length).Should().BeTrue();
 
             buffer.Opcode.Should().Be(DhcpOpcode.Reply);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
@@ -203,6 +221,7 @@ End={}
             AsciiString(buffer.ServerHostName).Should().Be("S");
             AsciiString(buffer.BootFileName).Should().Be("B");
             buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
+            OptionsString(buffer).Should().Be(ExpectedOptions);
         }
 
         private static string HexString(Span<byte> span)
@@ -232,10 +251,10 @@ End={}
             return sb.ToString();
         }
 
-        private static string OptionsString(DhcpOptionsBuffer options)
+        private static string OptionsString(DhcpMessageBuffer buffer)
         {
             StringBuilder sb = new StringBuilder();
-            options.ReadAll(sb, (o, s) => s.AppendLine(OptionString(o)));
+            buffer.ReadOptions(sb, (o, s) => s.AppendLine(OptionString(o)));
             return sb.ToString();
         }
 

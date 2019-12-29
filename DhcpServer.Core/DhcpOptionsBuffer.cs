@@ -29,6 +29,37 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes an option header to the buffer and slices out a data segment.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="tag">The option tag.</param>
+        /// <param name="length">The length of the option data.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpOption Slice(int start, DhcpOptionTag tag, byte length)
+        {
+            Span<byte> header = this.options.Span;
+            header[start] = (byte)tag;
+            header[start + 1] = length;
+            return new DhcpOption(tag, this.options.Slice(start + 2, length));
+        }
+
+        /// <summary>
+        /// Writes padding (zero-value) bytes to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="length">The number of padding bytes.</param>
+        public void Pad(int start, byte length) => this.options.Span.Slice(start, length).Clear();
+
+        /// <summary>
+        /// Writes an option end marker to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        public void End(int start)
+        {
+            this.options.Span[start] = (byte)DhcpOptionTag.End;
+        }
+
+        /// <summary>
         /// Reads options in sequential order and passes each one to a user-defined callback.
         /// </summary>
         /// <remarks>The Pad option is processed internally but not passed to the <paramref name="read"/> function.

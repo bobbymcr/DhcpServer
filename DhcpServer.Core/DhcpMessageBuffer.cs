@@ -43,6 +43,11 @@ namespace DhcpServer
         public byte HardwareAddressLength { get; set; }
 
         /// <summary>
+        /// Gets or sets the hop count.
+        /// </summary>
+        public byte Hops { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -52,6 +57,7 @@ namespace DhcpServer
             this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(current++);
             this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(current++);
             this.HardwareAddressLength = this.buffer.ReadUInt8(current++);
+            this.Hops = this.buffer.ReadUInt8(current++);
         }
     }
 }

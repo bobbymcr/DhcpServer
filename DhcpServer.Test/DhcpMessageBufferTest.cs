@@ -26,6 +26,7 @@ namespace DhcpServer.Test
             buffer.Opcode.Should().Be(DhcpOpcode.Request);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
             buffer.HardwareAddressLength.Should().Be(6);
+            buffer.Hops.Should().Be(0);
         }
 
         [TestMethod]
@@ -40,6 +41,7 @@ namespace DhcpServer.Test
             buffer.Opcode.Should().Be(DhcpOpcode.Reply);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
             buffer.HardwareAddressLength.Should().Be(6);
+            buffer.Hops.Should().Be(3);
         }
 
         private static int ReadResource(string name, Span<byte> destination)

@@ -136,5 +136,24 @@ namespace DhcpServer
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
             return true;
         }
+
+        /// <summary>
+        /// Saves message data to the underlying buffer.
+        /// </summary>
+        public void Save()
+        {
+            this.buffer.WriteUInt8(0, (byte)this.Opcode);
+            this.buffer.WriteUInt8(1, (byte)this.HardwareAddressType);
+            this.buffer.WriteUInt8(2, this.HardwareAddressLength);
+            this.buffer.WriteUInt8(3, this.Hops);
+            this.buffer.WriteUInt32(4, this.TransactionId);
+            this.buffer.WriteUInt16(8, this.Seconds);
+            this.buffer.WriteUInt16(10, (ushort)this.Flags);
+            this.ClientIPAddress.WriteTo(this.buffer.Span.Slice(12, 4));
+            this.YourIPAddress.WriteTo(this.buffer.Span.Slice(16, 4));
+            this.ServerIPAddress.WriteTo(this.buffer.Span.Slice(20, 4));
+            this.GatewayIPAddress.WriteTo(this.buffer.Span.Slice(24, 4));
+            this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
+        }
     }
 }

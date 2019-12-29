@@ -31,5 +31,12 @@ namespace DhcpServer.Perf
             this.buffer.Load(BufferSize);
             return this.buffer.TransactionId;
         }
+
+        [Benchmark]
+        public uint Save()
+        {
+            this.buffer.Save();
+            return this.buffer.TransactionId;
+        }
     }
 }

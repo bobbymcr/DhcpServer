@@ -35,6 +35,7 @@ namespace DhcpServer.Test
             HexString(buffer.ClientHardwareAddress).Should().Be("000B8201FC42");
             AsciiString(buffer.ServerHostName).Should().BeEmpty();
             AsciiString(buffer.BootFileName).Should().BeEmpty();
+            buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
         }
 
         [TestMethod]
@@ -60,6 +61,7 @@ namespace DhcpServer.Test
             HexString(buffer.ClientHardwareAddress).Should().Be("0013204E06D3");
             AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
             AsciiString(buffer.BootFileName).Should().Be(@"Some\Boot\File.xyz");
+            buffer.MagicCookie.Should().Be(MagicCookie.Dhcp);
         }
 
         private static string HexString(Span<byte> span)

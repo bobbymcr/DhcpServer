@@ -98,6 +98,11 @@ namespace DhcpServer
         public Span<byte> BootFileName => this.Span.Slice(108, 128);
 
         /// <summary>
+        /// Gets or sets the magic cookie.
+        /// </summary>
+        public MagicCookie MagicCookie { get; set; }
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -115,6 +120,8 @@ namespace DhcpServer
             this.YourIPAddress = this.NextIP(ref current);
             this.ServerIPAddress = this.NextIP(ref current);
             this.GatewayIPAddress = this.NextIP(ref current);
+            current = 236;
+            this.MagicCookie = (MagicCookie)this.NextUInt32(ref current);
         }
 
         private byte NextUInt8(ref int current) => this.buffer.ReadUInt8(current++);

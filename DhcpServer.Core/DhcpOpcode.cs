@@ -5,7 +5,8 @@
 namespace DhcpServer
 {
     /// <summary>
-    /// The DHCP packet opcode.
+    /// The DHCP packet operation code, as defined in
+    /// <see href="https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-1"/> .
     /// </summary>
     public enum DhcpOpcode : byte
     {
@@ -15,13 +16,13 @@ namespace DhcpServer
         None = 0,
 
         /// <summary>
-        /// Specifies a BOOTREQUEST packet.
+        /// Specifies a REQUEST packet.
         /// </summary>
-        BootRequest = 1,
+        Request = 1,
 
         /// <summary>
-        /// Specifies a BOOTREPLY packet.
+        /// Specifies a REPLY packet.
         /// </summary>
-        BootReply = 2,
+        Reply = 2,
     }
 }

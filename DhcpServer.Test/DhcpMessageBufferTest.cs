@@ -23,7 +23,7 @@ namespace DhcpServer.Test
 
             buffer.Load(length);
 
-            buffer.Opcode.Should().Be(DhcpOpcode.BootRequest);
+            buffer.Opcode.Should().Be(DhcpOpcode.Request);
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace DhcpServer.Test
 
             buffer.Load(length);
 
-            buffer.Opcode.Should().Be(DhcpOpcode.BootReply);
+            buffer.Opcode.Should().Be(DhcpOpcode.Reply);
         }
 
         private static int ReadResource(string name, Span<byte> destination)

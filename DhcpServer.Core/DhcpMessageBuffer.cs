@@ -88,6 +88,16 @@ namespace DhcpServer
         public Span<byte> ClientHardwareAddress => this.Span.Slice(28, this.HardwareAddressLength);
 
         /// <summary>
+        /// Gets a span for the server host name bytes.
+        /// </summary>
+        public Span<byte> ServerHostName => this.Span.Slice(44, 64);
+
+        /// <summary>
+        /// Gets a span for the boot file name bytes.
+        /// </summary>
+        public Span<byte> BootFileName => this.Span.Slice(108, 128);
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>

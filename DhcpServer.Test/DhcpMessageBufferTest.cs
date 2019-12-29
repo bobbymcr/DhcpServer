@@ -33,6 +33,8 @@ namespace DhcpServer.Test
             buffer.ServerIPAddress.Should().Be(default(IPAddressV4));
             buffer.GatewayIPAddress.Should().Be(default(IPAddressV4));
             HexString(buffer.ClientHardwareAddress).Should().Be("000B8201FC42");
+            AsciiString(buffer.ServerHostName).Should().BeEmpty();
+            AsciiString(buffer.BootFileName).Should().BeEmpty();
         }
 
         [TestMethod]
@@ -56,6 +58,8 @@ namespace DhcpServer.Test
             buffer.ServerIPAddress.Should().Be(new IPAddressV4(192, 168, 1, 1));
             buffer.GatewayIPAddress.Should().Be(new IPAddressV4(153, 152, 151, 150));
             HexString(buffer.ClientHardwareAddress).Should().Be("0013204E06D3");
+            AsciiString(buffer.ServerHostName).Should().Be("MyHostName");
+            AsciiString(buffer.BootFileName).Should().Be(@"Some\Boot\File.xyz");
         }
 
         private static string HexString(Span<byte> span)
@@ -64,6 +68,22 @@ namespace DhcpServer.Test
             foreach (byte b in span)
             {
                 sb.Append(b.ToString("X2"));
+            }
+
+            return sb.ToString();
+        }
+
+        private static string AsciiString(Span<byte> span)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in span)
+            {
+                if (b == 0)
+                {
+                    break;
+                }
+
+                sb.Append((char)b);
             }
 
             return sb.ToString();

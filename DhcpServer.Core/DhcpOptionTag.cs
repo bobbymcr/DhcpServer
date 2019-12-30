@@ -51,6 +51,11 @@ namespace DhcpServer
         QuotesServer = 8,
 
         /// <summary>
+        /// Line printer server addresses
+        /// </summary>
+        LprServer = 9,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

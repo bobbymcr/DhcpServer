@@ -296,6 +296,23 @@ End={}
                 "QuotesServer={01020304050607080908070605040302}");
         }
 
+        [TestMethod]
+        public void Option9()
+        {
+            TestOption(
+                o => o.WriteLprServerOption(IP(1, 2, 3, 4)),
+                "LprServer={01020304}");
+            TestOption(
+                o => o.WriteLprServerOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "LprServer={0102030405060708}");
+            TestOption(
+                o => o.WriteLprServerOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6)),
+                "LprServer={010203040506070809080706}");
+            TestOption(
+                o => o.WriteLprServerOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "LprServer={01020304050607080908070605040302}");
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

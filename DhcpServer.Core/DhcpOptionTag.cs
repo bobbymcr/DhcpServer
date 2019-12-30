@@ -76,6 +76,11 @@ namespace DhcpServer
         BootFileSize = 13,
 
         /// <summary>
+        /// Client to dump and name the file to dump it to
+        /// </summary>
+        MeritDumpFile = 14,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Provides extension methods for <see cref="DhcpMessageBuffer"/>.
@@ -442,7 +443,7 @@ namespace DhcpServer
         /// <param name="hostName">The host name buffer.</param>
         public static void WriteHostNameOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> hostName)
         {
-            buffer.WriteOption(DhcpOptionTag.HostName, hostName);
+            buffer.WriteOption(DhcpOptionTag.HostName, hostName, Encoding.UTF8);
         }
 
         /// <summary>
@@ -455,6 +456,16 @@ namespace DhcpServer
             var option = buffer.WriteOption(DhcpOptionTag.BootFileSize, 2);
             option.Data[0] = (byte)(blocks >> 8);
             option.Data[1] = (byte)(blocks & 0xFF);
+        }
+
+        /// <summary>
+        /// Writes ASCII encoded data for the merit dump file option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="dumpFileName">The dump file name buffer.</param>
+        public static void WriteMeritDumpFileOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> dumpFileName)
+        {
+            buffer.WriteOption(DhcpOptionTag.MeritDumpFile, dumpFileName, Encoding.ASCII);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)

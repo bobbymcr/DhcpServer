@@ -45,17 +45,18 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes an option header followed by UTF-8 character data to the buffer.
+        /// Writes an option header followed by character data to the buffer.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
         /// <param name="tag">The option tag.</param>
         /// <param name="chars">The character buffer.</param>
+        /// <param name="encoding">The character encoding.</param>
         /// <returns>The sliced option.</returns>
-        public DhcpOption Write(int start, DhcpOptionTag tag, ReadOnlySpan<char> chars)
+        public DhcpOption Write(int start, DhcpOptionTag tag, ReadOnlySpan<char> chars, Encoding encoding)
         {
             Span<byte> option = this.options.Span;
             option[start] = (byte)tag;
-            int length = Encoding.UTF8.GetBytes(chars, option.Slice(start + 2));
+            int length = encoding.GetBytes(chars, option.Slice(start + 2));
             option[start + 1] = (byte)length;
             return new DhcpOption(tag, this.options.Slice(start + 2, length));
         }

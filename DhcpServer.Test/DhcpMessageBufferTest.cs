@@ -363,6 +363,14 @@ End={}
                 "BootFileSize={1234}");
         }
 
+        [TestMethod]
+        public void Option14()
+        {
+            TestOption(
+                o => o.WriteMeritDumpFileOption("file.dmp"),
+                "MeritDumpFile={66696C652E646D70}");
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

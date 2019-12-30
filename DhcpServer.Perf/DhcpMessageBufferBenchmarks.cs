@@ -46,18 +46,17 @@ namespace DhcpServer.Perf
         [Benchmark]
         public long SaveWithOptions()
         {
-            var option1 = this.buffer.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
-            option1.Data[0] = (byte)DhcpMessageType.Discover;
+            this.buffer.WriteDhcpMsgTypeOption(DhcpMessageType.Discover);
             var option2 = this.buffer.WriteOptionHeader(DhcpOptionTag.ClientId, 7);
             option2.Data[0] = (byte)DhcpHardwareAddressType.Ethernet10Mb;
             new MacAddress(0x000B8201FC42).WriteTo(option2.Data.Slice(1));
             var option3 = this.buffer.WriteOptionHeader(DhcpOptionTag.AddressRequest, 4);
             default(IPAddressV4).WriteTo(option3.Data);
-            var option4 = this.buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 4);
-            option4.Data[0] = (byte)DhcpOptionTag.SubnetMask;
-            option4.Data[1] = (byte)DhcpOptionTag.Router;
-            option4.Data[2] = (byte)DhcpOptionTag.DomainServer;
-            option4.Data[3] = (byte)DhcpOptionTag.NtpServers;
+            this.buffer.WriteParameterListOption(
+                DhcpOptionTag.SubnetMask,
+                DhcpOptionTag.Router,
+                DhcpOptionTag.DomainServer,
+                DhcpOptionTag.NtpServers);
             this.buffer.WriteEndOption();
             return this.buffer.Save();
         }

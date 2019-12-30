@@ -27,20 +27,18 @@ namespace DhcpServer
         /// <summary>
         /// Runs an asynchronous receive loop.
         /// </summary>
-        /// <typeparam name="T">The user-defined object type.</typeparam>
         /// <param name="buffer">The buffer to hold received messages.</param>
-        /// <param name="obj">A user-defined parameter object.</param>
+        /// <param name="callbacks">A user-defined callback implementation.</param>
         /// <param name="token">Used to signal that the loop should be canceled.</param>
-        /// <param name="processAsync">The user-defined processing callback.</param>
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
-        public async Task RunAsync<T>(Memory<byte> buffer, T obj, CancellationToken token, Func<DhcpMessageBuffer, T, CancellationToken, ValueTask> processAsync)
+        public async Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
             DhcpMessageBuffer messageBuffer = new DhcpMessageBuffer(buffer);
             while (true)
             {
                 int length = await this.socket.ReceiveAsync(buffer, token);
                 messageBuffer.Load(length);
-                await processAsync(messageBuffer, obj, token);
+                await callbacks.OnReceiveAsync(messageBuffer, token);
             }
         }
     }

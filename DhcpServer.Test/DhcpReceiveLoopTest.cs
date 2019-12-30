@@ -21,13 +21,9 @@ namespace DhcpServer.Test
             byte[] raw = new byte[500];
             Memory<byte> inputBuffer = new Memory<byte>(raw);
             DhcpMessageBuffer[] messages = new DhcpMessageBuffer[1];
-            static ValueTask ProcessAsync(DhcpMessageBuffer m, DhcpMessageBuffer[] a)
-            {
-                a[0] = m;
-                return new ValueTask(Task.CompletedTask);
-            }
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => messages[0] = m);
 
-            Task task = loop.RunAsync(inputBuffer, messages, CancellationToken.None, (m, a, t) => ProcessAsync(m, a));
+            Task task = loop.RunAsync(inputBuffer, callbacks, CancellationToken.None);
 
             task.IsCompleted.Should().BeFalse();
             messages[0].Should().BeNull();
@@ -56,15 +52,11 @@ namespace DhcpServer.Test
             byte[] raw = new byte[500];
             Memory<byte> inputBuffer = new Memory<byte>(raw);
             int count = 0;
-            ValueTask ShouldNotRun()
-            {
-                ++count;
-                return new ValueTask(Task.CompletedTask);
-            }
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++count);
 
             using CancellationTokenSource cts = new CancellationTokenSource();
             cts.Cancel();
-            Task task = loop.RunAsync(inputBuffer, new object(), cts.Token, (m, o, t) => ShouldNotRun());
+            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
 
             task.IsCanceled.Should().BeTrue();
             count.Should().Be(0);
@@ -73,25 +65,26 @@ namespace DhcpServer.Test
         [TestMethod]
         public void CancelDuringProcess()
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
             int count = 0;
-            ValueTask ShouldBeCanceled(DhcpMessageBuffer m, CancellationTokenSource c, CancellationToken t)
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            void Callback(DhcpMessageBuffer m, CancellationToken t)
             {
                 ++count;
                 if (m.Opcode == DhcpOpcode.Request)
                 {
-                    c.Cancel();
+                    cts.Cancel();
                 }
 
                 t.ThrowIfCancellationRequested();
-                return new ValueTask(Task.CompletedTask);
             }
 
-            using CancellationTokenSource cts = new CancellationTokenSource();
-            Task task = loop.RunAsync(inputBuffer, cts, cts.Token, (m, c, t) => ShouldBeCanceled(m, c, t));
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            byte[] raw = new byte[500];
+            Memory<byte> inputBuffer = new Memory<byte>(raw);
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(Callback);
+
+            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
 
             task.IsCanceled.Should().BeFalse();
 
@@ -126,6 +119,22 @@ namespace DhcpServer.Test
             {
                 data.CopyTo(this.buffer.Span);
                 this.next.SetResult(data.Length);
+            }
+        }
+
+        private sealed class StubDhcpReceiveCallbacks : IDhcpReceiveCallbacks
+        {
+            private readonly Action<DhcpMessageBuffer, CancellationToken> onReceive;
+
+            public StubDhcpReceiveCallbacks(Action<DhcpMessageBuffer, CancellationToken> onReceive)
+            {
+                this.onReceive = onReceive;
+            }
+
+            public ValueTask OnReceiveAsync(DhcpMessageBuffer message, CancellationToken token)
+            {
+                this.onReceive(message, token);
+                return new ValueTask(Task.CompletedTask);
             }
         }
     }

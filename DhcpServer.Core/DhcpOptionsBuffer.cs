@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Provides read/write access to a fixed size buffer containing DHCP options.
@@ -40,6 +41,22 @@ namespace DhcpServer
             Span<byte> header = this.options.Span;
             header[start] = (byte)tag;
             header[start + 1] = length;
+            return new DhcpOption(tag, this.options.Slice(start + 2, length));
+        }
+
+        /// <summary>
+        /// Writes an option header followed by UTF-8 character data to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="tag">The option tag.</param>
+        /// <param name="chars">The character buffer.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpOption Write(int start, DhcpOptionTag tag, ReadOnlySpan<char> chars)
+        {
+            Span<byte> option = this.options.Span;
+            option[start] = (byte)tag;
+            int length = Encoding.UTF8.GetBytes(chars, option.Slice(start + 2));
+            option[start + 1] = (byte)length;
             return new DhcpOption(tag, this.options.Slice(start + 2, length));
         }
 

@@ -66,6 +66,11 @@ namespace DhcpServer
         RlpServer = 11,
 
         /// <summary>
+        /// Host name string
+        /// </summary>
+        HostName = 12,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

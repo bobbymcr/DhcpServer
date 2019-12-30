@@ -4,6 +4,8 @@
 
 namespace DhcpServer
 {
+    using System;
+
     /// <summary>
     /// Provides extension methods for <see cref="DhcpMessageBuffer"/>.
     /// </summary>
@@ -431,6 +433,16 @@ namespace DhcpServer
         public static void WriteRlpServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
             WriteIPs(buffer, DhcpOptionTag.RlpServer, ip1, ip2, ip3, ip4);
+        }
+
+        /// <summary>
+        /// Writes UTF-8 encoded data for the host name option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="hostName">The host name buffer.</param>
+        public static void WriteHostNameOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> hostName)
+        {
+            buffer.WriteOption(DhcpOptionTag.HostName, hostName);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)

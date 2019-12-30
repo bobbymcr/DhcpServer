@@ -347,6 +347,14 @@ End={}
                 "RlpServer={01020304050607080908070605040302}");
         }
 
+        [TestMethod]
+        public void Option12()
+        {
+            TestOption(
+                o => o.WriteHostNameOption("MyHost"),
+                "HostName={4D79486F7374}");
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

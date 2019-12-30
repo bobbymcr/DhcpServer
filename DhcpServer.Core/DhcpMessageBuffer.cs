@@ -191,6 +191,19 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes an option header followed by UTF-8 character data to the buffer and advances the cursor.
+        /// </summary>
+        /// <param name="tag">The option tag.</param>
+        /// <param name="chars">The character buffer.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpOption WriteOption(DhcpOptionTag tag, ReadOnlySpan<char> chars)
+        {
+            DhcpOption option = this.options.Write(this.nextOption, tag, chars);
+            this.nextOption += 2 + option.Data.Length;
+            return option;
+        }
+
+        /// <summary>
         /// Writes option padding (zero-value) bytes and advances the cursor.
         /// </summary>
         /// <param name="length">The number of padding bytes.</param>

@@ -16,8 +16,7 @@ namespace DhcpServer
         /// <param name="mask">The subnet mask.</param>
         public static void WriteSubnetMaskOption(this DhcpMessageBuffer buffer, IPAddressV4 mask)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.SubnetMask, 4);
-            mask.WriteTo(option.Data);
+            WriteIPs(buffer, DhcpOptionTag.SubnetMask, mask);
         }
 
         /// <summary>
@@ -27,8 +26,7 @@ namespace DhcpServer
         /// <param name="ip1">The first router IP.</param>
         public static void WriteRouterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.Router, 4);
-            ip1.WriteTo(option.Data);
+            WriteIPs(buffer, DhcpOptionTag.Router, ip1);
         }
 
         /// <summary>
@@ -39,9 +37,7 @@ namespace DhcpServer
         /// <param name="ip2">The second router IP.</param>
         public static void WriteRouterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.Router, 8);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
+            WriteIPs(buffer, DhcpOptionTag.Router, ip1, ip2);
         }
 
         /// <summary>
@@ -53,10 +49,7 @@ namespace DhcpServer
         /// <param name="ip3">The third router IP.</param>
         public static void WriteRouterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.Router, 12);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
+            WriteIPs(buffer, DhcpOptionTag.Router, ip1, ip2, ip3);
         }
 
         /// <summary>
@@ -69,11 +62,7 @@ namespace DhcpServer
         /// <param name="ip4">The fourth router IP.</param>
         public static void WriteRouterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.Router, 16);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
-            ip4.WriteTo(option.Data.Slice(12));
+            WriteIPs(buffer, DhcpOptionTag.Router, ip1, ip2, ip3, ip4);
         }
 
         /// <summary>
@@ -83,8 +72,7 @@ namespace DhcpServer
         /// <param name="ip1">The first time server IP.</param>
         public static void WriteTimeServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.TimeServer, 4);
-            ip1.WriteTo(option.Data);
+            WriteIPs(buffer, DhcpOptionTag.TimeServer, ip1);
         }
 
         /// <summary>
@@ -95,9 +83,7 @@ namespace DhcpServer
         /// <param name="ip2">The second time server IP.</param>
         public static void WriteTimeServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.TimeServer, 8);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
+            WriteIPs(buffer, DhcpOptionTag.TimeServer, ip1, ip2);
         }
 
         /// <summary>
@@ -109,10 +95,7 @@ namespace DhcpServer
         /// <param name="ip3">The third time server IP.</param>
         public static void WriteTimeServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.TimeServer, 12);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
+            WriteIPs(buffer, DhcpOptionTag.TimeServer, ip1, ip2, ip3);
         }
 
         /// <summary>
@@ -125,11 +108,7 @@ namespace DhcpServer
         /// <param name="ip4">The fourth time server IP.</param>
         public static void WriteTimeServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.TimeServer, 16);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
-            ip4.WriteTo(option.Data.Slice(12));
+            WriteIPs(buffer, DhcpOptionTag.TimeServer, ip1, ip2, ip3, ip4);
         }
 
         /// <summary>
@@ -139,8 +118,7 @@ namespace DhcpServer
         /// <param name="ip1">The first name server IP.</param>
         public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 4);
-            ip1.WriteTo(option.Data);
+            WriteIPs(buffer, DhcpOptionTag.NameServer, ip1);
         }
 
         /// <summary>
@@ -151,9 +129,7 @@ namespace DhcpServer
         /// <param name="ip2">The second name server IP.</param>
         public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 8);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
+            WriteIPs(buffer, DhcpOptionTag.NameServer, ip1, ip2);
         }
 
         /// <summary>
@@ -165,10 +141,7 @@ namespace DhcpServer
         /// <param name="ip3">The third name server IP.</param>
         public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 12);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
+            WriteIPs(buffer, DhcpOptionTag.NameServer, ip1, ip2, ip3);
         }
 
         /// <summary>
@@ -181,11 +154,7 @@ namespace DhcpServer
         /// <param name="ip4">The fourth name server IP.</param>
         public static void WriteNameServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.NameServer, 16);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
-            ip4.WriteTo(option.Data.Slice(12));
+            WriteIPs(buffer, DhcpOptionTag.NameServer, ip1, ip2, ip3, ip4);
         }
 
         /// <summary>
@@ -195,8 +164,7 @@ namespace DhcpServer
         /// <param name="ip1">The first domain server IP.</param>
         public static void WriteDomainServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.DomainServer, 4);
-            ip1.WriteTo(option.Data);
+            WriteIPs(buffer, DhcpOptionTag.DomainServer, ip1);
         }
 
         /// <summary>
@@ -207,9 +175,7 @@ namespace DhcpServer
         /// <param name="ip2">The second domain server IP.</param>
         public static void WriteDomainServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.DomainServer, 8);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
+            WriteIPs(buffer, DhcpOptionTag.DomainServer, ip1, ip2);
         }
 
         /// <summary>
@@ -221,10 +187,7 @@ namespace DhcpServer
         /// <param name="ip3">The third domain server IP.</param>
         public static void WriteDomainServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.DomainServer, 12);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
+            WriteIPs(buffer, DhcpOptionTag.DomainServer, ip1, ip2, ip3);
         }
 
         /// <summary>
@@ -237,7 +200,33 @@ namespace DhcpServer
         /// <param name="ip4">The fourth domain server IP.</param>
         public static void WriteDomainServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.DomainServer, 16);
+            WriteIPs(buffer, DhcpOptionTag.DomainServer, ip1, ip2, ip3, ip4);
+        }
+
+        private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
+        {
+            var option = buffer.WriteOption(tag, 4);
+            ip1.WriteTo(option.Data);
+        }
+
+        private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            var option = buffer.WriteOption(tag, 8);
+            ip1.WriteTo(option.Data);
+            ip2.WriteTo(option.Data.Slice(4));
+        }
+
+        private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            var option = buffer.WriteOption(tag, 12);
+            ip1.WriteTo(option.Data);
+            ip2.WriteTo(option.Data.Slice(4));
+            ip3.WriteTo(option.Data.Slice(8));
+        }
+
+        private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            var option = buffer.WriteOption(tag, 16);
             ip1.WriteTo(option.Data);
             ip2.WriteTo(option.Data.Slice(4));
             ip3.WriteTo(option.Data.Slice(8));

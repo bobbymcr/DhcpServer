@@ -61,6 +61,11 @@ namespace DhcpServer
         ImpressServer = 10,
 
         /// <summary>
+        /// Resource Location server addresses
+        /// </summary>
+        RlpServer = 11,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

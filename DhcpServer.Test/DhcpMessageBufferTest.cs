@@ -403,6 +403,23 @@ End={}
             TestOption53("DhcpMsgType={12}", DhcpMessageType.Tls);
         }
 
+        [TestMethod]
+        public void Option55()
+        {
+            TestOption(
+                o => o.WriteParameterListOption(DhcpOptionTag.SubnetMask),
+                "ParameterList={01}");
+            TestOption(
+                o => o.WriteParameterListOption(DhcpOptionTag.SubnetMask, DhcpOptionTag.Router),
+                "ParameterList={0103}");
+            TestOption(
+                o => o.WriteParameterListOption(DhcpOptionTag.SubnetMask, DhcpOptionTag.Router, DhcpOptionTag.TimeServer),
+                "ParameterList={010304}");
+            TestOption(
+                o => o.WriteParameterListOption(DhcpOptionTag.SubnetMask, DhcpOptionTag.Router, DhcpOptionTag.TimeServer, DhcpOptionTag.NameServer),
+                "ParameterList={01030405}");
+        }
+
         private static void TestOption53(string expectedOption, DhcpMessageType messageType)
         {
             TestOption(o => o.WriteDhcpMsgTypeOption(messageType), expectedOption);

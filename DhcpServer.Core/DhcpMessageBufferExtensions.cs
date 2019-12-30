@@ -489,6 +489,62 @@ namespace DhcpServer
             option.Data[0] = (byte)messageType;
         }
 
+        /// <summary>
+        /// Writes data for the requested parameter list option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="p1">The first requested parameter.</param>
+        public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 1);
+            option.Data[0] = (byte)p1;
+        }
+
+        /// <summary>
+        /// Writes data for the requested parameter list option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="p1">The first requested parameter.</param>
+        /// <param name="p2">The second requested parameter.</param>
+        public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 2);
+            option.Data[0] = (byte)p1;
+            option.Data[1] = (byte)p2;
+        }
+
+        /// <summary>
+        /// Writes data for the requested parameter list option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="p1">The first requested parameter.</param>
+        /// <param name="p2">The second requested parameter.</param>
+        /// <param name="p3">The third requested parameter.</param>
+        public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2, DhcpOptionTag p3)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 3);
+            option.Data[0] = (byte)p1;
+            option.Data[1] = (byte)p2;
+            option.Data[2] = (byte)p3;
+        }
+
+        /// <summary>
+        /// Writes data for the requested parameter list option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="p1">The first requested parameter.</param>
+        /// <param name="p2">The second requested parameter.</param>
+        /// <param name="p3">The third requested parameter.</param>
+        /// <param name="p4">The fourth requested parameter.</param>
+        public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2, DhcpOptionTag p3, DhcpOptionTag p4)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 4);
+            option.Data[0] = (byte)p1;
+            option.Data[1] = (byte)p2;
+            option.Data[2] = (byte)p3;
+            option.Data[3] = (byte)p4;
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOptionHeader(tag, 4);

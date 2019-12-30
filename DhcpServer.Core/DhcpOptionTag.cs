@@ -56,6 +56,11 @@ namespace DhcpServer
         LprServer = 9,
 
         /// <summary>
+        /// Imagen Impress server addresses
+        /// </summary>
+        ImpressServer = 10,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

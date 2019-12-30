@@ -341,6 +341,52 @@ namespace DhcpServer
             WriteIPs(buffer, DhcpOptionTag.LprServer, ip1, ip2, ip3, ip4);
         }
 
+        /// <summary>
+        /// Writes data for the Impress server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first Impress server IP.</param>
+        public static void WriteImpressServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.ImpressServer, ip1);
+        }
+
+        /// <summary>
+        /// Writes data for the Impress server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first Impress server IP.</param>
+        /// <param name="ip2">The second Impress server IP.</param>
+        public static void WriteImpressServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.ImpressServer, ip1, ip2);
+        }
+
+        /// <summary>
+        /// Writes data for the Impress server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first Impress server IP.</param>
+        /// <param name="ip2">The second Impress server IP.</param>
+        /// <param name="ip3">The third Impress server IP.</param>
+        public static void WriteImpressServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            WriteIPs(buffer, DhcpOptionTag.ImpressServer, ip1, ip2, ip3);
+        }
+
+        /// <summary>
+        /// Writes data for the Impress server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first Impress server IP.</param>
+        /// <param name="ip2">The second Impress server IP.</param>
+        /// <param name="ip3">The third Impress server IP.</param>
+        /// <param name="ip4">The fourth Impress server IP.</param>
+        public static void WriteImpressServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            WriteIPs(buffer, DhcpOptionTag.ImpressServer, ip1, ip2, ip3, ip4);
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOption(tag, 4);

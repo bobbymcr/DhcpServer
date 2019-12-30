@@ -249,6 +249,52 @@ namespace DhcpServer
             WriteIPs(buffer, DhcpOptionTag.LogServer, ip1, ip2, ip3, ip4);
         }
 
+        /// <summary>
+        /// Writes data for the quotes server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first quotes server IP.</param>
+        public static void WriteQuotesServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.QuotesServer, ip1);
+        }
+
+        /// <summary>
+        /// Writes data for the quotes server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first quotes server IP.</param>
+        /// <param name="ip2">The second quotes server IP.</param>
+        public static void WriteQuotesServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.QuotesServer, ip1, ip2);
+        }
+
+        /// <summary>
+        /// Writes data for the quotes server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first quotes server IP.</param>
+        /// <param name="ip2">The second quotes server IP.</param>
+        /// <param name="ip3">The third quotes server IP.</param>
+        public static void WriteQuotesServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            WriteIPs(buffer, DhcpOptionTag.QuotesServer, ip1, ip2, ip3);
+        }
+
+        /// <summary>
+        /// Writes data for the quotes server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first quotes server IP.</param>
+        /// <param name="ip2">The second quotes server IP.</param>
+        /// <param name="ip3">The third quotes server IP.</param>
+        /// <param name="ip4">The fourth quotes server IP.</param>
+        public static void WriteQuotesServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            WriteIPs(buffer, DhcpOptionTag.QuotesServer, ip1, ip2, ip3, ip4);
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOption(tag, 4);

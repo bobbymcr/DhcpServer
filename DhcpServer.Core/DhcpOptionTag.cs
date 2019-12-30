@@ -46,6 +46,11 @@ namespace DhcpServer
         LogServer = 7,
 
         /// <summary>
+        /// Quote of the Day server addresses
+        /// </summary>
+        QuotesServer = 8,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

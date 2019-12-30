@@ -45,6 +45,21 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes a sub-option header to the buffer and slices out a data segment.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="code">The sub-option code.</param>
+        /// <param name="length">The length of the option data.</param>
+        /// <returns>The sliced sub-option.</returns>
+        public DhcpSubOption SliceSub(int start, byte code, byte length)
+        {
+            Span<byte> header = this.options.Span;
+            header[start] = code;
+            header[start + 1] = length;
+            return new DhcpSubOption(code, this.options.Slice(start + 2, length));
+        }
+
+        /// <summary>
         /// Writes an option header followed by character data to the buffer.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
@@ -59,6 +74,23 @@ namespace DhcpServer
             int length = encoding.GetBytes(chars, option.Slice(start + 2));
             option[start + 1] = (byte)length;
             return new DhcpOption(tag, this.options.Slice(start + 2, length));
+        }
+
+        /// <summary>
+        /// Writes a sub-option header followed by character data to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="code">The sub-option code.</param>
+        /// <param name="chars">The character buffer.</param>
+        /// <param name="encoding">The character encoding.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpSubOption WriteSub(int start, byte code, ReadOnlySpan<char> chars, Encoding encoding)
+        {
+            Span<byte> option = this.options.Span;
+            option[start] = (byte)code;
+            int length = encoding.GetBytes(chars, option.Slice(start + 2));
+            option[start + 1] = (byte)length;
+            return new DhcpSubOption(code, this.options.Slice(start + 2, length));
         }
 
         /// <summary>

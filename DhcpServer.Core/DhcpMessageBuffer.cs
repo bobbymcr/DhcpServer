@@ -22,6 +22,7 @@ namespace DhcpServer
 
         private DhcpOptionsBuffer options;
         private int nextOption;
+        private int containerStart;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpMessageBuffer"/> class.
@@ -177,6 +178,60 @@ namespace DhcpServer
         /// <param name="obj">A user-defined parameter object.</param>
         /// <param name="read">The user-defined callback.</param>
         public void ReadOptions<T>(T obj, Action<DhcpOption, T> read) => this.options.ReadAll(obj, read);
+
+        /// <summary>
+        /// Writes a container option header to the buffer with a variable sized data segment and advances the cursor.
+        /// </summary>
+        /// <remarks>At least one call to either <see cref="WriteSubOptionHeader(byte, byte)"/> or
+        /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/> must be made after this.
+        /// The container option must be terminated by an <see cref="EndContainerOption"/> call.</remarks>
+        /// <param name="tag">The container option tag.</param>
+        public void WriteContainerOptionHeader(DhcpOptionTag tag)
+        {
+            this.options.Slice(this.nextOption, tag, 0);
+            this.containerStart = this.nextOption;
+            this.nextOption += 2;
+        }
+
+        /// <summary>
+        /// Writes a sub-option header to the buffer, slices out a data segment, and advances the cursor.
+        /// </summary>
+        /// <remarks>This must be called after <see cref="WriteContainerOptionHeader(DhcpOptionTag)"/>.</remarks>
+        /// <param name="code">The sub-option code.</param>
+        /// <param name="length">The sub-option length.</param>
+        /// <returns>The sliced sub-option.</returns>
+        public DhcpSubOption WriteSubOptionHeader(byte code, byte length)
+        {
+            DhcpSubOption subOption = this.options.SliceSub(this.nextOption, code, length);
+            this.nextOption += 2 + length;
+            return subOption;
+        }
+
+        /// <summary>
+        /// Writes a sub-option header followed by character data to the buffer and advances the cursor.
+        /// </summary>
+        /// <remarks>This must be called after <see cref="WriteContainerOptionHeader(DhcpOptionTag)"/>.</remarks>
+        /// <param name="code">The sub-option code.</param>
+        /// <param name="chars">The character buffer.</param>
+        /// <param name="encoding">The character encoding.</param>
+        /// <returns>The sliced option.</returns>
+        public DhcpSubOption WriteSubOption(byte code, ReadOnlySpan<char> chars, Encoding encoding)
+        {
+            DhcpSubOption option = this.options.WriteSub(this.nextOption, code, chars, encoding);
+            this.nextOption += 2 + option.Data.Length;
+            return option;
+        }
+
+        /// <summary>
+        /// Marks the end of the current container option and updates the length.
+        /// </summary>
+        /// <remarks>At least one call to either <see cref="WriteSubOptionHeader(byte, byte)"/> or
+        /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/> must be made before this.
+        /// </remarks>
+        public void EndContainerOption()
+        {
+            this.Span[HeaderSize + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
+        }
 
         /// <summary>
         /// Writes an option header to the buffer, slices out a data segment, and advances the cursor.

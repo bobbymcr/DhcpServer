@@ -136,6 +136,11 @@ namespace DhcpServer
         ClientId = 61,
 
         /// <summary>
+        /// Relay Agent Information
+        /// </summary>
+        RelayAgentInformation = 82,
+
+        /// <summary>
         /// Marks the end of an options buffer.
         /// </summary>
         End = 255,

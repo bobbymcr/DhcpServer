@@ -545,6 +545,16 @@ namespace DhcpServer
             option.Data[3] = (byte)p4;
         }
 
+        /// <summary>
+        /// Writes the header for the relay agent information option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <returns>A buffer to allow writing relay agent sub-options.</returns>
+        public static DhcpRelayAgentSubOptionsBuffer WriteRelayAgentInformationOptionHeader(this DhcpMessageBuffer buffer)
+        {
+            return new DhcpRelayAgentSubOptionsBuffer(buffer);
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOptionHeader(tag, 4);

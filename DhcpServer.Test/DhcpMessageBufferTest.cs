@@ -420,6 +420,36 @@ End={}
                 "ParameterList={01030405}");
         }
 
+        [TestMethod]
+        public void Option82()
+        {
+            const string ExpectedOptions =
+@"RelayAgentInformation={01056369726331020372653105040102030406027331}
+SubnetMask={FFFFFF00}
+End={}
+";
+            const string ExpectedRelayAgentOptions =
+@"AgentCircuitId={6369726331}
+AgentRemoteId={726531}
+LinkSelection={01020304}
+SubscriberId={7331}
+";
+            byte[] raw = new byte[300];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            DhcpRelayAgentSubOptionsBuffer buffer = output.WriteRelayAgentInformationOptionHeader();
+            buffer.WriteAgentCircuitId("circ1");
+            buffer.WriteAgentRemoteId("re1");
+            buffer.WriteLinkSelection(new IPAddressV4(1, 2, 3, 4));
+            buffer.WriteSubscriberId("s1");
+            buffer.End();
+            output.WriteSubnetMaskOption(new IPAddressV4(255, 255, 255, 0));
+            output.WriteEndOption();
+
+            RelayAgentOptionsString(output).Should().Be(ExpectedRelayAgentOptions);
+            OptionsString(output).Should().Be(ExpectedOptions);
+        }
+
         private static void TestOption53(string expectedOption, DhcpMessageType messageType)
         {
             TestOption(o => o.WriteDhcpMsgTypeOption(messageType), expectedOption);
@@ -561,6 +591,29 @@ End={}
             sb.Append(HexString(option.Data));
             sb.Append("}");
             return sb.ToString();
+        }
+
+        private static string RelayAgentOptionsString(DhcpMessageBuffer buffer)
+        {
+            StringBuilder sb = new StringBuilder();
+            buffer.ReadOptions(sb, (o, s) => AppendRelayAgentOption(o, s));
+            return sb.ToString();
+        }
+
+        private static void AppendRelayAgentOption(DhcpOption option, StringBuilder sb)
+        {
+            if (option.Tag == DhcpOptionTag.RelayAgentInformation)
+            {
+                option.ReadSubOptions(sb, (o, s) => AppendRelayAgentSubOption(o, s));
+            }
+        }
+
+        private static void AppendRelayAgentSubOption(DhcpSubOption option, StringBuilder sb)
+        {
+            sb.Append((DhcpRelayAgentSubOptionCode)option.Code);
+            sb.Append("={");
+            sb.Append(HexString(option.Data));
+            sb.AppendLine("}");
         }
     }
 }

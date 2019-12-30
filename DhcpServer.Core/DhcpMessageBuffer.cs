@@ -184,7 +184,7 @@ namespace DhcpServer
         /// <param name="tag">The option tag.</param>
         /// <param name="length">The length of the option data.</param>
         /// <returns>The sliced option.</returns>
-        public DhcpOption WriteOption(DhcpOptionTag tag, byte length)
+        public DhcpOption WriteOptionHeader(DhcpOptionTag tag, byte length)
         {
             DhcpOption option = this.options.Slice(this.nextOption, tag, length);
             this.nextOption += 2 + length;

@@ -453,7 +453,7 @@ namespace DhcpServer
         /// <param name="blocks">The size in 512-byte blocks.</param>
         public static void WriteBootFileSizeOption(this DhcpMessageBuffer buffer, ushort blocks)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.BootFileSize, 2);
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.BootFileSize, 2);
             option.Data[0] = (byte)(blocks >> 8);
             option.Data[1] = (byte)(blocks & 0xFF);
         }
@@ -485,26 +485,26 @@ namespace DhcpServer
         /// <param name="messageType">The message type.</param>
         public static void WriteDhcpMsgTypeOption(this DhcpMessageBuffer buffer, DhcpMessageType messageType)
         {
-            var option = buffer.WriteOption(DhcpOptionTag.DhcpMsgType, 1);
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
             option.Data[0] = (byte)messageType;
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
-            var option = buffer.WriteOption(tag, 4);
+            var option = buffer.WriteOptionHeader(tag, 4);
             ip1.WriteTo(option.Data);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2)
         {
-            var option = buffer.WriteOption(tag, 8);
+            var option = buffer.WriteOptionHeader(tag, 8);
             ip1.WriteTo(option.Data);
             ip2.WriteTo(option.Data.Slice(4));
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
-            var option = buffer.WriteOption(tag, 12);
+            var option = buffer.WriteOptionHeader(tag, 12);
             ip1.WriteTo(option.Data);
             ip2.WriteTo(option.Data.Slice(4));
             ip3.WriteTo(option.Data.Slice(8));
@@ -512,7 +512,7 @@ namespace DhcpServer
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
-            var option = buffer.WriteOption(tag, 16);
+            var option = buffer.WriteOptionHeader(tag, 16);
             ip1.WriteTo(option.Data);
             ip2.WriteTo(option.Data.Slice(4));
             ip3.WriteTo(option.Data.Slice(8));

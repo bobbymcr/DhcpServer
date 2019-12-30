@@ -470,9 +470,9 @@ End={}
             output.ClientHardwareAddress[0] = 0xAA;
             output.ServerHostName[0] = (byte)'S';
             output.BootFileName[0] = (byte)'B';
-            DhcpOption msgType = output.WriteOption(DhcpOptionTag.DhcpMsgType, 1);
+            DhcpOption msgType = output.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
             msgType.Data[0] = (byte)DhcpMessageType.Offer;
-            DhcpOption serverId = output.WriteOption(DhcpOptionTag.DhcpServerId, 4);
+            DhcpOption serverId = output.WriteOptionHeader(DhcpOptionTag.DhcpServerId, 4);
             IP(10, 20, 30, 40).WriteTo(serverId.Data);
             output.WritePadding(5);
             output.WriteEndOption();

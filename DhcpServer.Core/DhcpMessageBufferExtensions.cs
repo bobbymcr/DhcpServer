@@ -445,6 +445,18 @@ namespace DhcpServer
             buffer.WriteOption(DhcpOptionTag.HostName, hostName);
         }
 
+        /// <summary>
+        /// Writes data for the boot file size option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="blocks">The size in 512-byte blocks.</param>
+        public static void WriteBootFileSizeOption(this DhcpMessageBuffer buffer, ushort blocks)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.BootFileSize, 2);
+            option.Data[0] = (byte)(blocks >> 8);
+            option.Data[1] = (byte)(blocks & 0xFF);
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOption(tag, 4);

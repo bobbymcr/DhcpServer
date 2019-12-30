@@ -355,6 +355,14 @@ End={}
                 "HostName={4D79486F7374}");
         }
 
+        [TestMethod]
+        public void Option13()
+        {
+            TestOption(
+                o => o.WriteBootFileSizeOption(0x1234),
+                "BootFileSize={1234}");
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

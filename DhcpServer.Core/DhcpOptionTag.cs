@@ -71,6 +71,11 @@ namespace DhcpServer
         HostName = 12,
 
         /// <summary>
+        /// Size of boot file in 512 byte chunks
+        /// </summary>
+        BootFileSize = 13,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

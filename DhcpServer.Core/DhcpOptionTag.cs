@@ -36,9 +36,14 @@ namespace DhcpServer
         NameServer = 5,
 
         /// <summary>
-        /// DNS Server addresses
+        /// DNS server addresses
         /// </summary>
         DomainServer = 6,
+
+        /// <summary>
+        /// MIT-LCS UDP log server addresses
+        /// </summary>
+        LogServer = 7,
 
         /// <summary>
         /// NTP Server Addresses

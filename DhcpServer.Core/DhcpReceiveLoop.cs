@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -29,14 +30,15 @@ namespace DhcpServer
         /// <typeparam name="T">The user-defined object type.</typeparam>
         /// <param name="buffer">The buffer to hold received messages.</param>
         /// <param name="obj">A user-defined parameter object.</param>
+        /// <param name="token">Used to signal that the loop should be canceled.</param>
         /// <param name="processAsync">The user-defined processing callback.</param>
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
-        public async Task RunAsync<T>(Memory<byte> buffer, T obj, Func<DhcpMessageBuffer, T, ValueTask> processAsync)
+        public async Task RunAsync<T>(Memory<byte> buffer, T obj, CancellationToken token, Func<DhcpMessageBuffer, T, ValueTask> processAsync)
         {
             DhcpMessageBuffer messageBuffer = new DhcpMessageBuffer(buffer);
             while (true)
             {
-                int length = await this.socket.ReceiveAsync(buffer);
+                int length = await this.socket.ReceiveAsync(buffer, token);
                 messageBuffer.Load(length);
                 await processAsync(messageBuffer, obj);
             }

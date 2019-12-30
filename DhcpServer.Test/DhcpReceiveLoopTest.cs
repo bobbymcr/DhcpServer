@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,7 +27,7 @@ namespace DhcpServer.Test
                 return new ValueTask(Task.CompletedTask);
             }
 
-            Task task = loop.RunAsync(inputBuffer, messages, (m, a) => ProcessAsync(m, a));
+            Task task = loop.RunAsync(inputBuffer, messages, CancellationToken.None, (m, a) => ProcessAsync(m, a));
 
             task.IsCompleted.Should().BeFalse();
             messages[0].Should().BeNull();
@@ -47,6 +48,28 @@ namespace DhcpServer.Test
             messages[0].TransactionId.Should().Be(0x3903F326);
         }
 
+        [TestMethod]
+        public void CancelRightAway()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            byte[] raw = new byte[500];
+            Memory<byte> inputBuffer = new Memory<byte>(raw);
+            int count = 0;
+            ValueTask ShouldNotRun()
+            {
+                ++count;
+                return new ValueTask(Task.CompletedTask);
+            }
+
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            cts.Cancel();
+            Task task = loop.RunAsync(inputBuffer, new object(), cts.Token, (m, o) => ShouldNotRun());
+
+            task.IsCanceled.Should().BeTrue();
+            count.Should().Be(0);
+        }
+
         private static void Complete(StubInputSocket socket, string resourceName)
         {
             byte[] raw = new byte[500];
@@ -60,8 +83,9 @@ namespace DhcpServer.Test
             private Memory<byte> buffer;
             private TaskCompletionSource<int> next;
 
-            public ValueTask<int> ReceiveAsync(Memory<byte> buffer)
+            public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
             {
+                token.ThrowIfCancellationRequested();
                 this.buffer = buffer;
                 this.next = new TaskCompletionSource<int>();
                 return new ValueTask<int>(this.next.Task);

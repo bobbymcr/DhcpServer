@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -16,7 +17,8 @@ namespace DhcpServer
         /// Receives data from the socket.
         /// </summary>
         /// <param name="buffer">A region of memory that is the storage location for the received data.</param>
+        /// <param name="token">Used to signal that the receive should be canceled.</param>
         /// <returns>A <see cref="ValueTask{Int32}"/> that completes with the number of bytes received.</returns>
-        ValueTask<int> ReceiveAsync(Memory<byte> buffer);
+        ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token);
     }
 }

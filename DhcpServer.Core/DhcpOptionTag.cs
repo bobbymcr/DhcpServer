@@ -81,6 +81,11 @@ namespace DhcpServer
         MeritDumpFile = 14,
 
         /// <summary>
+        /// The DNS domain name of the client
+        /// </summary>
+        DomainName = 15,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

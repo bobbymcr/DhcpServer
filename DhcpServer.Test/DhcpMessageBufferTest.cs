@@ -371,6 +371,14 @@ End={}
                 "MeritDumpFile={66696C652E646D70}");
         }
 
+        [TestMethod]
+        public void Option15()
+        {
+            TestOption(
+                o => o.WriteDomainNameOption("MyName.com"),
+                "DomainName={4D794E616D652E636F6D}");
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

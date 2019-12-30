@@ -468,6 +468,16 @@ namespace DhcpServer
             buffer.WriteOption(DhcpOptionTag.MeritDumpFile, dumpFileName, Encoding.ASCII);
         }
 
+        /// <summary>
+        /// Writes UTF-8 encoded data for the domain name option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="domainName">The domain name buffer.</param>
+        public static void WriteDomainNameOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> domainName)
+        {
+            buffer.WriteOption(DhcpOptionTag.DomainName, domainName, Encoding.UTF8);
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOption(tag, 4);

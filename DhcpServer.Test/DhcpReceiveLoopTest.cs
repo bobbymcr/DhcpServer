@@ -94,11 +94,48 @@ namespace DhcpServer.Test
             count.Should().Be(1);
         }
 
-        private static void Complete(StubInputSocket socket, string resourceName)
+        [TestMethod]
+        public void PacketTooSmall()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            byte[] raw = new byte[500];
+            Memory<byte> inputBuffer = new Memory<byte>(raw);
+            int receiveCount = 0;
+            DhcpError error = default;
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            void ErrorCallback(DhcpError e, CancellationToken t)
+            {
+                error = e;
+                cts.Cancel();
+                t.ThrowIfCancellationRequested();
+            }
+
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++receiveCount, ErrorCallback);
+
+            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
+
+            task.IsCompleted.Should().BeFalse();
+
+            error.Code.Should().Be(DhcpErrorCode.None);
+
+            Complete(socket, "Request1", 50);
+
+            task.IsCanceled.Should().BeTrue();
+            receiveCount.Should().Be(0);
+            error.Code.Should().Be(DhcpErrorCode.PacketTooSmall);
+        }
+
+        private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
         {
             byte[] raw = new byte[500];
             Span<byte> packet = new Memory<byte>(raw).Span;
-            int length = PacketResource.Read(resourceName, packet);
+            int actualLength = PacketResource.Read(resourceName, packet);
+            if (length == -1)
+            {
+                length = actualLength;
+            }
+
             socket.Complete(packet.Slice(0, length));
         }
 
@@ -115,25 +152,39 @@ namespace DhcpServer.Test
                 return new ValueTask<int>(this.next.Task);
             }
 
-            public void Complete(ReadOnlySpan<byte> data)
+            public void Complete(ReadOnlySpan<byte> input)
             {
-                data.CopyTo(this.buffer.Span);
-                this.next.SetResult(data.Length);
+                Span<byte> output = this.buffer.Span;
+                int safeLength = Math.Min(input.Length, output.Length);
+                for (int i = 0; i < safeLength; ++i)
+                {
+                    output[i] = input[i];
+                }
+
+                this.next.SetResult(input.Length);
             }
         }
 
         private sealed class StubDhcpReceiveCallbacks : IDhcpReceiveCallbacks
         {
             private readonly Action<DhcpMessageBuffer, CancellationToken> onReceive;
+            private readonly Action<DhcpError, CancellationToken> onError;
 
-            public StubDhcpReceiveCallbacks(Action<DhcpMessageBuffer, CancellationToken> onReceive)
+            public StubDhcpReceiveCallbacks(Action<DhcpMessageBuffer, CancellationToken> onReceive, Action<DhcpError, CancellationToken> onError = null)
             {
                 this.onReceive = onReceive;
+                this.onError = onError;
             }
 
             public ValueTask OnReceiveAsync(DhcpMessageBuffer message, CancellationToken token)
             {
                 this.onReceive(message, token);
+                return new ValueTask(Task.CompletedTask);
+            }
+
+            public ValueTask OnErrorAsync(DhcpError error, CancellationToken token)
+            {
+                this.onError(error, token);
                 return new ValueTask(Task.CompletedTask);
             }
         }

@@ -37,8 +37,14 @@ namespace DhcpServer
             while (true)
             {
                 int length = await this.socket.ReceiveAsync(buffer, token);
-                messageBuffer.Load(length);
-                await callbacks.OnReceiveAsync(messageBuffer, token);
+                if (messageBuffer.Load(length))
+                {
+                    await callbacks.OnReceiveAsync(messageBuffer, token);
+                }
+                else
+                {
+                    await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooSmall), token);
+                }
             }
         }
     }

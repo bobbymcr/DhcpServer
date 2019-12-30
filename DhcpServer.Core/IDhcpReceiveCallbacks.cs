@@ -19,5 +19,13 @@ namespace DhcpServer
         /// <param name="token">Used to signal that processing should be canceled.</param>
         /// <returns>A <see cref="ValueTask"/> to track the asynchronous operation.</returns>
         ValueTask OnReceiveAsync(DhcpMessageBuffer message, CancellationToken token);
+
+        /// <summary>
+        /// Called when there is an error during receive.
+        /// </summary>
+        /// <param name="error">The error information.</param>
+        /// <param name="token">Used to signal that processing should be canceled.</param>
+        /// <returns>A <see cref="ValueTask"/> to track the asynchronous operation.</returns>
+        ValueTask OnErrorAsync(DhcpError error, CancellationToken token);
     }
 }

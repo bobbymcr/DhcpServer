@@ -379,6 +379,35 @@ End={}
                 "DomainName={4D794E616D652E636F6D}");
         }
 
+        [TestMethod]
+        public void Option53()
+        {
+            TestOption53("DhcpMsgType={00}", DhcpMessageType.None);
+            TestOption53("DhcpMsgType={01}", DhcpMessageType.Discover);
+            TestOption53("DhcpMsgType={02}", DhcpMessageType.Offer);
+            TestOption53("DhcpMsgType={03}", DhcpMessageType.Request);
+            TestOption53("DhcpMsgType={04}", DhcpMessageType.Decline);
+            TestOption53("DhcpMsgType={05}", DhcpMessageType.Ack);
+            TestOption53("DhcpMsgType={06}", DhcpMessageType.Nak);
+            TestOption53("DhcpMsgType={07}", DhcpMessageType.Release);
+            TestOption53("DhcpMsgType={08}", DhcpMessageType.Inform);
+            TestOption53("DhcpMsgType={09}", DhcpMessageType.ForceRenew);
+            TestOption53("DhcpMsgType={0A}", DhcpMessageType.LeaseQuery);
+            TestOption53("DhcpMsgType={0B}", DhcpMessageType.LeaseUnassigned);
+            TestOption53("DhcpMsgType={0C}", DhcpMessageType.LeaseUnknown);
+            TestOption53("DhcpMsgType={0D}", DhcpMessageType.LeaseActive);
+            TestOption53("DhcpMsgType={0E}", DhcpMessageType.BulkLeaseQuery);
+            TestOption53("DhcpMsgType={0F}", DhcpMessageType.LeaseQueryDone);
+            TestOption53("DhcpMsgType={10}", DhcpMessageType.ActiveLeaseQuery);
+            TestOption53("DhcpMsgType={11}", DhcpMessageType.LeaseQueryStatus);
+            TestOption53("DhcpMsgType={12}", DhcpMessageType.Tls);
+        }
+
+        private static void TestOption53(string expectedOption, DhcpMessageType messageType)
+        {
+            TestOption(o => o.WriteDhcpMsgTypeOption(messageType), expectedOption);
+        }
+
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
         {
             byte[] raw = new byte[300];

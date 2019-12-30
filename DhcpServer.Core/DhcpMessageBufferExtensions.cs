@@ -478,6 +478,17 @@ namespace DhcpServer
             buffer.WriteOption(DhcpOptionTag.DomainName, domainName, Encoding.UTF8);
         }
 
+        /// <summary>
+        /// Writes data for the DHCP message type option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="messageType">The message type.</param>
+        public static void WriteDhcpMsgTypeOption(this DhcpMessageBuffer buffer, DhcpMessageType messageType)
+        {
+            var option = buffer.WriteOption(DhcpOptionTag.DhcpMsgType, 1);
+            option.Data[0] = (byte)messageType;
+        }
+
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOption(tag, 4);

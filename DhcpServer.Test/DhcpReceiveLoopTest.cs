@@ -126,6 +126,19 @@ namespace DhcpServer.Test
             error.Code.Should().Be(DhcpErrorCode.PacketTooSmall);
         }
 
+        [TestMethod]
+        public void BufferTooSmall()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            int count = 0;
+            Task task;
+
+            Action act = () => task = loop.RunAsync(new Memory<byte>(new byte[1]), new StubDhcpReceiveCallbacks((m, t) => ++count), CancellationToken.None);
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
         private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
         {
             byte[] raw = new byte[500];

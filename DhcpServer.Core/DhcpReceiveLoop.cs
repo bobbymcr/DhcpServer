@@ -31,9 +31,14 @@ namespace DhcpServer
         /// <param name="callbacks">A user-defined callback implementation.</param>
         /// <param name="token">Used to signal that the loop should be canceled.</param>
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
-        public async Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
+        public Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
             DhcpMessageBuffer messageBuffer = new DhcpMessageBuffer(buffer);
+            return this.RunAsync(buffer, messageBuffer, callbacks, token);
+        }
+
+        private async Task RunAsync(Memory<byte> buffer, DhcpMessageBuffer messageBuffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
+        {
             while (true)
             {
                 int length = await this.socket.ReceiveAsync(buffer, token);

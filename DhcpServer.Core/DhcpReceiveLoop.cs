@@ -33,14 +33,14 @@ namespace DhcpServer
         /// <param name="token">Used to signal that the loop should be canceled.</param>
         /// <param name="processAsync">The user-defined processing callback.</param>
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
-        public async Task RunAsync<T>(Memory<byte> buffer, T obj, CancellationToken token, Func<DhcpMessageBuffer, T, ValueTask> processAsync)
+        public async Task RunAsync<T>(Memory<byte> buffer, T obj, CancellationToken token, Func<DhcpMessageBuffer, T, CancellationToken, ValueTask> processAsync)
         {
             DhcpMessageBuffer messageBuffer = new DhcpMessageBuffer(buffer);
             while (true)
             {
                 int length = await this.socket.ReceiveAsync(buffer, token);
                 messageBuffer.Load(length);
-                await processAsync(messageBuffer, obj);
+                await processAsync(messageBuffer, obj, token);
             }
         }
     }

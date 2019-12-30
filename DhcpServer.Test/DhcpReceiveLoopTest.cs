@@ -169,6 +169,31 @@ namespace DhcpServer.Test
             task.IsCanceled.Should().BeTrue();
         }
 
+        [TestMethod]
+        public void ReceiveWithGenericException()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            Exception exception = new Exception();
+            void Callback(DhcpMessageBuffer m, CancellationToken t)
+            {
+                if (m.Opcode == DhcpOpcode.Request)
+                {
+                    throw exception;
+                }
+            }
+
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks(Callback), CancellationToken.None);
+
+            task.IsCompleted.Should().BeFalse();
+
+            Complete(socket, "Request1");
+
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+        }
+
         private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
         {
             byte[] raw = new byte[500];

@@ -18,5 +18,10 @@ namespace DhcpServer
         /// The packet was too small to be a valid DHCP message.
         /// </summary>
         PacketTooSmall = 1,
+
+        /// <summary>
+        /// A socket error occurred.
+        /// </summary>
+        SocketError = 2,
     }
 }

@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
@@ -139,6 +140,35 @@ namespace DhcpServer.Test
             act.Should().Throw<ArgumentOutOfRangeException>();
         }
 
+        [TestMethod]
+        public void ReceiveWithSocketException()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            int count = 0;
+            DhcpError error = default;
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            void ErrorCallback(DhcpError e, CancellationToken t)
+            {
+                error = e;
+                cts.Cancel();
+                t.ThrowIfCancellationRequested();
+            }
+
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks((m, t) => ++count, ErrorCallback), cts.Token);
+
+            task.IsCompleted.Should().BeFalse();
+            error.Code.Should().Be(DhcpErrorCode.None);
+
+            SocketException exception = new SocketException(1);
+            socket.Complete(exception);
+
+            count.Should().Be(0);
+            error.Code.Should().Be(DhcpErrorCode.SocketError);
+            error.Exception.Should().BeSameAs(exception);
+            task.IsCanceled.Should().BeTrue();
+        }
+
         private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
         {
             byte[] raw = new byte[500];
@@ -175,6 +205,11 @@ namespace DhcpServer.Test
                 }
 
                 this.next.SetResult(input.Length);
+            }
+
+            public void Complete(SocketException exception)
+            {
+                this.next.SetException(exception);
             }
         }
 

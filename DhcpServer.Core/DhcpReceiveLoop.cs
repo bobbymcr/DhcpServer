@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -41,14 +42,21 @@ namespace DhcpServer
         {
             while (true)
             {
-                int length = await this.socket.ReceiveAsync(buffer, token);
-                if (messageBuffer.Load(length))
+                try
                 {
-                    await callbacks.OnReceiveAsync(messageBuffer, token);
+                    int length = await this.socket.ReceiveAsync(buffer, token);
+                    if (messageBuffer.Load(length))
+                    {
+                        await callbacks.OnReceiveAsync(messageBuffer, token);
+                    }
+                    else
+                    {
+                        await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooSmall), token);
+                    }
                 }
-                else
+                catch (SocketException e)
                 {
-                    await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooSmall), token);
+                    await callbacks.OnErrorAsync(new DhcpError(e), token);
                 }
             }
         }

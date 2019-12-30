@@ -38,10 +38,7 @@ namespace DhcpServer
         /// <returns>The sliced option.</returns>
         public DhcpOption Slice(int start, DhcpOptionTag tag, byte length)
         {
-            Span<byte> header = this.options.Span;
-            header[start] = (byte)tag;
-            header[start + 1] = length;
-            return new DhcpOption(tag, this.options.Slice(start + 2, length));
+            return new DhcpOption(tag, this.SliceInner(start, (byte)tag, length));
         }
 
         /// <summary>
@@ -53,10 +50,7 @@ namespace DhcpServer
         /// <returns>The sliced sub-option.</returns>
         public DhcpSubOption SliceSub(int start, byte code, byte length)
         {
-            Span<byte> header = this.options.Span;
-            header[start] = code;
-            header[start + 1] = length;
-            return new DhcpSubOption(code, this.options.Slice(start + 2, length));
+            return new DhcpSubOption(code, this.SliceInner(start, code, length));
         }
 
         /// <summary>
@@ -69,11 +63,7 @@ namespace DhcpServer
         /// <returns>The sliced option.</returns>
         public DhcpOption Write(int start, DhcpOptionTag tag, ReadOnlySpan<char> chars, Encoding encoding)
         {
-            Span<byte> option = this.options.Span;
-            option[start] = (byte)tag;
-            int length = encoding.GetBytes(chars, option.Slice(start + 2));
-            option[start + 1] = (byte)length;
-            return new DhcpOption(tag, this.options.Slice(start + 2, length));
+            return new DhcpOption(tag, this.WriteInner(start, (byte)tag, chars, encoding));
         }
 
         /// <summary>
@@ -86,11 +76,7 @@ namespace DhcpServer
         /// <returns>The sliced option.</returns>
         public DhcpSubOption WriteSub(int start, byte code, ReadOnlySpan<char> chars, Encoding encoding)
         {
-            Span<byte> option = this.options.Span;
-            option[start] = (byte)code;
-            int length = encoding.GetBytes(chars, option.Slice(start + 2));
-            option[start + 1] = (byte)length;
-            return new DhcpSubOption(code, this.options.Slice(start + 2, length));
+            return new DhcpSubOption(code, this.WriteInner(start, code, chars, encoding));
         }
 
         /// <summary>
@@ -173,6 +159,23 @@ namespace DhcpServer
             }
 
             return overloads;
+        }
+
+        private Memory<byte> SliceInner(int start, byte code, byte length)
+        {
+            Span<byte> header = this.options.Span;
+            header[start] = code;
+            header[start + 1] = length;
+            return this.options.Slice(start + 2, length);
+        }
+
+        private Memory<byte> WriteInner(int start, byte code, ReadOnlySpan<char> chars, Encoding encoding)
+        {
+            Span<byte> option = this.options.Span;
+            option[start] = (byte)code;
+            int length = encoding.GetBytes(chars, option.Slice(start + 2));
+            option[start + 1] = (byte)length;
+            return this.options.Slice(start + 2, length);
         }
     }
 }

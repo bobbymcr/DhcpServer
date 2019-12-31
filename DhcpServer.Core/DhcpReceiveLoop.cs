@@ -54,7 +54,7 @@ namespace DhcpServer
                         await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooSmall), token);
                     }
                 }
-                catch (SocketException e)
+                catch (DhcpException e)
                 {
                     await callbacks.OnErrorAsync(new DhcpError(e), token);
                 }

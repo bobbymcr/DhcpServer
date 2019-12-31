@@ -141,7 +141,7 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
-        public void ReceiveWithSocketException()
+        public void ReceiveWithSocketError()
         {
             StubInputSocket socket = new StubInputSocket();
             DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
@@ -160,7 +160,7 @@ namespace DhcpServer.Test
             task.IsCompleted.Should().BeFalse();
             error.Code.Should().Be(DhcpErrorCode.None);
 
-            SocketException exception = new SocketException(1);
+            Exception exception = new DhcpException(DhcpErrorCode.SocketError);
             socket.Complete(exception);
 
             count.Should().Be(0);
@@ -232,7 +232,7 @@ namespace DhcpServer.Test
                 this.next.SetResult(input.Length);
             }
 
-            public void Complete(SocketException exception)
+            public void Complete(Exception exception)
             {
                 this.next.SetException(exception);
             }

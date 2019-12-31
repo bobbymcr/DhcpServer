@@ -5,7 +5,6 @@
 namespace DhcpServer
 {
     using System;
-    using System.Net.Sockets;
 
     /// <summary>
     /// A value type which holds DHCP error information.
@@ -24,13 +23,13 @@ namespace DhcpServer
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpError"/> struct.
         /// </summary>
-        /// <param name="exception">The underlying socket exception.</param>
-        public DhcpError(SocketException exception)
-            : this(DhcpErrorCode.SocketError, exception)
+        /// <param name="exception">The underlying exception.</param>
+        public DhcpError(DhcpException exception)
+            : this(exception.Code, exception)
         {
         }
 
-        private DhcpError(DhcpErrorCode code, SocketException exception)
+        private DhcpError(DhcpErrorCode code, Exception exception)
         {
             this.Code = code;
             this.Exception = exception;

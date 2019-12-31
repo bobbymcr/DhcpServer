@@ -23,5 +23,10 @@ namespace DhcpServer
         /// A socket error occurred.
         /// </summary>
         SocketError = 2,
+
+        /// <summary>
+        /// There was an error while using the buffer.
+        /// </summary>
+        BufferError = 3,
     }
 }

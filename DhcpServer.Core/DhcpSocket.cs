@@ -54,10 +54,21 @@ namespace DhcpServer
         }
 
         /// <inheritdoc/>
-        public Task SendAsync(ReadOnlyMemory<byte> buffer, IPEndpointV4 endpoint)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, IPEndpointV4 endpoint)
         {
-            MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> segment);
-            return this.socket.SendToAsync(segment, SocketFlags.None, this.endpoints[endpoint]);
+            if (!MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> segment))
+            {
+                throw new DhcpException(DhcpErrorCode.BufferError, null);
+            }
+
+            try
+            {
+                await this.socket.SendToAsync(segment, SocketFlags.None, this.endpoints[endpoint]);
+            }
+            catch (SocketException e)
+            {
+                throw new DhcpException(DhcpErrorCode.SocketError, e);
+            }
         }
 
         /// <inheritdoc/>

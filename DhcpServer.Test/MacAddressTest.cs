@@ -19,10 +19,10 @@ namespace DhcpServer.Test
             MacAddress one2 = new MacAddress(0x010203040506);
             MacAddress two = new MacAddress(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
-            CheckEquality(true, one1, one2);
-            CheckEquality(false, one1, two);
-            CheckEquality(false, one1, zero);
-            CheckEquality(true, zero, zero);
+            EqualityTest.Check(true, one1, one2);
+            EqualityTest.Check(false, one1, two);
+            EqualityTest.Check(false, one1, zero);
+            EqualityTest.Check(true, zero, zero);
             one1.Equals("hmm").Should().BeFalse();
             zero.Equals(null).Should().BeFalse();
 
@@ -53,15 +53,6 @@ namespace DhcpServer.Test
             address.WriteTo(span);
 
             raw.Should().ContainInOrder(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
-        }
-
-        private static void CheckEquality<T>(bool areEqual, T x, T y)
-            where T : IEquatable<T>
-        {
-            x.Equals(y).Should().Be(areEqual);
-            y.Equals(x).Should().Be(areEqual);
-            ((object)x).Equals(y).Should().Be(areEqual);
-            y.Equals((object)x).Should().Be(areEqual);
         }
     }
 }

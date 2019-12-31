@@ -19,10 +19,10 @@ namespace DhcpServer.Test
             IPAddressV4 one2 = new IPAddressV4(0x01020304);
             IPAddressV4 two = new IPAddressV4(0xFF, 0xFF, 0xFF, 0xFF);
 
-            CheckEquality(true, one1, one2);
-            CheckEquality(false, one1, two);
-            CheckEquality(false, one1, zero);
-            CheckEquality(true, zero, zero);
+            EqualityTest.Check(true, one1, one2);
+            EqualityTest.Check(false, one1, two);
+            EqualityTest.Check(false, one1, zero);
+            EqualityTest.Check(true, zero, zero);
             one1.Equals("hmm").Should().BeFalse();
             zero.Equals(null).Should().BeFalse();
 
@@ -41,15 +41,6 @@ namespace DhcpServer.Test
             address.WriteTo(span);
 
             raw.Should().ContainInOrder(1, 2, 3, 4);
-        }
-
-        private static void CheckEquality<T>(bool areEqual, T x, T y)
-            where T : IEquatable<T>
-        {
-            x.Equals(y).Should().Be(areEqual);
-            y.Equals(x).Should().Be(areEqual);
-            ((object)x).Equals(y).Should().Be(areEqual);
-            y.Equals((object)x).Should().Be(areEqual);
         }
     }
 }

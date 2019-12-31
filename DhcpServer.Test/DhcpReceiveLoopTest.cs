@@ -5,7 +5,6 @@
 namespace DhcpServer.Test
 {
     using System;
-    using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
@@ -170,7 +169,7 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
-        public void ReceiveWithGenericException()
+        public void ReceiveWithGenericCallbackException()
         {
             StubInputSocket socket = new StubInputSocket();
             DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
@@ -189,6 +188,25 @@ namespace DhcpServer.Test
 
             Complete(socket, "Request1");
 
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+        }
+
+        [TestMethod]
+        public void ReceiveWithGenericReceiveException()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            Exception exception = new Exception();
+            int count = 0;
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks((m, t) => ++count), CancellationToken.None);
+
+            task.IsCompleted.Should().BeFalse();
+
+            socket.Complete(exception);
+
+            count.Should().Be(0);
             task.IsFaulted.Should().BeTrue();
             task.Exception.Should().NotBeNull();
             task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);

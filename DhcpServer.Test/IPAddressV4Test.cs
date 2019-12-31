@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Net;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,6 +42,27 @@ namespace DhcpServer.Test
             address.WriteTo(span);
 
             raw.Should().ContainInOrder(1, 2, 3, 4);
+        }
+
+        [TestMethod]
+        public void Conversion()
+        {
+            IPAddressV4 max = new IPAddressV4(uint.MaxValue);
+            IPAddressV4 middle = new IPAddressV4(0x40, 0x3F, 0x41, 0x7F);
+            IPAddressV4 min = new IPAddressV4(0);
+
+            TestConvert(max, 0xFFFFFFFF, "255.255.255.255");
+            TestConvert(middle, 0x7F413F40, "64.63.65.127");
+            TestConvert(min, 0, "0.0.0.0");
+        }
+
+        private static void TestConvert(IPAddressV4 value, uint expected, string expectedStr)
+        {
+            uint i = (uint)value;
+            IPAddress address = new IPAddress(i);
+
+            i.Should().Be(expected);
+            address.ToString().Should().Be(expectedStr);
         }
     }
 }

@@ -44,10 +44,18 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Converts the <see cref="IPAddressV4"/> to an unsigned 32-bit integer.
+        /// Converts the <see cref="IPAddressV4"/> to an unsigned 32-bit integer in host order.
         /// </summary>
         /// <param name="address">The address.</param>
-        public static explicit operator uint(IPAddressV4 address) => address.value;
+        public static explicit operator uint(IPAddressV4 address)
+        {
+            uint v = address.value;
+            uint r = (v & 0x000000FF) << 24;
+            r |= (v & 0x00FF0000) >> 8;
+            r |= (v & 0x00000FF00) << 8;
+            r |= (v & 0xFF000000) >> 24;
+            return r;
+        }
 
         /// <summary>
         /// Writes the address to the specified buffer.

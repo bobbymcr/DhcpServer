@@ -11,6 +11,11 @@ namespace DhcpServer
     /// </summary>
     public readonly struct IPAddressV4 : IEquatable<IPAddressV4>
     {
+        /// <summary>
+        /// Provides the loopback address.
+        /// </summary>
+        public static readonly IPAddressV4 Loopback = new IPAddressV4(127, 0, 0, 1);
+
         private readonly uint value;
 
         /// <summary>
@@ -32,11 +37,17 @@ namespace DhcpServer
         /// <summary>
         /// Initializes a new instance of the <see cref="IPAddressV4"/> struct.
         /// </summary>
-        /// <param name="value">The value as an unsigned 32-bit number.</param>
+        /// <param name="value">The value as an unsigned 32-bit integer.</param>
         public IPAddressV4(uint value)
         {
             this.value = value;
         }
+
+        /// <summary>
+        /// Converts the <see cref="IPAddressV4"/> to an unsigned 32-bit integer.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        public static explicit operator uint(IPAddressV4 address) => address.value;
 
         /// <summary>
         /// Writes the address to the specified buffer.

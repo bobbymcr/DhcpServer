@@ -17,8 +17,6 @@ namespace DhcpServer.Perf
         private byte[] raw;
         private DhcpMessageBuffer buffer;
 
-        private long totalSize;
-
         [GlobalSetup]
         public void Setup()
         {
@@ -37,10 +35,14 @@ namespace DhcpServer.Perf
         [Benchmark]
         public long LoadWithOptions()
         {
-            this.totalSize = 0;
+            long totalSize = 0;
             this.buffer.Load(BufferSize);
-            this.buffer.ReadOptions(this, (o, t) => t.totalSize += o.Data.Length);
-            return this.totalSize;
+            foreach (DhcpOption option in this.buffer.Options)
+            {
+                totalSize += option.Data.Length;
+            }
+
+            return totalSize;
         }
 
         [Benchmark]

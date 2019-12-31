@@ -30,6 +30,12 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Gets an enumerator which reads options in sequential order.
+        /// </summary>
+        /// <returns>The options enumerator.</returns>
+        public Enumerator GetEnumerator() => new Enumerator(this);
+
+        /// <summary>
         /// Writes an option header to the buffer and slices out a data segment.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
@@ -95,72 +101,6 @@ namespace DhcpServer
             this.options.Span[start] = (byte)DhcpOptionTag.End;
         }
 
-        /// <summary>
-        /// Reads options in sequential order and passes each one to a user-defined callback.
-        /// </summary>
-        /// <remarks>The Pad option is processed internally but not passed to the <paramref name="read"/> function.
-        /// Reading stops after the first End option is read; this option is passed to the <paramref name="read"/> function.
-        /// </remarks>
-        /// <typeparam name="T">The user-defined object type.</typeparam>
-        /// <param name="obj">A user-defined parameter object.</param>
-        /// <param name="read">The user-defined callback.</param>
-        public void ReadAll<T>(T obj, Action<DhcpOption, T> read)
-        {
-            DhcpOptionOverloads overloads = Read(this.options, obj, read);
-
-            if (overloads.HasFlag(DhcpOptionOverloads.File))
-            {
-                Read(this.file, obj, read);
-            }
-
-            if (overloads.HasFlag(DhcpOptionOverloads.SName))
-            {
-                Read(this.sname, obj, read);
-            }
-        }
-
-        private static DhcpOptionOverloads Read<T>(Memory<byte> buffer, T obj, Action<DhcpOption, T> read)
-        {
-            Span<byte> span = buffer.Span;
-            int pos = 0;
-            int end = span.Length;
-            DhcpOptionOverloads overloads = DhcpOptionOverloads.None;
-            while (pos < end)
-            {
-                DhcpOptionTag tag = (DhcpOptionTag)span[pos++];
-                byte length;
-                switch (tag)
-                {
-                    case DhcpOptionTag.Pad:
-                    case DhcpOptionTag.End:
-                        length = 0;
-                        break;
-                    default:
-                        length = span[pos++];
-                        break;
-                }
-
-                if (tag != DhcpOptionTag.Pad)
-                {
-                    DhcpOption option = new DhcpOption(tag, buffer.Slice(pos, length));
-                    read(option, obj);
-                    if (tag == DhcpOptionTag.Overload)
-                    {
-                        overloads = (DhcpOptionOverloads)option.Data[0];
-                    }
-                }
-
-                if (tag == DhcpOptionTag.End)
-                {
-                    break;
-                }
-
-                pos += length;
-            }
-
-            return overloads;
-        }
-
         private Memory<byte> SliceInner(int start, byte code, byte length)
         {
             Span<byte> header = this.options.Span;
@@ -176,6 +116,120 @@ namespace DhcpServer
             int length = encoding.GetBytes(chars, option.Slice(start + 2));
             option[start + 1] = (byte)length;
             return this.options.Slice(start + 2, length);
+        }
+
+        /// <summary>
+        /// An enumerator which reads options in sequential order.
+        /// </summary>
+        public struct Enumerator
+        {
+            private readonly DhcpOptionsBuffer parent;
+
+            private DhcpOption current;
+            private int pos;
+            private DhcpOptionOverloads overloads;
+            private Memory<byte> buffer;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Enumerator"/> struct.
+            /// </summary>
+            /// <param name="parent">The parent buffer.</param>
+            public Enumerator(DhcpOptionsBuffer parent)
+            {
+                this.parent = parent;
+                this.current = default;
+                this.pos = 0;
+                this.overloads = DhcpOptionOverloads.None;
+                this.buffer = this.parent.options;
+            }
+
+            /// <summary>
+            /// Gets the <see cref="DhcpOption"/> at the current position of the enumerator.
+            /// </summary>
+            public DhcpOption Current => this.current;
+
+            /// <summary>
+            /// Advances the enumerator to the next <see cref="DhcpOption"/> element.
+            /// </summary>
+            /// <returns><c>true</c> if the enumerator was successfully advanced to the next element;
+            /// <c>false</c> if the enumerator has passed the end.</returns>
+            public bool MoveNext()
+            {
+                do
+                {
+                    int end = this.buffer.Length;
+                    if (this.pos < end)
+                    {
+                        if (this.NextOption(end))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (!this.NextBuffer())
+                    {
+                        return false;
+                    }
+                }
+                while (true);
+            }
+
+            private bool NextOption(int end)
+            {
+                int i = this.pos;
+                Span<byte> span = this.buffer.Span;
+                DhcpOptionTag tag = (DhcpOptionTag)span[i++];
+                byte length;
+                switch (tag)
+                {
+                    case DhcpOptionTag.Pad:
+                        this.pos = i;
+                        return false;
+                    case DhcpOptionTag.End:
+                        length = 0;
+                        break;
+                    default:
+                        length = span[i++];
+                        break;
+                }
+
+                this.current = new DhcpOption(tag, this.buffer.Slice(i, length));
+                switch (tag)
+                {
+                    case DhcpOptionTag.Overload:
+                        this.overloads = (DhcpOptionOverloads)span[i];
+                        break;
+                    case DhcpOptionTag.End:
+                        this.pos = end;
+                        return true;
+                }
+
+                this.pos = i + length;
+                return true;
+            }
+
+            private bool NextBuffer()
+            {
+                switch (this.overloads)
+                {
+                    case DhcpOptionOverloads.None:
+                        return false;
+                    case DhcpOptionOverloads.File:
+                        this.overloads = DhcpOptionOverloads.None;
+                        this.buffer = this.parent.file;
+                        break;
+                    case DhcpOptionOverloads.SName:
+                        this.overloads = DhcpOptionOverloads.None;
+                        this.buffer = this.parent.sname;
+                        break;
+                    default:
+                        this.overloads = DhcpOptionOverloads.SName;
+                        this.buffer = this.parent.file;
+                        break;
+                }
+
+                this.pos = 0;
+                return true;
+            }
         }
     }
 }

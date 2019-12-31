@@ -119,6 +119,14 @@ namespace DhcpServer
         public MagicCookie MagicCookie { get; set; }
 
         /// <summary>
+        /// Gets the sequence of options from the DHCP message.
+        /// </summary>
+        /// <remarks>The Pad option is processed internally but not returned.
+        /// Reading stops after the End option is read; this option is returned.
+        /// </remarks>
+        public OptionsSequence Options => new OptionsSequence(this.options);
+
+        /// <summary>
         /// Loads and parses message data from the underlying buffer.
         /// </summary>
         /// <param name="length">The length of the message.</param>
@@ -167,17 +175,6 @@ namespace DhcpServer
             this.nextOption = 0;
             return totalSize;
         }
-
-        /// <summary>
-        /// Reads options in sequential order and passes each one to a user-defined callback.
-        /// </summary>
-        /// <remarks>The Pad option is processed internally but not passed to the <paramref name="read"/> function.
-        /// Reading stops after the first End option is read; this option is passed to the <paramref name="read"/> function.
-        /// </remarks>
-        /// <typeparam name="T">The user-defined object type.</typeparam>
-        /// <param name="obj">A user-defined parameter object.</param>
-        /// <param name="read">The user-defined callback.</param>
-        public void ReadOptions<T>(T obj, Action<DhcpOption, T> read) => this.options.ReadAll(obj, read);
 
         /// <summary>
         /// Writes a container option header to the buffer with a variable sized data segment and advances the cursor.
@@ -288,6 +285,29 @@ namespace DhcpServer
 
             this.options = default;
             return false;
+        }
+
+        /// <summary>
+        /// Represents a sequence of DHCP options.
+        /// </summary>
+        public readonly struct OptionsSequence
+        {
+            private readonly DhcpOptionsBuffer options;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="OptionsSequence"/> struct.
+            /// </summary>
+            /// <param name="options">The underlying buffer.</param>
+            public OptionsSequence(DhcpOptionsBuffer options)
+            {
+                this.options = options;
+            }
+
+            /// <summary>
+            /// Gets an enumerator which reads options in sequential order.
+            /// </summary>
+            /// <returns>The options enumerator.</returns>
+            public DhcpOptionsBuffer.Enumerator GetEnumerator() => this.options.GetEnumerator();
         }
     }
 }

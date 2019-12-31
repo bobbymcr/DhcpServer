@@ -611,64 +611,55 @@ End={}
         private static string OptionsString(DhcpMessageBuffer buffer)
         {
             StringBuilder sb = new StringBuilder();
-            buffer.ReadOptions(sb, (o, s) => s.AppendLine(OptionString(o)));
-            return sb.ToString();
-        }
+            foreach (DhcpOption option in buffer.Options)
+            {
+                sb.Append(option.Tag);
+                sb.Append("={");
+                sb.Append(HexString(option.Data));
+                sb.AppendLine("}");
+            }
 
-        private static string OptionString(DhcpOption option)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(option.Tag);
-            sb.Append("={");
-            sb.Append(HexString(option.Data));
-            sb.Append("}");
             return sb.ToString();
         }
 
         private static string SubOptionsString(DhcpMessageBuffer buffer, byte tag)
         {
             StringBuilder sb = new StringBuilder();
-            buffer.ReadOptions(sb, (o, s) => AppendContainerOption(o, (DhcpOptionTag)tag, s));
-            return sb.ToString();
-        }
-
-        private static void AppendContainerOption(DhcpOption option, DhcpOptionTag tag, StringBuilder sb)
-        {
-            if (option.Tag == tag)
+            foreach (DhcpOption option in buffer.Options)
             {
-                option.ReadSubOptions(sb, (o, s) => AppendSubOption(o, s));
+                if ((byte)option.Tag == tag)
+                {
+                    foreach (DhcpSubOption subOption in option)
+                    {
+                        sb.Append(subOption.Code);
+                        sb.Append("={");
+                        sb.Append(HexString(subOption.Data));
+                        sb.AppendLine("}");
+                    }
+                }
             }
-        }
 
-        private static void AppendSubOption(DhcpSubOption option, StringBuilder sb)
-        {
-            sb.Append(option.Code);
-            sb.Append("={");
-            sb.Append(HexString(option.Data));
-            sb.AppendLine("}");
+            return sb.ToString();
         }
 
         private static string RelayAgentOptionsString(DhcpMessageBuffer buffer)
         {
             StringBuilder sb = new StringBuilder();
-            buffer.ReadOptions(sb, (o, s) => AppendRelayAgentOption(o, s));
-            return sb.ToString();
-        }
-
-        private static void AppendRelayAgentOption(DhcpOption option, StringBuilder sb)
-        {
-            if (option.Tag == DhcpOptionTag.RelayAgentInformation)
+            foreach (DhcpOption option in buffer.Options)
             {
-                option.ReadSubOptions(sb, (o, s) => AppendRelayAgentSubOption(o, s));
+                if (option.Tag == DhcpOptionTag.RelayAgentInformation)
+                {
+                    foreach (DhcpSubOption subOption in option)
+                    {
+                        sb.Append((DhcpRelayAgentSubOptionCode)subOption.Code);
+                        sb.Append("={");
+                        sb.Append(HexString(subOption.Data));
+                        sb.AppendLine("}");
+                    }
+                }
             }
-        }
 
-        private static void AppendRelayAgentSubOption(DhcpSubOption option, StringBuilder sb)
-        {
-            sb.Append((DhcpRelayAgentSubOptionCode)option.Code);
-            sb.Append("={");
-            sb.Append(HexString(option.Data));
-            sb.AppendLine("}");
+            return sb.ToString();
         }
     }
 }

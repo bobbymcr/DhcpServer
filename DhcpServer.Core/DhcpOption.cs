@@ -35,23 +35,59 @@ namespace DhcpServer
         public Span<byte> Data => this.data.Span;
 
         /// <summary>
-        /// Reads sub-options in sequential order and passes each one to a user-defined callback.
+        /// Gets an enumerator which reads sub-options in sequential order.
         /// </summary>
-        /// <typeparam name="T">The user-defined object type.</typeparam>
-        /// <param name="obj">A user-defined parameter object.</param>
-        /// <param name="read">The user-defined callback.</param>
-        public void ReadSubOptions<T>(T obj, Action<DhcpSubOption, T> read)
+        /// <returns>The sub-options enumerator.</returns>
+        public Enumerator GetEnumerator() => new Enumerator(this.data);
+
+        /// <summary>
+        /// An enumerator which reads sub-options in sequential order.
+        /// </summary>
+        public struct Enumerator
         {
-            Span<byte> span = this.Data;
-            int pos = 0;
-            int end = span.Length;
-            while (pos < end)
+            private readonly Memory<byte> data;
+
+            private DhcpSubOption current;
+            private int pos;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Enumerator"/> struct.
+            /// </summary>
+            /// <param name="data">The underlying data.</param>
+            public Enumerator(Memory<byte> data)
             {
-                byte code = span[pos++];
-                byte length = span[pos++];
-                DhcpSubOption subOption = new DhcpSubOption(code, this.data.Slice(pos, length));
-                read(subOption, obj);
-                pos += length;
+                this.data = data;
+                this.current = default;
+                this.pos = 0;
+            }
+
+            /// <summary>
+            /// Gets the <see cref="DhcpSubOption"/> at the current position of the enumerator.
+            /// </summary>
+            public DhcpSubOption Current => this.current;
+
+            /// <summary>
+            /// Advances the enumerator to the next <see cref="DhcpSubOption"/> element.
+            /// </summary>
+            /// <returns><c>true</c> if the enumerator was successfully advanced to the next element;
+            /// <c>false</c> if the enumerator has passed the end.</returns>
+            public bool MoveNext()
+            {
+                Span<byte> span = this.data.Span;
+                int end = span.Length;
+                int i = this.pos;
+                if (i < end)
+                {
+                    byte code = span[i++];
+                    byte length = span[i++];
+                    this.current = new DhcpSubOption(code, this.data.Slice(i, length));
+                    this.pos = i + length;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
     }

@@ -15,7 +15,9 @@ namespace DhcpServer
         /// Initializes a new instance of the <see cref="DhcpException"/> class.
         /// </summary>
         /// <param name="code">The DHCP error code.</param>
-        public DhcpException(DhcpErrorCode code)
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        public DhcpException(DhcpErrorCode code, Exception innerException)
+            : base("A DHCP error occurred.", innerException)
         {
             this.Code = code;
         }

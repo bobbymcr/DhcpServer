@@ -159,12 +159,14 @@ namespace DhcpServer.Test
             task.IsCompleted.Should().BeFalse();
             error.Code.Should().Be(DhcpErrorCode.None);
 
-            Exception exception = new DhcpException(DhcpErrorCode.SocketError);
+            Exception inner = new Exception();
+            Exception exception = new DhcpException(DhcpErrorCode.SocketError, inner);
             socket.Complete(exception);
 
             count.Should().Be(0);
             error.Code.Should().Be(DhcpErrorCode.SocketError);
             error.Exception.Should().BeSameAs(exception);
+            error.Exception.InnerException.Should().BeSameAs(inner);
             task.IsCanceled.Should().BeTrue();
         }
 

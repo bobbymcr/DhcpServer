@@ -110,6 +110,8 @@ namespace DhcpServer
         /// <summary>
         /// Gets a span for the client hardware address bytes.
         /// </summary>
+        /// <remarks>The <see cref="HardwareAddressLength"/> value must be set before calling this.
+        /// Regardless of the <see cref="HardwareAddressLength"/> value, the span will never be longer than 16.</remarks>
         public Span<byte> ClientHardwareAddress
         {
             get

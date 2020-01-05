@@ -12,7 +12,7 @@ namespace DhcpServer
     /// </summary>
     public sealed class DhcpMessageBuffer
     {
-        private const int HeaderSize = 240;
+        private const int HeaderLength = 240;
         private const int ServerHostNameStart = 44;
         private const int ServerHostNameLength = 64;
         private const int BootFileNameStart = 108;
@@ -156,7 +156,7 @@ namespace DhcpServer
         /// <summary>
         /// Saves message data to the underlying buffer and resets the cursor.
         /// </summary>
-        /// <returns>The total message size.</returns>
+        /// <returns>The total message length.</returns>
         public int Save()
         {
             this.buffer.WriteUInt8(0, (byte)this.Opcode);
@@ -171,9 +171,9 @@ namespace DhcpServer
             this.ServerIPAddress.WriteTo(this.buffer.Span.Slice(20, 4));
             this.GatewayIPAddress.WriteTo(this.buffer.Span.Slice(24, 4));
             this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
-            int totalSize = this.nextOption + HeaderSize;
+            int totalLength = this.nextOption + HeaderLength;
             this.nextOption = 0;
-            return totalSize;
+            return totalLength;
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace DhcpServer
         /// </remarks>
         public void EndContainerOption()
         {
-            this.Span[HeaderSize + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
+            this.Span[HeaderLength + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
         }
 
         /// <summary>
@@ -274,10 +274,10 @@ namespace DhcpServer
 
         private bool SetOptions(int length)
         {
-            if (length >= HeaderSize)
+            if (length >= HeaderLength)
             {
                 this.options = new DhcpOptionsBuffer(
-                    this.buffer.Slice(HeaderSize, length - HeaderSize),
+                    this.buffer.Slice(HeaderLength, length - HeaderLength),
                     this.buffer.Slice(BootFileNameStart, BootFileNameLength),
                     this.buffer.Slice(ServerHostNameStart, ServerHostNameLength));
                 return true;

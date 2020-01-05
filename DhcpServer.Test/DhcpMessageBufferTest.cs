@@ -45,6 +45,7 @@ namespace DhcpServer.Test
             AsciiString(buffer.BootFileName).Should().BeEmpty();
             buffer.MagicCookie.Should().Be(MagicCookie.None);
             OptionsString(buffer).Should().BeEmpty();
+            buffer.Length.Should().Be(0);
         }
 
         [TestMethod]
@@ -63,6 +64,7 @@ End={}
 
             buffer.Load(length).Should().BeTrue();
 
+            buffer.Length.Should().Be(length);
             buffer.Opcode.Should().Be(DhcpOpcode.Request);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
             buffer.HardwareAddressLength.Should().Be(6);
@@ -156,6 +158,7 @@ End={}
 
             buffer.Load(length).Should().BeTrue();
 
+            buffer.Length.Should().Be(length);
             buffer.Opcode.Should().Be(DhcpOpcode.Reply);
             buffer.HardwareAddressType.Should().Be(DhcpHardwareAddressType.Ethernet10Mb);
             buffer.HardwareAddressLength.Should().Be(6);
@@ -557,6 +560,7 @@ End={}
             output.WriteEndOption();
 
             int length = output.Save();
+            output.Length.Should().Be(length);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             buffer.Load(length).Should().BeTrue();
 

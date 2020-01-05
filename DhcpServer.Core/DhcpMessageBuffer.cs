@@ -39,8 +39,15 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Gets the length of the currently buffered message.
+        /// </summary>
+        /// <remarks>This value is set after a successful <see cref="Load(int)"/> or <see cref="Save"/> operation.</remarks>
+        public int Length { get; private set; }
+
+        /// <summary>
         /// Gets a span for the underlying buffer.
         /// </summary>
+        /// <remarks>The span length covers the entire buffer, not just the section with valid message data.</remarks>
         public Span<byte> Span => this.buffer.Span;
 
         /// <summary>
@@ -138,6 +145,7 @@ namespace DhcpServer
                 return false;
             }
 
+            this.Length = length;
             this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(0);
             this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(1);
             this.HardwareAddressLength = this.buffer.ReadUInt8(2);
@@ -173,7 +181,7 @@ namespace DhcpServer
             this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
             int totalLength = this.nextOption + HeaderLength;
             this.nextOption = 0;
-            return totalLength;
+            return this.Length = totalLength;
         }
 
         /// <summary>

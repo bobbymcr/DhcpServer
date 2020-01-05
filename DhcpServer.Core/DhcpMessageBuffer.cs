@@ -163,10 +163,10 @@ namespace DhcpServer
             this.TransactionId = this.buffer.ReadUInt32(4);
             this.Seconds = this.buffer.ReadUInt16(8);
             this.Flags = (DhcpFlags)this.buffer.ReadUInt16(10);
-            this.ClientIPAddress = new IPAddressV4(this.buffer.ReadUInt32(12));
-            this.YourIPAddress = new IPAddressV4(this.buffer.ReadUInt32(16));
-            this.ServerIPAddress = new IPAddressV4(this.buffer.ReadUInt32(20));
-            this.GatewayIPAddress = new IPAddressV4(this.buffer.ReadUInt32(24));
+            this.ClientIPAddress = this.ReadIP(12);
+            this.YourIPAddress = this.ReadIP(16);
+            this.ServerIPAddress = this.ReadIP(20);
+            this.GatewayIPAddress = this.ReadIP(24);
             this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
             return true;
         }
@@ -184,10 +184,10 @@ namespace DhcpServer
             this.buffer.WriteUInt32(4, this.TransactionId);
             this.buffer.WriteUInt16(8, this.Seconds);
             this.buffer.WriteUInt16(10, (ushort)this.Flags);
-            this.ClientIPAddress.WriteTo(this.buffer.Span.Slice(12, 4));
-            this.YourIPAddress.WriteTo(this.buffer.Span.Slice(16, 4));
-            this.ServerIPAddress.WriteTo(this.buffer.Span.Slice(20, 4));
-            this.GatewayIPAddress.WriteTo(this.buffer.Span.Slice(24, 4));
+            this.WriteIP(this.ClientIPAddress, 12);
+            this.WriteIP(this.YourIPAddress, 16);
+            this.WriteIP(this.ServerIPAddress, 20);
+            this.WriteIP(this.GatewayIPAddress, 24);
             this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
             int totalLength = this.nextOption + HeaderLength;
             this.nextOption = 0;
@@ -289,6 +289,10 @@ namespace DhcpServer
         /// Writes an option end marker and advances the cursor.
         /// </summary>
         public void WriteEndOption() => this.options.End(this.nextOption++);
+
+        private void WriteIP(IPAddressV4 ip, int start) => ip.WriteTo(this.buffer.Span.Slice(start, 4));
+
+        private IPAddressV4 ReadIP(int start) => new IPAddressV4(this.buffer.ReadUInt32(start));
 
         private bool SetOptions(int length)
         {

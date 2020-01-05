@@ -21,6 +21,17 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void TooLongHardwareAddressLength()
+        {
+            byte[] raw = new byte[500];
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            buffer.HardwareAddressLength = 17;
+
+            buffer.ClientHardwareAddress.Length.Should().Be(16);
+        }
+
+        [TestMethod]
         public void LoadRequestTooSmall()
         {
             byte[] raw = new byte[500];

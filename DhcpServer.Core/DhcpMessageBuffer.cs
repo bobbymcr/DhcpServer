@@ -12,11 +12,13 @@ namespace DhcpServer
     /// </summary>
     public sealed class DhcpMessageBuffer
     {
-        private const int HeaderLength = 240;
-        private const int ServerHostNameStart = 44;
-        private const int ServerHostNameLength = 64;
-        private const int BootFileNameStart = 108;
-        private const int BootFileNameLength = 128;
+        private const byte ClientHardwareAddressStart = 28;
+        private const byte MaxHardwareAddressLength = 16;
+        private const byte HeaderLength = 240;
+        private const byte ServerHostNameStart = 44;
+        private const byte ServerHostNameLength = 64;
+        private const byte BootFileNameStart = 108;
+        private const byte BootFileNameLength = 128;
 
         private readonly MessageBuffer buffer;
 
@@ -108,7 +110,15 @@ namespace DhcpServer
         /// <summary>
         /// Gets a span for the client hardware address bytes.
         /// </summary>
-        public Span<byte> ClientHardwareAddress => this.Span.Slice(28, this.HardwareAddressLength);
+        public Span<byte> ClientHardwareAddress
+        {
+            get
+            {
+                return this.Span.Slice(
+                    ClientHardwareAddressStart,
+                    Math.Min(this.HardwareAddressLength, MaxHardwareAddressLength));
+            }
+        }
 
         /// <summary>
         /// Gets a span for the server host name bytes.

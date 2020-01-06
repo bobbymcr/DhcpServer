@@ -563,14 +563,23 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the default IP time to live option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ttl">The time to live.</param>
+        public static void WriteDefaultIPTtlOption(this DhcpMessageBuffer buffer, byte ttl)
+        {
+            WriteUInt8(buffer, DhcpOptionTag.DefaultIPTtl, ttl);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
         /// <param name="messageType">The message type.</param>
         public static void WriteDhcpMsgTypeOption(this DhcpMessageBuffer buffer, DhcpMessageType messageType)
         {
-            var option = buffer.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
-            option.Data[0] = (byte)messageType;
+            WriteUInt8(buffer, DhcpOptionTag.DhcpMsgType, (byte)messageType);
         }
 
         /// <summary>
@@ -641,8 +650,13 @@ namespace DhcpServer
 
         private static void WriteFlag(DhcpMessageBuffer buffer, DhcpOptionTag tag, bool flag)
         {
+            WriteUInt8(buffer, tag, (byte)(flag ? 1 : 0));
+        }
+
+        private static void WriteUInt8(DhcpMessageBuffer buffer, DhcpOptionTag tag, byte value)
+        {
             var option = buffer.WriteOptionHeader(tag, 1);
-            option.Data[0] = (byte)(flag ? 1 : 0);
+            option.Data[0] = value;
         }
 
         private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort value)

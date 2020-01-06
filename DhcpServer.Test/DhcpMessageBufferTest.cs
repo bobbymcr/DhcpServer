@@ -453,6 +453,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option23()
+        {
+            TestOption(
+                o => o.WriteDefaultIPTtlOption(0x54),
+                "DefaultIPTtl={54}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

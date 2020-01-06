@@ -121,6 +121,11 @@ namespace DhcpServer
         MaxDGAssembly = 22,
 
         /// <summary>
+        /// Default IP time to live
+        /// </summary>
+        DefaultIPTtl = 23,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

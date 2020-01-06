@@ -394,6 +394,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option16()
+        {
+            TestOption(
+                o => o.WriteSwapServerOption(new IPAddressV4(0x1, 0x2, 0x3, 0x4)),
+                "SwapServer={01020304}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

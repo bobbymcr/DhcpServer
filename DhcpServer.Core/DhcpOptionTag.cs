@@ -86,6 +86,11 @@ namespace DhcpServer
         DomainName = 15,
 
         /// <summary>
+        /// Swap server address
+        /// </summary>
+        SwapServer = 16,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

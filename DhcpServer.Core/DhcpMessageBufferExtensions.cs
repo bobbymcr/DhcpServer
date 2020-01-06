@@ -479,6 +479,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the swap server option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip">The server address.</param>
+        public static void WriteSwapServerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip)
+        {
+            WriteIPs(buffer, DhcpOptionTag.SwapServer, ip);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

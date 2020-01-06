@@ -116,6 +116,11 @@ namespace DhcpServer
         PolicyFilter = 21,
 
         /// <summary>
+        /// Max datagram reassembly size
+        /// </summary>
+        MaxDGAssembly = 22,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

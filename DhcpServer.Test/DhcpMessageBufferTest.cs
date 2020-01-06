@@ -445,6 +445,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option22()
+        {
+            TestOption(
+                o => o.WriteMaxDGAssemblyOption(0x9988),
+                "MaxDGAssembly={9988}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

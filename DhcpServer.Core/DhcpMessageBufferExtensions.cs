@@ -553,6 +553,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the max datagram reassembly option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size">The max size.</param>
+        public static void WriteMaxDGAssemblyOption(this DhcpMessageBuffer buffer, ushort size)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MaxDGAssembly, size);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
@@ -633,6 +643,13 @@ namespace DhcpServer
         {
             var option = buffer.WriteOptionHeader(tag, 1);
             option.Data[0] = (byte)(flag ? 1 : 0);
+        }
+
+        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort value)
+        {
+            var option = buffer.WriteOptionHeader(tag, 2);
+            option.Data[0] = (byte)(value >> 8);
+            option.Data[1] = (byte)(value & 0xFF);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)

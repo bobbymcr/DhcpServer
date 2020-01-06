@@ -529,6 +529,30 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the policy filter option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first destination IP.</param>
+        /// <param name="mask1">The first destination mask.</param>
+        public static void WritePolicyFilterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 mask1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.PolicyFilter, ip1, mask1);
+        }
+
+        /// <summary>
+        /// Writes data for the policy filter option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first destination IP.</param>
+        /// <param name="mask1">The first destination mask.</param>
+        /// <param name="ip2">The second destination IP.</param>
+        /// <param name="mask2">The second destination mask.</param>
+        public static void WritePolicyFilterOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 mask1, IPAddressV4 ip2, IPAddressV4 mask2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.PolicyFilter, ip1, mask1, ip2, mask2);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

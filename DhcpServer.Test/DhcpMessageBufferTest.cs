@@ -434,6 +434,17 @@ End={}
         }
 
         [TestMethod]
+        public void Option21()
+        {
+            TestOption(
+                o => o.WritePolicyFilterOption(IP(1, 2, 3, 0), IP(0, 0, 0, 255)),
+                "PolicyFilter={01020300000000FF}");
+            TestOption(
+                o => o.WritePolicyFilterOption(IP(1, 2, 3, 0), IP(0, 0, 0, 255), IP(0, 8, 7, 6), IP(255, 0, 0, 0)),
+                "PolicyFilter={01020300000000FF00080706FF000000}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

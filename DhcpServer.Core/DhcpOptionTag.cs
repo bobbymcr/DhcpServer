@@ -111,6 +111,11 @@ namespace DhcpServer
         SrcRte = 20,
 
         /// <summary>
+        /// Routing policy filters
+        /// </summary>
+        PolicyFilter = 21,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

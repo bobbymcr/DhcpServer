@@ -489,6 +489,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes ASCII encoded data for the root path option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="rootPath">The root path buffer.</param>
+        public static void WriteRootPathOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> rootPath)
+        {
+            buffer.WriteOption(DhcpOptionTag.RootPath, rootPath, Encoding.ASCII);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

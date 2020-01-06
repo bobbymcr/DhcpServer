@@ -91,6 +91,11 @@ namespace DhcpServer
         SwapServer = 16,
 
         /// <summary>
+        /// Path name for root disk
+        /// </summary>
+        RootPath = 17,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

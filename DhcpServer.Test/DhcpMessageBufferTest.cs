@@ -402,6 +402,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option17()
+        {
+            TestOption(
+                o => o.WriteRootPathOption(@"\x\y\z"),
+                "RootPath={5C785C795C7A}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

@@ -136,6 +136,11 @@ namespace DhcpServer
         MtuPlateau = 25,
 
         /// <summary>
+        /// Interface MTU size
+        /// </summary>
+        MtuInterface = 26,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

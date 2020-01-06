@@ -486,6 +486,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option26()
+        {
+            TestOption(
+                o => o.WriteMtuInterfaceOption(0x4433),
+                "MtuInterface={4433}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

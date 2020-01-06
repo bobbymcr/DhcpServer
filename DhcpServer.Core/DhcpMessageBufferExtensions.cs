@@ -629,6 +629,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the MTU interface option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="mtu">The MTU to use on this interface.</param>
+        public static void WriteMtuInterfaceOption(this DhcpMessageBuffer buffer, ushort mtu)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MtuInterface, mtu);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

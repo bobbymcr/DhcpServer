@@ -629,13 +629,23 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes data for the MTU interface option.
+        /// Writes data for the MTU subnet option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
-        /// <param name="mtu">The MTU to use on this interface.</param>
+        /// <param name="mtu">.</param>
         public static void WriteMtuInterfaceOption(this DhcpMessageBuffer buffer, ushort mtu)
         {
             WriteUInt16(buffer, DhcpOptionTag.MtuInterface, mtu);
+        }
+
+        /// <summary>
+        /// Writes data for the MTU subnet option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="allSubnetsAreLocal">Specifies whether all subnets are local.</param>
+        public static void WriteMtuSubnetOption(this DhcpMessageBuffer buffer, bool allSubnetsAreLocal)
+        {
+            WriteFlag(buffer, DhcpOptionTag.MtuSubnet, allSubnetsAreLocal);
         }
 
         /// <summary>

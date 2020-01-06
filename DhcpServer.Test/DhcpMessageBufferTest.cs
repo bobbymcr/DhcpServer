@@ -494,6 +494,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option27()
+        {
+            TestOption(
+                o => o.WriteMtuSubnetOption(false),
+                "MtuSubnet={00}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

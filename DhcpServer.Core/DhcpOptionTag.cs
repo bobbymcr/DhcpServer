@@ -141,6 +141,11 @@ namespace DhcpServer
         MtuInterface = 26,
 
         /// <summary>
+        /// All subnets are local
+        /// </summary>
+        MtuSubnet = 27,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

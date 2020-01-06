@@ -101,6 +101,11 @@ namespace DhcpServer
         ExtensionFile = 18,
 
         /// <summary>
+        /// Enable/disable IP forwarding
+        /// </summary>
+        Forward = 19,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

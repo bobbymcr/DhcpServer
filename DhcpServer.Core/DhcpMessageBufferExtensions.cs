@@ -509,6 +509,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the forward option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="enable">The enable flag.</param>
+        public static void WriteForwardOption(this DhcpMessageBuffer buffer, bool enable)
+        {
+            WriteFlag(buffer, DhcpOptionTag.Forward, enable);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
@@ -583,6 +593,12 @@ namespace DhcpServer
         public static DhcpRelayAgentSubOptionsBuffer WriteRelayAgentInformationOptionHeader(this DhcpMessageBuffer buffer)
         {
             return new DhcpRelayAgentSubOptionsBuffer(buffer);
+        }
+
+        private static void WriteFlag(DhcpMessageBuffer buffer, DhcpOptionTag tag, bool flag)
+        {
+            var option = buffer.WriteOptionHeader(tag, 1);
+            option.Data[0] = (byte)(flag ? 1 : 0);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)

@@ -418,6 +418,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option19()
+        {
+            TestOption(
+                o => o.WriteForwardOption(true),
+                "Forward={01}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

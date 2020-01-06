@@ -126,6 +126,11 @@ namespace DhcpServer
         DefaultIPTtl = 23,
 
         /// <summary>
+        /// Path MTU aging timeout
+        /// </summary>
+        MtuTimeout = 24,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

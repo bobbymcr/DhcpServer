@@ -461,6 +461,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option24()
+        {
+            TestOption(
+                o => o.WriteMtuTimeoutOption(0x49813609),
+                "MtuTimeout={49813609}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

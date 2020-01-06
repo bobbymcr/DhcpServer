@@ -573,6 +573,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the MTU timeout option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="timeout">The timeout.</param>
+        public static void WriteMtuTimeoutOption(this DhcpMessageBuffer buffer, uint timeout)
+        {
+            WriteUInt32(buffer, DhcpOptionTag.MtuTimeout, timeout);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
@@ -664,6 +674,15 @@ namespace DhcpServer
             var option = buffer.WriteOptionHeader(tag, 2);
             option.Data[0] = (byte)(value >> 8);
             option.Data[1] = (byte)(value & 0xFF);
+        }
+
+        private static void WriteUInt32(DhcpMessageBuffer buffer, DhcpOptionTag tag, uint value)
+        {
+            var option = buffer.WriteOptionHeader(tag, 4);
+            option.Data[0] = (byte)(value >> 24);
+            option.Data[1] = (byte)((value >> 16) & 0xFF);
+            option.Data[2] = (byte)((value >> 8) & 0xFF);
+            option.Data[3] = (byte)(value & 0xFF);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)

@@ -96,6 +96,11 @@ namespace DhcpServer
         RootPath = 17,
 
         /// <summary>
+        /// Path name for more BOOTP info
+        /// </summary>
+        ExtensionFile = 18,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

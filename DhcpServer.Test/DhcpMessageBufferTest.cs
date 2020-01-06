@@ -410,6 +410,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option18()
+        {
+            TestOption(
+                o => o.WriteExtensionFileOption(@"\x\y\z"),
+                "ExtensionFile={5C785C795C7A}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

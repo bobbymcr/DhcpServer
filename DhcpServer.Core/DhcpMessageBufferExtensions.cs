@@ -499,6 +499,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes UTF-8 encoded data for the extension file option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="extensionFile">The extension file buffer.</param>
+        public static void WriteExtensionFileOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> extensionFile)
+        {
+            buffer.WriteOption(DhcpOptionTag.ExtensionFile, extensionFile, Encoding.UTF8);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

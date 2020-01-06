@@ -426,6 +426,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option20()
+        {
+            TestOption(
+                o => o.WriteSrcRteOption(false),
+                "SrcRte={00}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

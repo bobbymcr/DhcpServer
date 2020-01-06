@@ -519,6 +519,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the source route option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="enable">The enable flag.</param>
+        public static void WriteSrcRteOption(this DhcpMessageBuffer buffer, bool enable)
+        {
+            WriteFlag(buffer, DhcpOptionTag.SrcRte, enable);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

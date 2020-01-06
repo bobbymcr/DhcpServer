@@ -106,6 +106,11 @@ namespace DhcpServer
         Forward = 19,
 
         /// <summary>
+        /// Enable/Disable source routing
+        /// </summary>
+        SrcRte = 20,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

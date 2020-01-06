@@ -583,6 +583,52 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the MTU plateau option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size1">The first size (smallest).</param>
+        public static void WriteMtuPlateauOption(this DhcpMessageBuffer buffer, ushort size1)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MtuPlateau, size1);
+        }
+
+        /// <summary>
+        /// Writes data for the MTU plateau option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size1">The first size (smallest).</param>
+        /// <param name="size2">The second size (largest).</param>
+        public static void WriteMtuPlateauOption(this DhcpMessageBuffer buffer, ushort size1, ushort size2)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MtuPlateau, size1, size2);
+        }
+
+        /// <summary>
+        /// Writes data for the MTU plateau option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size1">The first size (smallest).</param>
+        /// <param name="size2">The second size.</param>
+        /// <param name="size3">The third size (largest).</param>
+        public static void WriteMtuPlateauOption(this DhcpMessageBuffer buffer, ushort size1, ushort size2, ushort size3)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MtuPlateau, size1, size2, size3);
+        }
+
+        /// <summary>
+        /// Writes data for the MTU plateau option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size1">The first size (smallest).</param>
+        /// <param name="size2">The second size.</param>
+        /// <param name="size3">The third size.</param>
+        /// <param name="size4">The fourth size (largest).</param>
+        public static void WriteMtuPlateauOption(this DhcpMessageBuffer buffer, ushort size1, ushort size2, ushort size3, ushort size4)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.MtuPlateau, size1, size2, size3, size4);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
@@ -669,11 +715,44 @@ namespace DhcpServer
             option.Data[0] = value;
         }
 
-        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort value)
+        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1)
         {
             var option = buffer.WriteOptionHeader(tag, 2);
-            option.Data[0] = (byte)(value >> 8);
-            option.Data[1] = (byte)(value & 0xFF);
+            option.Data[0] = (byte)(v1 >> 8);
+            option.Data[1] = (byte)(v1 & 0xFF);
+        }
+
+        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2)
+        {
+            var option = buffer.WriteOptionHeader(tag, 4);
+            option.Data[0] = (byte)(v1 >> 8);
+            option.Data[1] = (byte)(v1 & 0xFF);
+            option.Data[2] = (byte)(v2 >> 8);
+            option.Data[3] = (byte)(v2 & 0xFF);
+        }
+
+        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2, ushort v3)
+        {
+            var option = buffer.WriteOptionHeader(tag, 6);
+            option.Data[0] = (byte)(v1 >> 8);
+            option.Data[1] = (byte)(v1 & 0xFF);
+            option.Data[2] = (byte)(v2 >> 8);
+            option.Data[3] = (byte)(v2 & 0xFF);
+            option.Data[4] = (byte)(v3 >> 8);
+            option.Data[5] = (byte)(v3 & 0xFF);
+        }
+
+        private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2, ushort v3, ushort v4)
+        {
+            var option = buffer.WriteOptionHeader(tag, 8);
+            option.Data[0] = (byte)(v1 >> 8);
+            option.Data[1] = (byte)(v1 & 0xFF);
+            option.Data[2] = (byte)(v2 >> 8);
+            option.Data[3] = (byte)(v2 & 0xFF);
+            option.Data[4] = (byte)(v3 >> 8);
+            option.Data[5] = (byte)(v3 & 0xFF);
+            option.Data[6] = (byte)(v4 >> 8);
+            option.Data[7] = (byte)(v4 & 0xFF);
         }
 
         private static void WriteUInt32(DhcpMessageBuffer buffer, DhcpOptionTag tag, uint value)

@@ -469,6 +469,23 @@ End={}
         }
 
         [TestMethod]
+        public void Option25()
+        {
+            TestOption(
+                o => o.WriteMtuPlateauOption(0x5001),
+                "MtuPlateau={5001}");
+            TestOption(
+                o => o.WriteMtuPlateauOption(0x5001, 0x6002),
+                "MtuPlateau={50016002}");
+            TestOption(
+                o => o.WriteMtuPlateauOption(0x5001, 0x6002, 0x7003),
+                "MtuPlateau={500160027003}");
+            TestOption(
+                o => o.WriteMtuPlateauOption(0x5001, 0x6002, 0x7003, 0x8004),
+                "MtuPlateau={5001600270038004}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

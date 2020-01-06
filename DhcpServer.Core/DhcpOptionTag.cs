@@ -131,6 +131,11 @@ namespace DhcpServer
         MtuTimeout = 24,
 
         /// <summary>
+        /// Path MTU plateau table
+        /// </summary>
+        MtuPlateau = 25,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

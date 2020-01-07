@@ -181,6 +181,11 @@ namespace DhcpServer
         Trailers = 34,
 
         /// <summary>
+        /// ARP cache timeout
+        /// </summary>
+        ArpTimeout = 35,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

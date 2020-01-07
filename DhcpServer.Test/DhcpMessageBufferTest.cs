@@ -561,6 +561,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option35()
+        {
+            TestOption(
+                o => o.WriteArpTimeoutOption(0x76543210),
+                "ArpTimeout={76543210}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

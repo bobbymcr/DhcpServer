@@ -576,7 +576,7 @@ namespace DhcpServer
         /// Writes data for the MTU timeout option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
-        /// <param name="timeout">The timeout.</param>
+        /// <param name="timeout">The timeout in seconds.</param>
         public static void WriteMtuTimeoutOption(this DhcpMessageBuffer buffer, uint timeout)
         {
             WriteUInt32(buffer, DhcpOptionTag.MtuTimeout, timeout);
@@ -629,10 +629,10 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes data for the MTU subnet option.
+        /// Writes data for the MTU interface option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
-        /// <param name="mtu">.</param>
+        /// <param name="mtu">The MTU value.</param>
         public static void WriteMtuInterfaceOption(this DhcpMessageBuffer buffer, ushort mtu)
         {
             WriteUInt16(buffer, DhcpOptionTag.MtuInterface, mtu);
@@ -730,6 +730,16 @@ namespace DhcpServer
         public static void WriteTrailersOption(this DhcpMessageBuffer buffer, bool useTrailers)
         {
             WriteFlag(buffer, DhcpOptionTag.Trailers, useTrailers);
+        }
+
+        /// <summary>
+        /// Writes data for the ARP timeout option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="timeout">The ARP cache timeout in seconds.</param>
+        public static void WriteArpTimeoutOption(this DhcpMessageBuffer buffer, uint timeout)
+        {
+            WriteUInt32(buffer, DhcpOptionTag.ArpTimeout, timeout);
         }
 
         /// <summary>

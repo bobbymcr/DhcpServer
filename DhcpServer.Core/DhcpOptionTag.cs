@@ -176,6 +176,11 @@ namespace DhcpServer
         StaticRoute = 33,
 
         /// <summary>
+        /// Trailer encapsulation
+        /// </summary>
+        Trailers = 34,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

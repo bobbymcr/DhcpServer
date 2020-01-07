@@ -553,6 +553,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option34()
+        {
+            TestOption(
+                o => o.WriteTrailersOption(true),
+                "Trailers={01}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

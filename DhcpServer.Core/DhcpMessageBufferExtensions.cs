@@ -682,10 +682,10 @@ namespace DhcpServer
         /// Writes data for the mask supplier option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
-        /// <param name="performRouterDiscovery">Specifies whether the client should perform router discovery.</param>
-        public static void WriteRouterDiscoveryOption(this DhcpMessageBuffer buffer, bool performRouterDiscovery)
+        /// <param name="useTrailers">Specifies whether the client should perform router discovery.</param>
+        public static void WriteRouterDiscoveryOption(this DhcpMessageBuffer buffer, bool useTrailers)
         {
-            WriteFlag(buffer, DhcpOptionTag.RouterDiscovery, performRouterDiscovery);
+            WriteFlag(buffer, DhcpOptionTag.RouterDiscovery, useTrailers);
         }
 
         /// <summary>
@@ -720,6 +720,16 @@ namespace DhcpServer
         public static void WriteStaticRouteOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 router1, IPAddressV4 ip2, IPAddressV4 router2)
         {
             WriteIPs(buffer, DhcpOptionTag.StaticRoute, ip1, router1, ip2, router2);
+        }
+
+        /// <summary>
+        /// Writes data for the trailers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="useTrailers">Specifies whether the client should use trailers.</param>
+        public static void WriteTrailersOption(this DhcpMessageBuffer buffer, bool useTrailers)
+        {
+            WriteFlag(buffer, DhcpOptionTag.Trailers, useTrailers);
         }
 
         /// <summary>

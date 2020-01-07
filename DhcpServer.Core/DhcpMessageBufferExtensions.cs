@@ -689,6 +689,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the router request option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="address">The router solicitation address.</param>
+        public static void WriteRouterRequestOption(this DhcpMessageBuffer buffer, IPAddressV4 address)
+        {
+            WriteIPs(buffer, DhcpOptionTag.RouterRequest, address);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

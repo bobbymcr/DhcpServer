@@ -166,6 +166,11 @@ namespace DhcpServer
         RouterDiscovery = 31,
 
         /// <summary>
+        /// Router solicitation address
+        /// </summary>
+        RouterRequest = 32,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

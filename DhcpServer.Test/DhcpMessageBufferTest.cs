@@ -534,6 +534,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option32()
+        {
+            TestOption(
+                o => o.WriteRouterRequestOption(new IPAddressV4(1, 2, 3, 4)),
+                "RouterRequest={01020304}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

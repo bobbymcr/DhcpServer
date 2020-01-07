@@ -837,6 +837,52 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the NTP servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NTP server IP.</param>
+        public static void WriteNtpServersOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NtpServers, ip1);
+        }
+
+        /// <summary>
+        /// Writes data for the NTP servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NTP server IP.</param>
+        /// <param name="ip2">The second NTP server IP.</param>
+        public static void WriteNtpServersOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NtpServers, ip1, ip2);
+        }
+
+        /// <summary>
+        /// Writes data for the NTP servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NTP server IP.</param>
+        /// <param name="ip2">The second NTP server IP.</param>
+        /// <param name="ip3">The third NTP server IP.</param>
+        public static void WriteNtpServersOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NtpServers, ip1, ip2, ip3);
+        }
+
+        /// <summary>
+        /// Writes data for the NTP servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NTP server IP.</param>
+        /// <param name="ip2">The second NTP server IP.</param>
+        /// <param name="ip3">The third NTP server IP.</param>
+        /// <param name="ip4">The fourth NTP server IP.</param>
+        public static void WriteNtpServersOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NtpServers, ip1, ip2, ip3, ip4);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

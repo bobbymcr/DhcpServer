@@ -626,6 +626,23 @@ End={}
         }
 
         [TestMethod]
+        public void Option42()
+        {
+            TestOption(
+                o => o.WriteNtpServersOption(IP(1, 2, 3, 4)),
+                "NtpServers={01020304}");
+            TestOption(
+                o => o.WriteNtpServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "NtpServers={0102030405060708}");
+            TestOption(
+                o => o.WriteNtpServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6)),
+                "NtpServers={010203040506070809080706}");
+            TestOption(
+                o => o.WriteNtpServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "NtpServers={01020304050607080908070605040302}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

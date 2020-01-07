@@ -773,6 +773,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the keepalive data option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="sendGarbage">Specifies whether the client should send keepalive messages with a garbage octet.</param>
+        public static void WriteKeepaliveDataOption(this DhcpMessageBuffer buffer, bool sendGarbage)
+        {
+            WriteFlag(buffer, DhcpOptionTag.KeepaliveData, sendGarbage);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

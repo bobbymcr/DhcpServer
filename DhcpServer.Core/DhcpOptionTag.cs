@@ -201,6 +201,11 @@ namespace DhcpServer
         KeepaliveTime = 38,
 
         /// <summary>
+        /// TCP keepalive garbage
+        /// </summary>
+        KeepaliveData = 39,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

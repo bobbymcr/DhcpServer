@@ -146,6 +146,11 @@ namespace DhcpServer
         MtuSubnet = 27,
 
         /// <summary>
+        /// Broadcast address
+        /// </summary>
+        BroadcastAddress = 28,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

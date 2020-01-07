@@ -502,6 +502,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option28()
+        {
+            TestOption(
+                o => o.WriteBroadcastAddressOption(new IPAddressV4(0x7, 0x6, 0x5, 0xFF)),
+                "BroadcastAddress={070605FF}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

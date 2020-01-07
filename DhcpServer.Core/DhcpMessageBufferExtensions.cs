@@ -649,6 +649,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the broadcast address option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="address">The broadcast address.</param>
+        public static void WriteBroadcastAddressOption(this DhcpMessageBuffer buffer, IPAddressV4 address)
+        {
+            WriteIPs(buffer, DhcpOptionTag.BroadcastAddress, address);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

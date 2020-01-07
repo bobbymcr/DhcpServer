@@ -753,6 +753,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the default TCP time to live option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ttl">The time to live.</param>
+        public static void WriteDefaultTcpTtlOption(this DhcpMessageBuffer buffer, byte ttl)
+        {
+            WriteUInt8(buffer, DhcpOptionTag.DefaultTcpTtl, ttl);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

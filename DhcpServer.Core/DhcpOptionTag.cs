@@ -191,6 +191,11 @@ namespace DhcpServer
         Ethernet = 36,
 
         /// <summary>
+        /// Default TCP time to live
+        /// </summary>
+        DefaultTcpTtl = 37,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

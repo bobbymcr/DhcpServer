@@ -577,6 +577,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option37()
+        {
+            TestOption(
+                o => o.WriteDefaultTcpTtlOption(0x63),
+                "DefaultTcpTtl={63}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

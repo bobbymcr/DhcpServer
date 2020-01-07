@@ -542,6 +542,17 @@ End={}
         }
 
         [TestMethod]
+        public void Option33()
+        {
+            TestOption(
+                o => o.WriteStaticRouteOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "StaticRoute={0102030405060708}");
+            TestOption(
+                o => o.WriteStaticRouteOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "StaticRoute={01020304050607080908070605040302}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

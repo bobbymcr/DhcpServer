@@ -171,6 +171,11 @@ namespace DhcpServer
         RouterRequest = 32,
 
         /// <summary>
+        /// Static routing table
+        /// </summary>
+        StaticRoute = 33,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

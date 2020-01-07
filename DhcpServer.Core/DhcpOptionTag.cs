@@ -211,6 +211,11 @@ namespace DhcpServer
         NisDomain = 40,
 
         /// <summary>
+        /// NIS domain name
+        /// </summary>
+        NisServers = 41,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

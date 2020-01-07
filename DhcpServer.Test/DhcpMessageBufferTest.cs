@@ -397,7 +397,7 @@ End={}
         public void Option16()
         {
             TestOption(
-                o => o.WriteSwapServerOption(new IPAddressV4(0x1, 0x2, 0x3, 0x4)),
+                o => o.WriteSwapServerOption(IP(0x1, 0x2, 0x3, 0x4)),
                 "SwapServer={01020304}");
         }
 
@@ -505,7 +505,7 @@ End={}
         public void Option28()
         {
             TestOption(
-                o => o.WriteBroadcastAddressOption(new IPAddressV4(0x7, 0x6, 0x5, 0xFF)),
+                o => o.WriteBroadcastAddressOption(IP(0x7, 0x6, 0x5, 0xFF)),
                 "BroadcastAddress={070605FF}");
         }
 
@@ -537,7 +537,7 @@ End={}
         public void Option32()
         {
             TestOption(
-                o => o.WriteRouterRequestOption(new IPAddressV4(1, 2, 3, 4)),
+                o => o.WriteRouterRequestOption(IP(1, 2, 3, 4)),
                 "RouterRequest={01020304}");
         }
 
@@ -609,6 +609,23 @@ End={}
         }
 
         [TestMethod]
+        public void Option41()
+        {
+            TestOption(
+                o => o.WriteNisServersOption(IP(1, 2, 3, 4)),
+                "NisServers={01020304}");
+            TestOption(
+                o => o.WriteNisServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "NisServers={0102030405060708}");
+            TestOption(
+                o => o.WriteNisServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6)),
+                "NisServers={010203040506070809080706}");
+            TestOption(
+                o => o.WriteNisServersOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "NisServers={01020304050607080908070605040302}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);
@@ -669,10 +686,10 @@ SubscriberId={7331}
             DhcpRelayAgentSubOptionsBuffer buffer = output.WriteRelayAgentInformationOptionHeader();
             buffer.WriteAgentCircuitId("circ1");
             buffer.WriteAgentRemoteId("re1");
-            buffer.WriteLinkSelection(new IPAddressV4(1, 2, 3, 4));
+            buffer.WriteLinkSelection(IP(1, 2, 3, 4));
             buffer.WriteSubscriberId("s1");
             buffer.End();
-            output.WriteSubnetMaskOption(new IPAddressV4(255, 255, 255, 0));
+            output.WriteSubnetMaskOption(IP(255, 255, 255, 0));
             output.WriteEndOption();
 
             RelayAgentOptionsString(output).Should().Be(ExpectedRelayAgentOptions);

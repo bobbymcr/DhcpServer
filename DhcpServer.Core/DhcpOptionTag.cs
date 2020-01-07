@@ -206,6 +206,11 @@ namespace DhcpServer
         KeepaliveData = 39,
 
         /// <summary>
+        /// NIS domain name
+        /// </summary>
+        NisDomain = 40,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

@@ -601,6 +601,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option40()
+        {
+            TestOption(
+                o => o.WriteNisDomainOption("hello.net"),
+                "NisDomain={68656C6C6F2E6E6574}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

@@ -453,9 +453,7 @@ namespace DhcpServer
         /// <param name="blocks">The size in 512-byte blocks.</param>
         public static void WriteBootFileSizeOption(this DhcpMessageBuffer buffer, ushort blocks)
         {
-            var option = buffer.WriteOptionHeader(DhcpOptionTag.BootFileSize, 2);
-            option.Data[0] = (byte)(blocks >> 8);
-            option.Data[1] = (byte)(blocks & 0xFF);
+            WriteUInt16(buffer, DhcpOptionTag.BootFileSize, blocks);
         }
 
         /// <summary>
@@ -780,6 +778,16 @@ namespace DhcpServer
         public static void WriteKeepaliveDataOption(this DhcpMessageBuffer buffer, bool sendGarbage)
         {
             WriteFlag(buffer, DhcpOptionTag.KeepaliveData, sendGarbage);
+        }
+
+        /// <summary>
+        /// Writes ASCII encoded data for the NIS domain option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="domainName">The NIS domain name.</param>
+        public static void WriteNisDomainOption(this DhcpMessageBuffer buffer, string domainName)
+        {
+            buffer.WriteOption(DhcpOptionTag.NisDomain, domainName, Encoding.ASCII);
         }
 
         /// <summary>

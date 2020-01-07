@@ -883,6 +883,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes the header for the vendor specific information option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <returns>A buffer to allow writing vendor specific sub-options.</returns>
+        public static DhcpSubOptionsBuffer WriteVendorSpecificOptionHeader(this DhcpMessageBuffer buffer)
+        {
+            return new DhcpSubOptionsBuffer(buffer, DhcpOptionTag.VendorSpecific);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

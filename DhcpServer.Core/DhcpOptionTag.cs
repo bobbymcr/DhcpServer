@@ -221,6 +221,11 @@ namespace DhcpServer
         NtpServers = 42,
 
         /// <summary>
+        /// Vendor specific information
+        /// </summary>
+        VendorSpecific = 43,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

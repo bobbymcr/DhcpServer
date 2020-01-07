@@ -659,6 +659,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the mask discovery option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="performMaskDiscovery">Specifies to perform mask discovery.</param>
+        public static void WriteMaskDiscoveryOption(this DhcpMessageBuffer buffer, bool performMaskDiscovery)
+        {
+            WriteFlag(buffer, DhcpOptionTag.MaskDiscovery, performMaskDiscovery);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

@@ -151,6 +151,11 @@ namespace DhcpServer
         BroadcastAddress = 28,
 
         /// <summary>
+        /// Perform mask discovery
+        /// </summary>
+        MaskDiscovery = 29,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

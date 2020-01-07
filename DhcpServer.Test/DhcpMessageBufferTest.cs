@@ -510,6 +510,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option29()
+        {
+            TestOption(
+                o => o.WriteMaskDiscoveryOption(true),
+                "MaskDiscovery={01}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

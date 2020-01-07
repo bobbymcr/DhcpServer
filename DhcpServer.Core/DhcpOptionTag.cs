@@ -196,6 +196,11 @@ namespace DhcpServer
         DefaultTcpTtl = 37,
 
         /// <summary>
+        /// TCP keepalive interval
+        /// </summary>
+        KeepaliveTime = 38,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

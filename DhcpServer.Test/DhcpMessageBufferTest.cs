@@ -585,6 +585,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option38()
+        {
+            TestOption(
+                o => o.WriteKeepaliveTimeOption(0x11223344),
+                "KeepaliveTime={11223344}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

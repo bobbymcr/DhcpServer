@@ -662,7 +662,7 @@ namespace DhcpServer
         /// Writes data for the mask discovery option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>
-        /// <param name="performMaskDiscovery">Specifies to perform mask discovery.</param>
+        /// <param name="performMaskDiscovery">Specifies whether the client should perform mask discovery.</param>
         public static void WriteMaskDiscoveryOption(this DhcpMessageBuffer buffer, bool performMaskDiscovery)
         {
             WriteFlag(buffer, DhcpOptionTag.MaskDiscovery, performMaskDiscovery);
@@ -676,6 +676,16 @@ namespace DhcpServer
         public static void WriteMaskSupplierOption(this DhcpMessageBuffer buffer, bool shouldRespond)
         {
             WriteFlag(buffer, DhcpOptionTag.MaskSupplier, shouldRespond);
+        }
+
+        /// <summary>
+        /// Writes data for the mask supplier option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="performRouterDiscovery">Specifies whether the client should perform router discovery.</param>
+        public static void WriteRouterDiscoveryOption(this DhcpMessageBuffer buffer, bool performRouterDiscovery)
+        {
+            WriteFlag(buffer, DhcpOptionTag.RouterDiscovery, performRouterDiscovery);
         }
 
         /// <summary>

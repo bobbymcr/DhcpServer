@@ -161,6 +161,11 @@ namespace DhcpServer
         MaskSupplier = 30,
 
         /// <summary>
+        /// Perform router discovery
+        /// </summary>
+        RouterDiscovery = 31,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

@@ -186,6 +186,11 @@ namespace DhcpServer
         ArpTimeout = 35,
 
         /// <summary>
+        /// Ethernet encapsulation
+        /// </summary>
+        Ethernet = 36,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

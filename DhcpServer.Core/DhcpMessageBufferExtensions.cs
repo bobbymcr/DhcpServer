@@ -743,6 +743,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the Ethernet option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="useRfc1042">Specifies whether the client should use IEEE 802.3 (RFC 1042) encapsulation.</param>
+        public static void WriteEthernetOption(this DhcpMessageBuffer buffer, bool useRfc1042)
+        {
+            WriteFlag(buffer, DhcpOptionTag.Ethernet, useRfc1042);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

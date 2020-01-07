@@ -569,6 +569,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option36()
+        {
+            TestOption(
+                o => o.WriteEthernetOption(false),
+                "Ethernet={00}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

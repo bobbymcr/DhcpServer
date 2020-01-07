@@ -669,6 +669,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the mask supplier option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="shouldRespond">Specifies whether the client should respond to subnet mask requests.</param>
+        public static void WriteMaskSupplierOption(this DhcpMessageBuffer buffer, bool shouldRespond)
+        {
+            WriteFlag(buffer, DhcpOptionTag.MaskSupplier, shouldRespond);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

@@ -156,6 +156,11 @@ namespace DhcpServer
         MaskDiscovery = 29,
 
         /// <summary>
+        /// Provide mask to others
+        /// </summary>
+        MaskSupplier = 30,
+
+        /// <summary>
         /// NTP Server Addresses
         /// </summary>
         NtpServers = 42,

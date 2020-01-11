@@ -125,6 +125,37 @@ namespace DhcpServer.Test
             TestTryFormat(0xFCFDFEFF, "252.253.254.255");
         }
 
+        [TestMethod]
+        public void TryFormatTooSmall()
+        {
+            TestTryFormatTooSmall(0x01020304, 1);
+            TestTryFormatTooSmall(0x01020304, 2);
+            TestTryFormatTooSmall(0x01020304, 3);
+            TestTryFormatTooSmall(0x01020304, 4);
+            TestTryFormatTooSmall(0x01020304, 5);
+            TestTryFormatTooSmall(0x01020304, 6);
+            TestTryFormatTooSmall(0x0F0E0D0C, 7);
+            TestTryFormatTooSmall(0x0F0E0D0C, 8);
+            TestTryFormatTooSmall(0x0F0E0D0C, 9);
+            TestTryFormatTooSmall(0x0F0E0D0C, 10);
+            TestTryFormatTooSmall(0x2030407F, 11);
+            TestTryFormatTooSmall(0x2030EF7F, 12);
+            TestTryFormatTooSmall(0x20DCEF7F, 13);
+            TestTryFormatTooSmall(0xFFFFFFFF, 14);
+        }
+
+        private static void TestTryFormatTooSmall(uint input, int badLength)
+        {
+            char[] array = new char[badLength];
+            IPAddressV4 address = new IPAddressV4(input);
+
+            bool result = address.TryFormat(new Span<char>(array), out int charsWritten);
+
+            result.Should().BeFalse(because: "{0:X8} needs more than {1} chars", input, badLength);
+            charsWritten.Should().Be(0);
+            array.Should().OnlyContain(c => c == '\0');
+        }
+
         private static void TestTryFormat(uint input, string expected)
         {
             Span<char> destination = new Span<char>(new char[32]);

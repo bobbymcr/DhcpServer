@@ -16,6 +16,33 @@ namespace DhcpServer
         /// </summary>
         public static readonly IPAddressV4 Loopback = new IPAddressV4(127, 0, 0, 1);
 
+        private static readonly byte[] Base10Digits = new byte[256]
+        {
+            // 01 02 03...
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 33...
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 65...
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 97...
+            2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 129...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 161...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 193...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 225...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        };
+
         private readonly uint value;
 
         /// <summary>
@@ -81,6 +108,13 @@ namespace DhcpServer
             byte b1 = (byte)(this.value >> 16);
             byte b2 = (byte)(this.value >> 8);
             byte b3 = (byte)(this.value & 0xFF);
+            int requiredLength = Base10Digits[b0] + Base10Digits[b1] + Base10Digits[b2] + Base10Digits[b3] + 3;
+            if (destination.Length < requiredLength)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
             int i = 0;
             i = WriteByte(destination, i, b0);
             destination[i++] = '.';

@@ -893,6 +893,17 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the vendor specific information option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="data">The vendor-specific data.</param>
+        public static void WriteVendorSpecificOption(this DhcpMessageBuffer buffer, ReadOnlySpan<byte> data)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.VendorSpecific, (byte)data.Length);
+            data.CopyTo(option.Data);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

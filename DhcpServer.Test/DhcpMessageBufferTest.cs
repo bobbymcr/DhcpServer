@@ -701,6 +701,25 @@ End={}
         }
 
         [TestMethod]
+        public void Option43WithRawData()
+        {
+            const string ExpectedOptions =
+@"VendorSpecific={0908070605}
+SubnetMask={FFFFFF00}
+End={}
+";
+            byte[] raw = new byte[300];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            ReadOnlySpan<byte> rawData = new ReadOnlySpan<byte>(new byte[] { 0x9, 0x8, 0x7, 0x6, 0x5 });
+            output.WriteVendorSpecificOption(rawData);
+            output.WriteSubnetMaskOption(IP(255, 255, 255, 0));
+            output.WriteEndOption();
+
+            OptionsString(output).Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

@@ -147,6 +147,12 @@ namespace DhcpServer
 
         private bool TryFormatHyphens(Span<char> destination, out int charsWritten)
         {
+            if (destination.Length < 17)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
             WriteHexByte(destination, 0, this.value >> 40);
             destination[2] = '-';
             WriteHexByte(destination, 3, this.value >> 32);

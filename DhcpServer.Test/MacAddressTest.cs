@@ -95,6 +95,19 @@ namespace DhcpServer.Test
             TestTryFormat(null, 0x00123456789F, "00-12-34-56-78-9F");
         }
 
+        [TestMethod]
+        public void TryFormatBufferTooSmall()
+        {
+            Span<char> destination = new Span<char>(new char[1]);
+            MacAddress address = new MacAddress(1);
+
+            bool result = address.TryFormat(destination, out int charsWritten);
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+            destination[0].Should().Be('\0');
+        }
+
         private static void TestTryFormat(ulong input, string expected)
         {
             Memory<char> destination = new Memory<char>(new char[32]);

@@ -306,7 +306,12 @@ namespace DhcpServer
         RebindingTime = 59,
 
         /// <summary>
-        /// Client Identifier
+        /// Class identifier
+        /// </summary>
+        ClassId = 60,
+
+        /// <summary>
+        /// Client identifier
         /// </summary>
         ClientId = 61,
 

@@ -903,6 +903,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option60()
+        {
+            TestOption(
+                o => o.WriteClassIdOption("MyClass"),
+                "ClassId={4D79436C617373}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

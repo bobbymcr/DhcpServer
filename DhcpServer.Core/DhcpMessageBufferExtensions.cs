@@ -1244,6 +1244,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes ASCII encoded data for the class identifier option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="id">The identifier.</param>
+        public static void WriteClassIdOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> id)
+        {
+            buffer.WriteOption(DhcpOptionTag.ClassId, id, Encoding.ASCII);
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

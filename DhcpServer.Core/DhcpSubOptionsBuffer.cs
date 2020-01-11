@@ -40,5 +40,12 @@ namespace DhcpServer
         /// Marks the end of the container option.
         /// </summary>
         public void End() => this.buffer.EndContainerOption();
+
+        /// <summary>
+        /// Marks the end of the container option by writing an option end code
+        /// followed by a raw data segment.
+        /// </summary>
+        /// <param name="data">The data buffer.</param>
+        public void End(ReadOnlySpan<byte> data) => this.buffer.EndContainerOption(data);
     }
 }

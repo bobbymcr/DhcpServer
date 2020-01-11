@@ -79,7 +79,7 @@ namespace DhcpServer
                 if (i < end)
                 {
                     byte code = span[i++];
-                    byte length = span[i++];
+                    byte length = code != 255 ? span[i++] : (byte)(end - i);
                     this.current = new DhcpSubOption(code, this.data.Slice(i, length));
                     this.pos = i + length;
                     return true;

@@ -9,6 +9,8 @@ namespace DhcpServer
     /// <summary>
     /// A value type representing a DHCP sub-option.
     /// </summary>
+    /// <remarks>The END sub-option (code 255) may carry vendor-specific data
+    /// in its <see cref="Data"/> span.</remarks>
     public readonly struct DhcpSubOption
     {
         private readonly Memory<byte> data;

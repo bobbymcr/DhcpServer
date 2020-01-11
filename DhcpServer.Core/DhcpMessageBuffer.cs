@@ -201,7 +201,8 @@ namespace DhcpServer
         /// </summary>
         /// <remarks>At least one call to either <see cref="WriteSubOptionHeader(byte, byte)"/> or
         /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/> must be made after this.
-        /// The container option must be terminated by an <see cref="EndContainerOption"/> call.</remarks>
+        /// The container option must be terminated by an <see cref="EndContainerOption()"/> or
+        /// <see cref="EndContainerOption(ReadOnlySpan{byte})"/> call.</remarks>
         /// <param name="tag">The container option tag.</param>
         public void WriteContainerOptionHeader(DhcpOptionTag tag)
         {
@@ -247,6 +248,23 @@ namespace DhcpServer
         /// </remarks>
         public void EndContainerOption()
         {
+            this.Span[HeaderLength + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
+        }
+
+        /// <summary>
+        /// Marks the end of the container option by writing an option end code followed by
+        /// a raw data segment. The length is updated to include the total sub-options
+        /// and raw data size.
+        /// </summary>
+        /// <remarks>At least one call to either <see cref="WriteSubOptionHeader(byte, byte)"/> or
+        /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/> must be made before this.
+        /// </remarks>
+        /// <param name="data">The data buffer.</param>
+        public void EndContainerOption(ReadOnlySpan<byte> data)
+        {
+            this.WriteEndOption();
+            data.CopyTo(this.Span.Slice(HeaderLength + this.nextOption));
+            this.nextOption += data.Length;
             this.Span[HeaderLength + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
         }
 

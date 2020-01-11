@@ -643,7 +643,7 @@ End={}
         }
 
         [TestMethod]
-        public void Option43()
+        public void Option43WithSubOptions()
         {
             const string ExpectedOptions =
 @"VendorSpecific={1203020406550177}
@@ -663,6 +663,36 @@ End={}
             ReadOnlySpan<byte> data2 = new ReadOnlySpan<byte>(new byte[] { 0x77 });
             buffer.WriteDataItem(0x55, data2);
             buffer.End();
+            output.WriteSubnetMaskOption(IP(255, 255, 255, 0));
+            output.WriteEndOption();
+
+            SubOptionsString(output, (byte)DhcpOptionTag.VendorSpecific).Should().Be(ExpectedVendorSpecificOptions);
+            OptionsString(output).Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
+        public void Option43WithSubOptionsAndRawData()
+        {
+            const string ExpectedOptions =
+@"VendorSpecific={1203020406550177FF09080706}
+SubnetMask={FFFFFF00}
+End={}
+";
+            const string ExpectedVendorSpecificOptions =
+@"18={020406}
+85={77}
+255={09080706}
+";
+            byte[] raw = new byte[300];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            DhcpSubOptionsBuffer buffer = output.WriteVendorSpecificOptionHeader();
+            ReadOnlySpan<byte> data1 = new ReadOnlySpan<byte>(new byte[] { 0x2, 0x4, 0x6 });
+            buffer.WriteDataItem(0x12, data1);
+            ReadOnlySpan<byte> data2 = new ReadOnlySpan<byte>(new byte[] { 0x77 });
+            buffer.WriteDataItem(0x55, data2);
+            ReadOnlySpan<byte> rawData = new ReadOnlySpan<byte>(new byte[] { 0x9, 0x8, 0x7, 0x6 });
+            buffer.End(rawData);
             output.WriteSubnetMaskOption(IP(255, 255, 255, 0));
             output.WriteEndOption();
 

@@ -814,6 +814,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option51()
+        {
+            TestOption(
+                o => o.WriteAddressTimeOption(0x55443322),
+                "AddressTime={55443322}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

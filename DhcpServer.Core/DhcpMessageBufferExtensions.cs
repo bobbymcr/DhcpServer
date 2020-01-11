@@ -1118,6 +1118,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the IP address lease time option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="leaseTime">The lease time in seconds.</param>
+        public static void WriteAddressTimeOption(this DhcpMessageBuffer buffer, uint leaseTime)
+        {
+            WriteUInt32(buffer, DhcpOptionTag.AddressTime, leaseTime);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

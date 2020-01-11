@@ -261,7 +261,7 @@ namespace DhcpServer
         AddressRequest = 50,
 
         /// <summary>
-        /// IP Address Lease Time
+        /// IP address lease time
         /// </summary>
         AddressTime = 51,
 

@@ -72,6 +72,14 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void WriteStringN()
+        {
+            TestWriteString("N", 0xFEDCBA987654, "FEDCBA987654");
+            TestWriteString("N", 0x000000000000, "000000000000");
+            TestWriteString("N", 0x00123456789F, "00123456789F");
+        }
+
+        [TestMethod]
         public void WriteStringEmpty()
         {
             TestWriteString(string.Empty, 0xFEDCBA987654, "FE-DC-BA-98-76-54");

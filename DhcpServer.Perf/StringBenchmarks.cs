@@ -27,9 +27,27 @@ namespace DhcpServer.Perf
         }
 
         [Benchmark]
+        public int MacEmpty()
+        {
+            return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer), string.Empty);
+        }
+
+        [Benchmark]
+        public int MacNull()
+        {
+            return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer), null);
+        }
+
+        [Benchmark]
         public int MacD()
         {
             return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer), "D");
+        }
+
+        [Benchmark]
+        public int MacN()
+        {
+            return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer), "N");
         }
     }
 }

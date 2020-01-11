@@ -231,6 +231,11 @@ namespace DhcpServer
         NetBiosNameSrv = 44,
 
         /// <summary>
+        /// NetBIOS datagram distribution servers
+        /// </summary>
+        NetBiosDistSrv = 45,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

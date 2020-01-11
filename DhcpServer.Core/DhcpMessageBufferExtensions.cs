@@ -950,6 +950,52 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the NetBIOS datagram distribution servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NetBIOS server IP.</param>
+        public static void WriteNetBiosDistSrvOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NetBiosDistSrv, ip1);
+        }
+
+        /// <summary>
+        /// Writes data for the NetBIOS datagram distribution servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NetBIOS server IP.</param>
+        /// <param name="ip2">The second NetBIOS server IP.</param>
+        public static void WriteNetBiosDistSrvOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NetBiosDistSrv, ip1, ip2);
+        }
+
+        /// <summary>
+        /// Writes data for the NetBIOS datagram distribution servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NetBIOS server IP.</param>
+        /// <param name="ip2">The second NetBIOS server IP.</param>
+        /// <param name="ip3">The third NetBIOS server IP.</param>
+        public static void WriteNetBiosDistSrvOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NetBiosDistSrv, ip1, ip2, ip3);
+        }
+
+        /// <summary>
+        /// Writes data for the NetBIOS datagram distribution servers option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first NetBIOS server IP.</param>
+        /// <param name="ip2">The second NetBIOS server IP.</param>
+        /// <param name="ip3">The third NetBIOS server IP.</param>
+        /// <param name="ip4">The fourth NetBIOS server IP.</param>
+        public static void WriteNetBiosDistSrvOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            WriteIPs(buffer, DhcpOptionTag.NetBiosDistSrv, ip1, ip2, ip3, ip4);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

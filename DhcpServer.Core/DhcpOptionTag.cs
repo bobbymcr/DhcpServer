@@ -296,6 +296,11 @@ namespace DhcpServer
         DhcpMaxMsgSize = 57,
 
         /// <summary>
+        /// DHCP renewal (T1) time
+        /// </summary>
+        RenewalTime = 58,
+
+        /// <summary>
         /// Client Identifier
         /// </summary>
         ClientId = 61,

@@ -1224,6 +1224,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the DHCP renewal (T1) time.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="time">The time in seconds.</param>
+        public static void WriteRenewalTimeOption(this DhcpMessageBuffer buffer, uint time)
+        {
+            WriteUInt32(buffer, DhcpOptionTag.RenewalTime, time);
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

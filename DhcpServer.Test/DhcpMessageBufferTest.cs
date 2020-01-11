@@ -887,6 +887,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option58()
+        {
+            TestOption(
+                o => o.WriteRenewalTimeOption(0x23456789),
+                "RenewalTime={23456789}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

@@ -281,12 +281,12 @@ namespace DhcpServer
         DhcpServerId = 54,
 
         /// <summary>
-        /// Parameter Request List
+        /// Parameter request list
         /// </summary>
         ParameterList = 55,
 
         /// <summary>
-        /// DHCP Error Message
+        /// DHCP error message
         /// </summary>
         DhcpMessage = 56,
 

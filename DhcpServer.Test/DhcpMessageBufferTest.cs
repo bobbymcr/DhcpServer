@@ -871,6 +871,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option56()
+        {
+            TestOption(
+                o => o.WriteDhcpMessageOption("error!"),
+                "DhcpMessage={6572726F7221}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

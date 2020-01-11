@@ -1204,6 +1204,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes ASCII encoded data for the DHCP error message option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="text">The error message text.</param>
+        public static void WriteDhcpMessageOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> text)
+        {
+            buffer.WriteOption(DhcpOptionTag.DhcpMessage, text, Encoding.ASCII);
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

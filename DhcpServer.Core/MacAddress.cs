@@ -66,6 +66,27 @@ namespace DhcpServer
             destination.Slice(6).Clear();
         }
 
+        /// <summary>
+        /// Writes the string representation of the address to the specified buffer.
+        /// </summary>
+        /// <param name="destination">The destination buffer.</param>
+        /// <returns>The number of characters in the resulting string.</returns>
+        public int WriteString(Span<char> destination)
+        {
+            WriteHexByte(destination, 0, this.value >> 40);
+            destination[2] = '-';
+            WriteHexByte(destination, 3, this.value >> 32);
+            destination[5] = '-';
+            WriteHexByte(destination, 6, this.value >> 24);
+            destination[8] = '-';
+            WriteHexByte(destination, 9, this.value >> 16);
+            destination[11] = '-';
+            WriteHexByte(destination, 12, this.value >> 8);
+            destination[14] = '-';
+            WriteHexByte(destination, 15, this.value & 0xFF);
+            return 17;
+        }
+
         /// <inheritdoc/>
         public bool Equals(MacAddress other) => this.value == other.value;
 
@@ -81,6 +102,33 @@ namespace DhcpServer
             }
 
             return false;
+        }
+
+        private static void WriteHexByte(Span<char> destination, int start, ulong v)
+        {
+            byte b = (byte)v;
+            destination[start] = HexDigit((b >> 4) & 0xF);
+            destination[start + 1] = HexDigit(b & 0xF);
+        }
+
+        private static char HexDigit(int d)
+        {
+            switch (d)
+            {
+                case 0x0:
+                case 0x1:
+                case 0x2:
+                case 0x3:
+                case 0x4:
+                case 0x5:
+                case 0x6:
+                case 0x7:
+                case 0x8:
+                case 0x9:
+                    return (char)(d + '0');
+                default:
+                    return (char)(d - 0xA + 'A');
+            }
         }
     }
 }

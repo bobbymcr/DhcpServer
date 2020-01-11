@@ -54,5 +54,24 @@ namespace DhcpServer.Test
 
             raw.Should().ContainInOrder(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
         }
+
+        [TestMethod]
+        public void WriteString()
+        {
+            TestWriteString(0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestWriteString(0x000000000000, "00-00-00-00-00-00");
+            TestWriteString(0x00123456789F, "00-12-34-56-78-9F");
+        }
+
+        private static void TestWriteString(ulong input, string expected)
+        {
+            Span<char> buffer = new Span<char>(new char[32]);
+            MacAddress address = new MacAddress(input);
+
+            int length = address.WriteString(buffer);
+
+            length.Should().Be(expected.Length);
+            buffer.Slice(0, length).ToString().Should().Be(expected);
+        }
     }
 }

@@ -246,6 +246,11 @@ namespace DhcpServer
         NetBiosScope = 47,
 
         /// <summary>
+        /// X Window font server
+        /// </summary>
+        XWindowFont = 48,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

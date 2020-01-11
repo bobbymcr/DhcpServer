@@ -720,6 +720,23 @@ End={}
         }
 
         [TestMethod]
+        public void Option44()
+        {
+            TestOption(
+                o => o.WriteNetBiosNameSrvOption(IP(1, 2, 3, 4)),
+                "NetBiosNameSrv={01020304}");
+            TestOption(
+                o => o.WriteNetBiosNameSrvOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8)),
+                "NetBiosNameSrv={0102030405060708}");
+            TestOption(
+                o => o.WriteNetBiosNameSrvOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6)),
+                "NetBiosNameSrv={010203040506070809080706}");
+            TestOption(
+                o => o.WriteNetBiosNameSrvOption(IP(1, 2, 3, 4), IP(5, 6, 7, 8), IP(9, 8, 7, 6), IP(5, 4, 3, 2)),
+                "NetBiosNameSrv={01020304050607080908070605040302}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

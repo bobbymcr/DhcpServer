@@ -226,6 +226,11 @@ namespace DhcpServer
         VendorSpecific = 43,
 
         /// <summary>
+        /// NetBIOS name servers
+        /// </summary>
+        NetBiosNameSrv = 44,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

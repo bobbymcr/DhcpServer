@@ -1234,6 +1234,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the DHCP rebinding (T2) time.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="time">The time in seconds.</param>
+        public static void WriteRebindingTimeOption(this DhcpMessageBuffer buffer, uint time)
+        {
+            WriteUInt32(buffer, DhcpOptionTag.RebindingTime, time);
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

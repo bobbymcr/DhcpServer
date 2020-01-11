@@ -895,6 +895,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option59()
+        {
+            TestOption(
+                o => o.WriteRebindingTimeOption(0x11449916),
+                "RebindingTime={11449916}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

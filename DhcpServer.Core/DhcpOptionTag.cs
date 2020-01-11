@@ -301,6 +301,11 @@ namespace DhcpServer
         RenewalTime = 58,
 
         /// <summary>
+        /// DHCP rebinding (T1) time
+        /// </summary>
+        RebindingTime = 59,
+
+        /// <summary>
         /// Client Identifier
         /// </summary>
         ClientId = 61,

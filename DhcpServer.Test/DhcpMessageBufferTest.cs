@@ -911,6 +911,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option61()
+        {
+            TestOption(
+                o => o.WriteClientIdOption(new MacAddress(9, 8, 7, 6, 5, 4)),
+                "ClientId={01090807060504}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

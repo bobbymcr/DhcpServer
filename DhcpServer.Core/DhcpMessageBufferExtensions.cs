@@ -1254,6 +1254,18 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the client identifier option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="id">The identifier.</param>
+        public static void WriteClientIdOption(this DhcpMessageBuffer buffer, MacAddress id)
+        {
+            var option = buffer.WriteOptionHeader(DhcpOptionTag.ClientId, 7);
+            option.Data[0] = (byte)DhcpHardwareAddressType.Ethernet10Mb;
+            id.WriteTo(option.Data.Slice(1));
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

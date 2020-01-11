@@ -764,6 +764,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option47()
+        {
+            TestOption(
+                o => o.WriteNetBiosScopeOption("Name.com"),
+                "NetBiosScope={4E616D652E636F6D}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

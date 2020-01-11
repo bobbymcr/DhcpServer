@@ -1006,6 +1006,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes UTF-8 encoded data for the NetBIOS scope option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="scope">The scope buffer.</param>
+        public static void WriteNetBiosScopeOption(this DhcpMessageBuffer buffer, ReadOnlySpan<char> scope)
+        {
+            buffer.WriteOption(DhcpOptionTag.NetBiosScope, scope, Encoding.UTF8);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

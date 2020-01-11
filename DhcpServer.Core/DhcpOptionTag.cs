@@ -241,6 +241,11 @@ namespace DhcpServer
         NetBiosNodeType = 46,
 
         /// <summary>
+        /// NetBIOS scope
+        /// </summary>
+        NetBiosScope = 47,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

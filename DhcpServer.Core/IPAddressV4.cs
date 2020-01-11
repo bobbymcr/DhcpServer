@@ -69,6 +69,29 @@ namespace DhcpServer
             destination[3] = (byte)(this.value & 0xFF);
         }
 
+        /// <summary>
+        /// Tries to format the current IP address into the provided span.
+        /// </summary>
+        /// <param name="destination">When this method returns, the IP address as a span of characters.</param>
+        /// <param name="charsWritten">When this method returns, the number of characters written into the span.</param>
+        /// <returns><c>true </c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten)
+        {
+            byte b0 = (byte)(this.value >> 24);
+            byte b1 = (byte)(this.value >> 16);
+            byte b2 = (byte)(this.value >> 8);
+            byte b3 = (byte)(this.value & 0xFF);
+            int i = 0;
+            i = WriteByte(destination, i, b0);
+            destination[i++] = '.';
+            i = WriteByte(destination, i, b1);
+            destination[i++] = '.';
+            i = WriteByte(destination, i, b2);
+            destination[i++] = '.';
+            charsWritten = WriteByte(destination, i, b3);
+            return true;
+        }
+
         /// <inheritdoc/>
         public bool Equals(IPAddressV4 other) => this.value == other.value;
 
@@ -84,6 +107,12 @@ namespace DhcpServer
             }
 
             return false;
+        }
+
+        private static int WriteByte(Span<char> destination, int start, byte b)
+        {
+            b.TryFormat(destination.Slice(start), out int c);
+            return start + c;
         }
     }
 }

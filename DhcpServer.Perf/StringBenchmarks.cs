@@ -21,6 +21,13 @@ namespace DhcpServer.Perf
         }
 
         [Benchmark]
+        public int IP()
+        {
+            new IPAddressV4(0xC0A8000F).TryFormat(new Span<char>(this.buffer), out int c);
+            return c;
+        }
+
+        [Benchmark]
         public int Mac()
         {
             new MacAddress(0xFEDCBA987654).TryFormat(new Span<char>(this.buffer), out int c);

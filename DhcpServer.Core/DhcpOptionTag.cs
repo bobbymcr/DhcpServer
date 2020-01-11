@@ -291,7 +291,7 @@ namespace DhcpServer
         DhcpMessage = 56,
 
         /// <summary>
-        /// DHCP Maximum Message Size
+        /// DHCP maximum message size
         /// </summary>
         DhcpMaxMsgSize = 57,
 

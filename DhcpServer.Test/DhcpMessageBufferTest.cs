@@ -879,6 +879,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option57()
+        {
+            TestOption(
+                o => o.WriteDhcpMaxMsgSizeOption(0x4321),
+                "DhcpMaxMsgSize={4321}");
+        }
+
+        [TestMethod]
         public void Option82()
         {
             const string ExpectedOptions =

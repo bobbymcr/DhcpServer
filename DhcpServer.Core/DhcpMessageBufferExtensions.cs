@@ -1214,6 +1214,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the DHCP maximum message size option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="size">The maximum message size.</param>
+        public static void WriteDhcpMaxMsgSizeOption(this DhcpMessageBuffer buffer, ushort size)
+        {
+            WriteUInt16(buffer, DhcpOptionTag.DhcpMaxMsgSize, size);
+        }
+
+        /// <summary>
         /// Writes the header for the relay agent information option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

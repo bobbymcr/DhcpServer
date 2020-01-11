@@ -170,6 +170,12 @@ namespace DhcpServer
 
         private bool TryFormatNoHyphens(Span<char> destination, out int charsWritten)
         {
+            if (destination.Length < 12)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
             WriteHexByte(destination, 0, this.value >> 40);
             WriteHexByte(destination, 2, this.value >> 32);
             WriteHexByte(destination, 4, this.value >> 24);

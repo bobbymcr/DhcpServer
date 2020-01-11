@@ -108,6 +108,19 @@ namespace DhcpServer.Test
             destination[0].Should().Be('\0');
         }
 
+        [TestMethod]
+        public void TryFormatNBufferTooSmall()
+        {
+            Span<char> destination = new Span<char>(new char[1]);
+            MacAddress address = new MacAddress(1);
+
+            bool result = address.TryFormat(destination, out int charsWritten, "N");
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+            destination[0].Should().Be('\0');
+        }
+
         private static void TestTryFormat(ulong input, string expected)
         {
             Memory<char> destination = new Memory<char>(new char[32]);

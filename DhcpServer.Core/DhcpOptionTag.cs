@@ -271,12 +271,12 @@ namespace DhcpServer
         Overload = 52,
 
         /// <summary>
-        /// DHCP Message Type
+        /// DHCP message type
         /// </summary>
         DhcpMsgType = 53,
 
         /// <summary>
-        /// DHCP Server Identification
+        /// DHCP server identification
         /// </summary>
         DhcpServerId = 54,
 

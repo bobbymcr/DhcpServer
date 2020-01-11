@@ -1138,6 +1138,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the DHCP server identification option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip">The server IP.</param>
+        public static void WriteDhcpServerIdOption(this DhcpMessageBuffer buffer, IPAddressV4 ip)
+        {
+            WriteIPs(buffer, DhcpOptionTag.DhcpServerId, ip);
+        }
+
+        /// <summary>
         /// Writes data for the requested parameter list option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

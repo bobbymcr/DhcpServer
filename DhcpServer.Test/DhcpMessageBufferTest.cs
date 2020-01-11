@@ -846,6 +846,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option54()
+        {
+            TestOption(
+                o => o.WriteDhcpServerIdOption(IP(1, 2, 3, 4)),
+                "DhcpServerId={01020304}");
+        }
+
+        [TestMethod]
         public void Option55()
         {
             TestOption(

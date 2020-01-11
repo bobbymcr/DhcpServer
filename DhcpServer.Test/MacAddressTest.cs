@@ -63,15 +63,33 @@ namespace DhcpServer.Test
             TestWriteString(0x00123456789F, "00-12-34-56-78-9F");
         }
 
+        [TestMethod]
+        public void WriteStringD()
+        {
+            TestWriteString("D", 0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestWriteString("D", 0x000000000000, "00-00-00-00-00-00");
+            TestWriteString("D", 0x00123456789F, "00-12-34-56-78-9F");
+        }
+
         private static void TestWriteString(ulong input, string expected)
         {
-            Span<char> buffer = new Span<char>(new char[32]);
+            TestWriteString(input, (m, d) => m.WriteString(d.Span), expected);
+        }
+
+        private static void TestWriteString(string format, ulong input, string expected)
+        {
+            TestWriteString(input, (m, d) => m.WriteString(d.Span, format), expected);
+        }
+
+        private static void TestWriteString(ulong input, Func<MacAddress, Memory<char>, int> act, string expected)
+        {
+            Memory<char> destination = new Memory<char>(new char[32]);
             MacAddress address = new MacAddress(input);
 
-            int length = address.WriteString(buffer);
+            int length = act(address, destination);
 
             length.Should().Be(expected.Length);
-            buffer.Slice(0, length).ToString().Should().Be(expected);
+            destination.Slice(0, length).ToString().Should().Be(expected);
         }
     }
 }

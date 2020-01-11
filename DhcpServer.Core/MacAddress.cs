@@ -70,21 +70,23 @@ namespace DhcpServer
         /// Writes the string representation of the address to the specified buffer.
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
+        /// <param name="format">The format specifier ("D"); if <c>null</c> or empty, "D" is used.</param>
+        /// <remarks>
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Specifier</term>
+        ///     <description>Format of return value</description>
+        ///   </listheader>
+        ///   <item>
+        ///     <term><c>D</c></term>
+        ///     <description>12 hexadecimal digits separated by hyphens: 00-00-00-00-00-00</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         /// <returns>The number of characters in the resulting string.</returns>
-        public int WriteString(Span<char> destination)
+        public int WriteString(Span<char> destination, string format = null)
         {
-            WriteHexByte(destination, 0, this.value >> 40);
-            destination[2] = '-';
-            WriteHexByte(destination, 3, this.value >> 32);
-            destination[5] = '-';
-            WriteHexByte(destination, 6, this.value >> 24);
-            destination[8] = '-';
-            WriteHexByte(destination, 9, this.value >> 16);
-            destination[11] = '-';
-            WriteHexByte(destination, 12, this.value >> 8);
-            destination[14] = '-';
-            WriteHexByte(destination, 15, this.value & 0xFF);
-            return 17;
+            return this.WriteStringHyphens(destination);
         }
 
         /// <inheritdoc/>
@@ -129,6 +131,22 @@ namespace DhcpServer
                 default:
                     return (char)(d - 0xA + 'A');
             }
+        }
+
+        private int WriteStringHyphens(Span<char> destination)
+        {
+            WriteHexByte(destination, 0, this.value >> 40);
+            destination[2] = '-';
+            WriteHexByte(destination, 3, this.value >> 32);
+            destination[5] = '-';
+            WriteHexByte(destination, 6, this.value >> 24);
+            destination[8] = '-';
+            WriteHexByte(destination, 9, this.value >> 16);
+            destination[11] = '-';
+            WriteHexByte(destination, 12, this.value >> 8);
+            destination[14] = '-';
+            WriteHexByte(destination, 15, this.value & 0xFF);
+            return 17;
         }
     }
 }

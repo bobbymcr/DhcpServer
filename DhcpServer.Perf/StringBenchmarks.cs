@@ -25,5 +25,11 @@ namespace DhcpServer.Perf
         {
             return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer));
         }
+
+        [Benchmark]
+        public int MacD()
+        {
+            return new MacAddress(0xFEDCBA987654).WriteString(new Span<char>(this.buffer), "D");
+        }
     }
 }

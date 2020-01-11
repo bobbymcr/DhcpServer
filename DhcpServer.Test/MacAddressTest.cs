@@ -56,64 +56,67 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
-        public void WriteString()
+        public void TryFormat()
         {
-            TestWriteString(0xFEDCBA987654, "FE-DC-BA-98-76-54");
-            TestWriteString(0x000000000000, "00-00-00-00-00-00");
-            TestWriteString(0x00123456789F, "00-12-34-56-78-9F");
+            TestTryFormat(0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestTryFormat(0x000000000000, "00-00-00-00-00-00");
+            TestTryFormat(0x00123456789F, "00-12-34-56-78-9F");
         }
 
         [TestMethod]
-        public void WriteStringD()
+        public void TryFormatD()
         {
-            TestWriteString("D", 0xFEDCBA987654, "FE-DC-BA-98-76-54");
-            TestWriteString("D", 0x000000000000, "00-00-00-00-00-00");
-            TestWriteString("D", 0x00123456789F, "00-12-34-56-78-9F");
+            TestTryFormat("D", 0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestTryFormat("D", 0x000000000000, "00-00-00-00-00-00");
+            TestTryFormat("D", 0x00123456789F, "00-12-34-56-78-9F");
         }
 
         [TestMethod]
-        public void WriteStringN()
+        public void TryFormatN()
         {
-            TestWriteString("N", 0xFEDCBA987654, "FEDCBA987654");
-            TestWriteString("N", 0x000000000000, "000000000000");
-            TestWriteString("N", 0x00123456789F, "00123456789F");
+            TestTryFormat("N", 0xFEDCBA987654, "FEDCBA987654");
+            TestTryFormat("N", 0x000000000000, "000000000000");
+            TestTryFormat("N", 0x00123456789F, "00123456789F");
         }
 
         [TestMethod]
-        public void WriteStringEmpty()
+        public void TryFormatEmpty()
         {
-            TestWriteString(string.Empty, 0xFEDCBA987654, "FE-DC-BA-98-76-54");
-            TestWriteString(string.Empty, 0x000000000000, "00-00-00-00-00-00");
-            TestWriteString(string.Empty, 0x00123456789F, "00-12-34-56-78-9F");
+            TestTryFormat(string.Empty, 0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestTryFormat(string.Empty, 0x000000000000, "00-00-00-00-00-00");
+            TestTryFormat(string.Empty, 0x00123456789F, "00-12-34-56-78-9F");
         }
 
         [TestMethod]
-        public void WriteStringNull()
+        public void TryFormatNull()
         {
-            TestWriteString(null, 0xFEDCBA987654, "FE-DC-BA-98-76-54");
-            TestWriteString(null, 0x000000000000, "00-00-00-00-00-00");
-            TestWriteString(null, 0x00123456789F, "00-12-34-56-78-9F");
+            TestTryFormat(null, 0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestTryFormat(null, 0x000000000000, "00-00-00-00-00-00");
+            TestTryFormat(null, 0x00123456789F, "00-12-34-56-78-9F");
         }
 
-        private static void TestWriteString(ulong input, string expected)
-        {
-            TestWriteString(input, (m, d) => m.WriteString(d.Span), expected);
-        }
-
-        private static void TestWriteString(string format, ulong input, string expected)
-        {
-            TestWriteString(input, (m, d) => m.WriteString(d.Span, format), expected);
-        }
-
-        private static void TestWriteString(ulong input, Func<MacAddress, Memory<char>, int> act, string expected)
+        private static void TestTryFormat(ulong input, string expected)
         {
             Memory<char> destination = new Memory<char>(new char[32]);
             MacAddress address = new MacAddress(input);
 
-            int length = act(address, destination);
+            bool result = address.TryFormat(destination.Span, out int charsWritten);
 
-            length.Should().Be(expected.Length);
-            destination.Slice(0, length).ToString().Should().Be(expected);
+            result.Should().BeTrue();
+            charsWritten.Should().Be(expected.Length);
+            destination.Slice(0, charsWritten).ToString().Should().Be(expected);
+        }
+
+        private static void TestTryFormat(string format, ulong input, string expected)
+        {
+            Memory<char> destination = new Memory<char>(new char[32]);
+            MacAddress address = new MacAddress(input);
+
+            bool result = address.TryFormat(destination.Span, out int charsWritten, format);
+
+            result.Should().BeTrue();
+            charsWritten.Should().Be(expected.Length);
+            destination.Slice(0, charsWritten).ToString().Should().Be(expected);
         }
     }
 }

@@ -67,10 +67,13 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes the string representation of the address to the specified buffer.
+        /// Tries to format the value of the address into the provided span of characters.
         /// </summary>
-        /// <param name="destination">The destination buffer.</param>
-        /// <param name="format">The format specifier ("D" or "N"); if <c>null</c> or empty, "D" is used.</param>
+        /// <param name="destination">When this method returns, this instance's value formatted as a
+        /// span of characters.</param>
+        /// <param name="charsWritten">When this method returns, the number of characters that were
+        /// written in <paramref name="destination"/>.</param>
+        /// <param name="format">The format specifier ("D" or "N"); if empty, "D" is used.</param>
         /// <remarks>
         /// <list type="table">
         ///   <listheader>
@@ -87,14 +90,15 @@ namespace DhcpServer
         ///   </item>
         /// </list>
         /// </remarks>
-        /// <returns>The number of characters in the resulting string.</returns>
-        public int WriteString(Span<char> destination, string format = null)
+        /// <returns><c>true </c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format = default)
         {
-            switch (format)
+            if (format == "N")
             {
-                case "N": return this.WriteStringNoHyphens(destination);
-                default: return this.WriteStringHyphens(destination);
+                return this.TryFormatNoHyphens(destination, out charsWritten);
             }
+
+            return this.TryFormatHyphens(destination, out charsWritten);
         }
 
         /// <inheritdoc/>
@@ -141,7 +145,7 @@ namespace DhcpServer
             }
         }
 
-        private int WriteStringHyphens(Span<char> destination)
+        private bool TryFormatHyphens(Span<char> destination, out int charsWritten)
         {
             WriteHexByte(destination, 0, this.value >> 40);
             destination[2] = '-';
@@ -154,10 +158,11 @@ namespace DhcpServer
             WriteHexByte(destination, 12, this.value >> 8);
             destination[14] = '-';
             WriteHexByte(destination, 15, this.value & 0xFF);
-            return 17;
+            charsWritten = 17;
+            return true;
         }
 
-        private int WriteStringNoHyphens(Span<char> destination)
+        private bool TryFormatNoHyphens(Span<char> destination, out int charsWritten)
         {
             WriteHexByte(destination, 0, this.value >> 40);
             WriteHexByte(destination, 2, this.value >> 32);
@@ -165,7 +170,8 @@ namespace DhcpServer
             WriteHexByte(destination, 6, this.value >> 16);
             WriteHexByte(destination, 8, this.value >> 8);
             WriteHexByte(destination, 10, this.value & 0xFF);
-            return 12;
+            charsWritten = 12;
+            return true;
         }
     }
 }

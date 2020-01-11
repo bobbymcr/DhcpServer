@@ -79,6 +79,14 @@ namespace DhcpServer.Test
             TestWriteString(string.Empty, 0x00123456789F, "00-12-34-56-78-9F");
         }
 
+        [TestMethod]
+        public void WriteStringNull()
+        {
+            TestWriteString(null, 0xFEDCBA987654, "FE-DC-BA-98-76-54");
+            TestWriteString(null, 0x000000000000, "00-00-00-00-00-00");
+            TestWriteString(null, 0x00123456789F, "00-12-34-56-78-9F");
+        }
+
         private static void TestWriteString(ulong input, string expected)
         {
             TestWriteString(input, (m, d) => m.WriteString(d.Span), expected);

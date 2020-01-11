@@ -1108,6 +1108,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the requested IP address option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip">The requested IP.</param>
+        public static void WriteAddressRequestOption(this DhcpMessageBuffer buffer, IPAddressV4 ip)
+        {
+            WriteIPs(buffer, DhcpOptionTag.AddressRequest, ip);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

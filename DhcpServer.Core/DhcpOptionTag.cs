@@ -256,7 +256,7 @@ namespace DhcpServer
         XWindowManager = 49,
 
         /// <summary>
-        /// Requested IP Address
+        /// Requested IP address
         /// </summary>
         AddressRequest = 50,
 

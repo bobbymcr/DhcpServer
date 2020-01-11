@@ -806,6 +806,14 @@ End={}
         }
 
         [TestMethod]
+        public void Option50()
+        {
+            TestOption(
+                o => o.WriteAddressRequestOption(IP(1, 2, 3, 4)),
+                "AddressRequest={01020304}");
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);

@@ -1062,6 +1062,52 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the X Window display manager option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first X Window display manager IP.</param>
+        public static void WriteXWindowManagerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1)
+        {
+            WriteIPs(buffer, DhcpOptionTag.XWindowManager, ip1);
+        }
+
+        /// <summary>
+        /// Writes data for the X Window display manager option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first X Window display manager IP.</param>
+        /// <param name="ip2">The second X Window display manager IP.</param>
+        public static void WriteXWindowManagerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2)
+        {
+            WriteIPs(buffer, DhcpOptionTag.XWindowManager, ip1, ip2);
+        }
+
+        /// <summary>
+        /// Writes data for the X Window display manager option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first X Window display manager IP.</param>
+        /// <param name="ip2">The second X Window display manager IP.</param>
+        /// <param name="ip3">The third X Window display manager IP.</param>
+        public static void WriteXWindowManagerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
+        {
+            WriteIPs(buffer, DhcpOptionTag.XWindowManager, ip1, ip2, ip3);
+        }
+
+        /// <summary>
+        /// Writes data for the X Window display manager option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="ip1">The first X Window display manager IP.</param>
+        /// <param name="ip2">The second X Window display manager IP.</param>
+        /// <param name="ip3">The third X Window display manager IP.</param>
+        /// <param name="ip4">The fourth X Window display manager IP.</param>
+        public static void WriteXWindowManagerOption(this DhcpMessageBuffer buffer, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
+        {
+            WriteIPs(buffer, DhcpOptionTag.XWindowManager, ip1, ip2, ip3, ip4);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

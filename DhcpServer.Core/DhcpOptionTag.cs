@@ -251,6 +251,11 @@ namespace DhcpServer
         XWindowFont = 48,
 
         /// <summary>
+        /// X Window display manager
+        /// </summary>
+        XWindowManager = 49,
+
+        /// <summary>
         /// Requested IP Address
         /// </summary>
         AddressRequest = 50,

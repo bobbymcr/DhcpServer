@@ -754,6 +754,16 @@ End={}
         }
 
         [TestMethod]
+        public void Option46()
+        {
+            TestOption46("NetBiosNodeType={00}", NetBiosNodeType.None);
+            TestOption46("NetBiosNodeType={01}", NetBiosNodeType.Broadcast);
+            TestOption46("NetBiosNodeType={02}", NetBiosNodeType.PointToPoint);
+            TestOption46("NetBiosNodeType={04}", NetBiosNodeType.MixedMode);
+            TestOption46("NetBiosNodeType={08}", NetBiosNodeType.Hybrid);
+        }
+
+        [TestMethod]
         public void Option53()
         {
             TestOption53("DhcpMsgType={00}", DhcpMessageType.None);
@@ -854,6 +864,11 @@ End={}
             RelayAgentOptionsString(output).Should().Be(ExpectedRelayAgentOptions);
             SubOptionsString(output, 254).Should().Be(ExpectedCustomOptions);
             OptionsString(output).Should().Be(ExpectedOptions);
+        }
+
+        private static void TestOption46(string expectedOption, NetBiosNodeType nodeType)
+        {
+            TestOption(o => o.WriteNetBiosNodeTypeOption(nodeType), expectedOption);
         }
 
         private static void TestOption53(string expectedOption, DhcpMessageType messageType)

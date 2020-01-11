@@ -996,6 +996,16 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the NetBIOS node type option.
+        /// </summary>
+        /// <param name="buffer">The message buffer.</param>
+        /// <param name="nodeType">The node type.</param>
+        public static void WriteNetBiosNodeTypeOption(this DhcpMessageBuffer buffer, NetBiosNodeType nodeType)
+        {
+            WriteUInt8(buffer, DhcpOptionTag.NetBiosNodeType, (byte)nodeType);
+        }
+
+        /// <summary>
         /// Writes data for the DHCP message type option.
         /// </summary>
         /// <param name="buffer">The message buffer.</param>

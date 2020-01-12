@@ -61,5 +61,21 @@ namespace DhcpServer
 
             return false;
         }
+
+        /// <summary>
+        /// Tries to format the current endpoint into the provided span.
+        /// </summary>
+        /// <param name="destination">When this method returns, the endpoint as a span of characters
+        /// (for example "192.168.1.2:80").</param>
+        /// <param name="charsWritten">When this method returns, the number of characters written into the span.</param>
+        /// <returns><c>true </c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten)
+        {
+            this.Address.TryFormat(destination, out charsWritten);
+            destination[charsWritten++] = ':';
+            this.Port.TryFormat(destination.Slice(charsWritten), out int c);
+            charsWritten += c;
+            return true;
+        }
     }
 }

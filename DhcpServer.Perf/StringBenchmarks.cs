@@ -21,6 +21,13 @@ namespace DhcpServer.Perf
         }
 
         [Benchmark]
+        public int IPEndpoint()
+        {
+            new IPEndpointV4(new IPAddressV4(0xC0A8000F), 4444).TryFormat(new Span<char>(this.buffer), out int c);
+            return c;
+        }
+
+        [Benchmark]
         public int IP()
         {
             new IPAddressV4(0xC0A8000F).TryFormat(new Span<char>(this.buffer), out int c);

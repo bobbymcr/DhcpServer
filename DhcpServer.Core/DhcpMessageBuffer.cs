@@ -310,7 +310,7 @@ namespace DhcpServer
         /// </summary>
         public void WriteEndOption() => this.options.End(this.nextOption++);
 
-        private void WriteIP(IPAddressV4 ip, int start) => ip.WriteTo(this.buffer.Span.Slice(start, 4));
+        private void WriteIP(IPAddressV4 ip, int start) => ip.CopyTo(this.buffer.Span.Slice(start, 4));
 
         private IPAddressV4 ReadIP(int start) => new IPAddressV4(this.buffer.ReadUInt32(start));
 

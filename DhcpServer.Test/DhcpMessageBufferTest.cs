@@ -1057,7 +1057,7 @@ End={}
             DhcpOption msgType = output.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
             msgType.Data[0] = (byte)DhcpMessageType.Offer;
             DhcpOption serverId = output.WriteOptionHeader(DhcpOptionTag.DhcpServerId, 4);
-            IP(10, 20, 30, 40).WriteTo(serverId.Data);
+            IP(10, 20, 30, 40).CopyTo(serverId.Data);
             output.WritePadding(5);
             output.WriteEndOption();
 

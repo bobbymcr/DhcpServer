@@ -32,25 +32,25 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
-        public void WriteToWithPadding()
+        public void CopyToWithPadding()
         {
             MacAddress address = new MacAddress(0xFFFF123456789ABC);
             byte[] raw = new byte[9];
             Span<byte> span = new Span<byte>(raw);
 
-            address.WriteTo(span);
+            address.CopyTo(span);
 
             raw.Should().ContainInOrder(0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0, 0, 0);
         }
 
         [TestMethod]
-        public void WriteToExact()
+        public void CopyToExact()
         {
             MacAddress address = new MacAddress(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
             byte[] raw = new byte[6];
             Span<byte> span = new Span<byte>(raw);
 
-            address.WriteTo(span);
+            address.CopyTo(span);
 
             raw.Should().ContainInOrder(0xA, 0xB, 0xC, 0xD, 0xE, 0xF);
         }

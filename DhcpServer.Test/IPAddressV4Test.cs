@@ -33,13 +33,13 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
-        public void WriteToExact()
+        public void CopyToExact()
         {
             IPAddressV4 address = new IPAddressV4(1, 2, 3, 4);
             byte[] raw = new byte[4];
             Span<byte> span = new Span<byte>(raw);
 
-            address.WriteTo(span);
+            address.CopyTo(span);
 
             raw.Should().ContainInOrder(1, 2, 3, 4);
         }

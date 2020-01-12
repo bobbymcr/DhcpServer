@@ -1262,7 +1262,7 @@ namespace DhcpServer
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ClientId, 7);
             option.Data[0] = (byte)DhcpHardwareAddressType.Ethernet10Mb;
-            id.WriteTo(option.Data.Slice(1));
+            id.CopyTo(option.Data.Slice(1));
         }
 
         /// <summary>
@@ -1338,31 +1338,31 @@ namespace DhcpServer
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOptionHeader(tag, 4);
-            ip1.WriteTo(option.Data);
+            ip1.CopyTo(option.Data);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2)
         {
             var option = buffer.WriteOptionHeader(tag, 8);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
+            ip1.CopyTo(option.Data);
+            ip2.CopyTo(option.Data.Slice(4));
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
             var option = buffer.WriteOptionHeader(tag, 12);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
+            ip1.CopyTo(option.Data);
+            ip2.CopyTo(option.Data.Slice(4));
+            ip3.CopyTo(option.Data.Slice(8));
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
             var option = buffer.WriteOptionHeader(tag, 16);
-            ip1.WriteTo(option.Data);
-            ip2.WriteTo(option.Data.Slice(4));
-            ip3.WriteTo(option.Data.Slice(8));
-            ip4.WriteTo(option.Data.Slice(12));
+            ip1.CopyTo(option.Data);
+            ip2.CopyTo(option.Data.Slice(4));
+            ip3.CopyTo(option.Data.Slice(8));
+            ip4.CopyTo(option.Data.Slice(12));
         }
     }
 }

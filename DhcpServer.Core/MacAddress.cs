@@ -52,10 +52,10 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes the address to the specified buffer with trailing zero padding.
+        /// Copies the address bytes into a destination span with trailing zero padding.
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
-        public void WriteTo(Span<byte> destination)
+        public void CopyTo(Span<byte> destination)
         {
             destination[0] = (byte)(this.value >> 40);
             destination[1] = (byte)(this.value >> 32);

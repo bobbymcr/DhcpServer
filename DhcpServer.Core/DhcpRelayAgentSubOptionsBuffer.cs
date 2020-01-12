@@ -50,7 +50,7 @@ namespace DhcpServer
         public void WriteLinkSelection(IPAddressV4 subnet)
         {
             var option = this.buffer.WriteSubOptionHeader((byte)DhcpRelayAgentSubOptionCode.LinkSelection, 4);
-            subnet.WriteTo(option.Data);
+            subnet.CopyTo(option.Data);
         }
 
         /// <summary>

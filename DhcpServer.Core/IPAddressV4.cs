@@ -145,8 +145,33 @@ namespace DhcpServer
 
         private static int WriteByte(Span<char> destination, int start, byte b)
         {
-            b.TryFormat(destination.Slice(start), out int c);
-            return start + c;
+            if (b > 99)
+            {
+                WriteDigit(destination, start, (byte)(b / 100));
+                WriteDigits2(destination, start + 1, (byte)(b % 100));
+                return start + 3;
+            }
+            else if (b > 9)
+            {
+                WriteDigits2(destination, start, b);
+                return start + 2;
+            }
+            else
+            {
+                WriteDigit(destination, start, b);
+                return start + 1;
+            }
+        }
+
+        private static void WriteDigit(Span<char> destination, int start, byte d)
+        {
+            destination[start] = (char)(d + '0');
+        }
+
+        private static void WriteDigits2(Span<char> destination, int start, byte dd)
+        {
+            WriteDigit(destination, start, (byte)(dd / 10));
+            WriteDigit(destination, start + 1, (byte)(dd % 10));
         }
     }
 }

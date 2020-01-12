@@ -21,6 +21,11 @@ namespace DhcpServer
         AgentRemoteId = 2,
 
         /// <summary>
+        /// DOCSIS device class
+        /// </summary>
+        DocsisDeviceClass = 4,
+
+        /// <summary>
         /// Link selection
         /// </summary>
         LinkSelection = 5,

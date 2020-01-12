@@ -922,7 +922,7 @@ End={}
         public void Option82()
         {
             const string ExpectedOptions =
-@"RelayAgentInformation={01056369726331020372653105040102030406027331}
+@"RelayAgentInformation={01056369726331020372653105040102030404040000000106027331}
 SubnetMask={FFFFFF00}
 End={}
 ";
@@ -930,6 +930,7 @@ End={}
 @"AgentCircuitId={6369726331}
 AgentRemoteId={726531}
 LinkSelection={01020304}
+DocsisDeviceClass={00000001}
 SubscriberId={7331}
 ";
             byte[] raw = new byte[300];
@@ -939,6 +940,7 @@ SubscriberId={7331}
             buffer.WriteAgentCircuitId("circ1");
             buffer.WriteAgentRemoteId("re1");
             buffer.WriteLinkSelection(IP(1, 2, 3, 4));
+            buffer.WriteDocsisDeviceClass(DocsisDeviceClass.CpeControlledCableModem);
             buffer.WriteSubscriberId("s1");
             buffer.End();
             output.WriteSubnetMaskOption(IP(255, 255, 255, 0));

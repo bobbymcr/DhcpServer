@@ -54,6 +54,20 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes the DOCSIS device class sub-option.
+        /// </summary>
+        /// <param name="deviceClass">The device class.</param>
+        public void WriteDocsisDeviceClass(DocsisDeviceClass deviceClass)
+        {
+            var option = this.buffer.WriteSubOptionHeader((byte)DhcpRelayAgentSubOptionCode.DocsisDeviceClass, 4);
+            uint value = (uint)deviceClass;
+            option.Data[0] = (byte)(value >> 24);
+            option.Data[1] = (byte)((value >> 16) & 0xFF);
+            option.Data[2] = (byte)((value >> 8) & 0xFF);
+            option.Data[3] = (byte)(value & 0xFF);
+        }
+
+        /// <summary>
         /// Writes the subscriber ID sub-option.
         /// </summary>
         /// <param name="id">The subscriber ID buffer.</param>

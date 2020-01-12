@@ -199,8 +199,12 @@ namespace DhcpServer
         /// <summary>
         /// Writes a container option header to the buffer with a variable sized data segment and advances the cursor.
         /// </summary>
-        /// <remarks>At least one call to either <see cref="WriteSubOptionHeader(byte, byte)"/> or
-        /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/> must be made after this.
+        /// <remarks>At least one call to
+        /// <see cref="WriteSubOptionHeader(byte, byte)"/>,
+        /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/>,
+        /// <see cref="WriteOptionRaw(byte)"/>, or
+        /// <see cref="WriteOptionRaw(ReadOnlySpan{char}, Encoding)"/>
+        /// must be made after this.
         /// The container option must be terminated by an <see cref="EndContainerOption()"/> or
         /// <see cref="EndContainerOption(ReadOnlySpan{byte})"/> call.</remarks>
         /// <param name="tag">The container option tag.</param>
@@ -293,6 +297,31 @@ namespace DhcpServer
             DhcpOption option = this.options.Write(this.nextOption, tag, chars, encoding);
             this.nextOption += 2 + option.Data.Length;
             return option;
+        }
+
+        /// <summary>
+        /// Slices out a data segment from the cursor to the end of the options buffer.
+        /// </summary>
+        /// <returns>The sliced option data segment.</returns>
+        public Memory<byte> SliceOptionRaw() => this.options.Slice(this.nextOption);
+
+        /// <summary>
+        /// Writes raw option data to the buffer and advances the cursor.
+        /// </summary>
+        /// <param name="value">The data value.</param>
+        public void WriteOptionRaw(byte value) => this.options.WriteRaw(this.nextOption++, value);
+
+        /// <summary>
+        /// Writes raw option data to the buffer and advances the cursor.
+        /// </summary>
+        /// <param name="chars">The character data.</param>
+        /// <param name="encoding">The character encoding.</param>
+        /// <returns>The number of bytes written.</returns>
+        public byte WriteOptionRaw(ReadOnlySpan<char> chars, Encoding encoding)
+        {
+            byte length = this.options.WriteRaw(this.nextOption, chars, encoding);
+            this.nextOption += length;
+            return length;
         }
 
         /// <summary>

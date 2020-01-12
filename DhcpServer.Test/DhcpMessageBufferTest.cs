@@ -951,6 +951,32 @@ SubscriberId={7331}
         }
 
         [TestMethod]
+        public void WriteOptionRaw()
+        {
+            const string ExpectedOptions =
+@"254={FF414243}
+SubnetMask={01020304}
+End={}
+";
+            byte[] raw = new byte[300];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            output.WriteContainerOptionHeader((DhcpOptionTag)254);
+            Span<byte> span = output.SliceOptionRaw().Span;
+            output.WriteOptionRaw((byte)0xFF);
+            output.WriteOptionRaw("ABC", Encoding.ASCII).Should().Be(3);
+            span[0].Should().Be(0xFF);
+            span[1].Should().Be((byte)'A');
+            span[2].Should().Be((byte)'B');
+            span[3].Should().Be((byte)'C');
+            output.EndContainerOption();
+            output.WriteSubnetMaskOption(IP(1, 2, 3, 4));
+            output.WriteEndOption();
+
+            OptionsString(output).Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
         public void WriteMultipleContainerOptions()
         {
             const string ExpectedOptions =

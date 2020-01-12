@@ -36,6 +36,13 @@ namespace DhcpServer
         public Enumerator GetEnumerator() => new Enumerator(this);
 
         /// <summary>
+        /// Slices out a data segment from the starting index to the end of the buffer.
+        /// </summary>
+        /// <param name="start">The starting index.</param>
+        /// <returns>The sliced data segment.</returns>
+        public Memory<byte> Slice(int start) => this.options.Slice(start);
+
+        /// <summary>
         /// Writes an option header to the buffer and slices out a data segment.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
@@ -93,6 +100,25 @@ namespace DhcpServer
         public void Pad(int start, byte length) => this.options.Span.Slice(start, length).Clear();
 
         /// <summary>
+        /// Writes raw data to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="value">The data value.</param>
+        public void WriteRaw(int start, byte value) => this.options.Span[start] = value;
+
+        /// <summary>
+        /// Writes raw data to the buffer and advances the cursor.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="chars">The character data.</param>
+        /// <param name="encoding">The character encoding.</param>
+        /// <returns>The number of bytes written.</returns>
+        public byte WriteRaw(int start, ReadOnlySpan<char> chars, Encoding encoding)
+        {
+            return (byte)encoding.GetBytes(chars, this.options.Span.Slice(start));
+        }
+
+        /// <summary>
         /// Writes an option end marker to the buffer.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
@@ -112,9 +138,9 @@ namespace DhcpServer
         private Memory<byte> WriteInner(int start, byte code, ReadOnlySpan<char> chars, Encoding encoding)
         {
             Span<byte> option = this.options.Span;
-            option[start] = (byte)code;
-            int length = encoding.GetBytes(chars, option.Slice(start + 2));
-            option[start + 1] = (byte)length;
+            option[start] = code;
+            byte length = this.WriteRaw(start + 2, chars, encoding);
+            option[start + 1] = length;
             return this.options.Slice(start + 2, length);
         }
 

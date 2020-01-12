@@ -51,6 +51,44 @@ namespace DhcpServer.Test
             TestTryFormat(0xFFFFFFFF, 65535, "255.255.255.255:65535");
         }
 
+        [TestMethod]
+        public void TryFormatTooSmall()
+        {
+            TestTryFormatTooSmall(0x01020304, 1, 1);
+            TestTryFormatTooSmall(0x01020304, 2, 2);
+            TestTryFormatTooSmall(0x01020304, 3, 3);
+            TestTryFormatTooSmall(0x01020304, 4, 4);
+            TestTryFormatTooSmall(0x01020304, 5, 5);
+            TestTryFormatTooSmall(0x01020304, 6, 6);
+            TestTryFormatTooSmall(0x01020304, 7, 7);
+            TestTryFormatTooSmall(0x01020304, 8, 8);
+            TestTryFormatTooSmall(0x01020304, 8, 8);
+            TestTryFormatTooSmall(0x01020304, 10, 9);
+            TestTryFormatTooSmall(0x01020304, 200, 10);
+            TestTryFormatTooSmall(0x01020304, 2000, 11);
+            TestTryFormatTooSmall(0x01020304, 20000, 12);
+            TestTryFormatTooSmall(0x0102030A, 30000, 13);
+            TestTryFormatTooSmall(0x01020B0A, 40000, 14);
+            TestTryFormatTooSmall(0x010C0B0A, 50000, 15);
+            TestTryFormatTooSmall(0x0D0C0B0A, 60000, 16);
+            TestTryFormatTooSmall(0x0D0CB0A0, 6000, 17);
+            TestTryFormatTooSmall(0xD0C0B0A0, 600, 18);
+            TestTryFormatTooSmall(0xD0C0B0A0, 6000, 19);
+            TestTryFormatTooSmall(0xD0C0B0A0, 60000, 20);
+        }
+
+        private static void TestTryFormatTooSmall(uint address, ushort port, int badLength)
+        {
+            char[] array = new char[badLength];
+            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(address), port);
+
+            bool result = endpoint.TryFormat(new Span<char>(array), out int charsWritten);
+
+            result.Should().BeFalse(because: "{0:X8}:{1} needs more than {2} chars", address, port, badLength);
+            charsWritten.Should().Be(0);
+            array.Should().OnlyContain(c => c == '\0');
+        }
+
         private static void TestTryFormat(uint address, ushort port, string expected)
         {
             Span<char> destination = new Span<char>(new char[32]);

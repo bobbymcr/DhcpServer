@@ -71,7 +71,21 @@ namespace DhcpServer
         /// <returns><c>true </c> if the formatting was successful; otherwise, <c>false</c>.</returns>
         public bool TryFormat(Span<char> destination, out int charsWritten)
         {
-            this.Address.TryFormat(destination, out charsWritten);
+            Span<char> ip = stackalloc char[16];
+            if (!this.Address.TryFormat(ip, out charsWritten))
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            int requiredLength = charsWritten + Base10.UInt16DigitCount(this.Port) + 1;
+            if (destination.Length < requiredLength)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            ip.CopyTo(destination);
             destination[charsWritten++] = ':';
             this.Port.TryFormat(destination.Slice(charsWritten), out int c);
             charsWritten += c;

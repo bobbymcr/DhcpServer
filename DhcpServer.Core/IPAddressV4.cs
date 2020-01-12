@@ -82,10 +82,10 @@ namespace DhcpServer
             byte b2 = (byte)(this.value >> 8);
             byte b3 = (byte)(this.value & 0xFF);
             int requiredLength =
-                Base10.UInt8DigitCount[b0] +
-                Base10.UInt8DigitCount[b1] +
-                Base10.UInt8DigitCount[b2] +
-                Base10.UInt8DigitCount[b3] +
+                Base10.UInt8DigitCount(b0) +
+                Base10.UInt8DigitCount(b1) +
+                Base10.UInt8DigitCount(b2) +
+                Base10.UInt8DigitCount(b3) +
                 3;
             if (destination.Length < requiredLength)
             {

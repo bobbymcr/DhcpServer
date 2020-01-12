@@ -8,7 +8,7 @@ namespace DhcpServer
 
     internal static class Base10
     {
-        public static readonly byte[] UInt8DigitCount = new byte[256]
+        private static readonly byte[] DigitCount = new byte[256]
         {
             // 01 02 03...
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -34,6 +34,32 @@ namespace DhcpServer
             // 225...
             3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
         };
+
+        public static byte UInt8DigitCount(byte value) => DigitCount[value];
+
+        public static byte UInt16DigitCount(ushort value)
+        {
+            if (value > 9999)
+            {
+                return 5;
+            }
+            else if (value > 999)
+            {
+                return 4;
+            }
+            else if (value > 99)
+            {
+                return 3;
+            }
+            else if (value > 9)
+            {
+                return 2;
+            }
+            else
+            {
+                return 1;
+            }
+        }
 
         public static int WriteUInt8(Span<char> destination, int start, byte value)
         {

@@ -78,17 +78,65 @@ namespace DhcpServer
                 return false;
             }
 
-            int requiredLength = charsWritten + Base10.UInt16DigitCount(this.Port) + 1;
-            if (destination.Length < requiredLength)
+            int colon = charsWritten++;
+            if (this.Port > 9999)
             {
-                charsWritten = 0;
-                return false;
+                if (destination.Length < (charsWritten + 5))
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                Base10.WriteDigits5(destination, charsWritten, this.Port);
+                charsWritten += 5;
+            }
+            else if (this.Port > 999)
+            {
+                if (destination.Length < (charsWritten + 4))
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                Base10.WriteDigits4(destination, charsWritten, this.Port);
+                charsWritten += 4;
+            }
+            else if (this.Port > 99)
+            {
+                if (destination.Length < (charsWritten + 3))
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                Base10.WriteDigits3(destination, charsWritten, this.Port);
+                charsWritten += 3;
+            }
+            else if (this.Port > 9)
+            {
+                if (destination.Length < (charsWritten + 2))
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                Base10.WriteDigits2(destination, charsWritten, (byte)this.Port);
+                charsWritten += 2;
+            }
+            else
+            {
+                if (destination.Length < (charsWritten + 1))
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                Base10.WriteDigit(destination, charsWritten, (byte)this.Port);
+                charsWritten += 1;
             }
 
-            ip.CopyTo(destination);
-            destination[charsWritten++] = ':';
-            this.Port.TryFormat(destination.Slice(charsWritten), out int c);
-            charsWritten += c;
+            ip.Slice(0, colon).CopyTo(destination);
+            destination[colon] = ':';
             return true;
         }
     }

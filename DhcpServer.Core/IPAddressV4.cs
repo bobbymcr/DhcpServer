@@ -16,6 +16,33 @@ namespace DhcpServer
         /// </summary>
         public static readonly IPAddressV4 Loopback = new IPAddressV4(127, 0, 0, 1);
 
+        private static readonly byte[] DigitCount = new byte[256]
+        {
+            // 01 02 03...
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 33...
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 65...
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+            // 97...
+            2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 129...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 161...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 193...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+            // 225...
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        };
+
         private readonly uint value;
 
         /// <summary>
@@ -81,26 +108,21 @@ namespace DhcpServer
             byte b1 = (byte)(this.value >> 16);
             byte b2 = (byte)(this.value >> 8);
             byte b3 = (byte)(this.value & 0xFF);
-            int requiredLength =
-                Base10.UInt8DigitCount(b0) +
-                Base10.UInt8DigitCount(b1) +
-                Base10.UInt8DigitCount(b2) +
-                Base10.UInt8DigitCount(b3) +
-                3;
+            int requiredLength = DigitCount[b0] + DigitCount[b1] + DigitCount[b2] + DigitCount[b3] + 3;
             if (destination.Length < requiredLength)
             {
                 charsWritten = 0;
                 return false;
             }
 
-            int i = 0;
-            i = Base10.WriteUInt8(destination, i, b0);
-            destination[i++] = '.';
-            i = Base10.WriteUInt8(destination, i, b1);
-            destination[i++] = '.';
-            i = Base10.WriteUInt8(destination, i, b2);
-            destination[i++] = '.';
-            charsWritten = Base10.WriteUInt8(destination, i, b3);
+            charsWritten = 0;
+            WriteUInt8(destination, ref charsWritten, b0);
+            destination[charsWritten++] = '.';
+            WriteUInt8(destination, ref charsWritten, b1);
+            destination[charsWritten++] = '.';
+            WriteUInt8(destination, ref charsWritten, b2);
+            destination[charsWritten++] = '.';
+            WriteUInt8(destination, ref charsWritten, b3);
             return true;
         }
 
@@ -119,6 +141,25 @@ namespace DhcpServer
             }
 
             return false;
+        }
+
+        private static void WriteUInt8(Span<char> destination, ref int start, byte value)
+        {
+            if (value > 99)
+            {
+                Base10.WriteDigits3(destination, start, value);
+                start += 3;
+            }
+            else if (value > 9)
+            {
+                Base10.WriteDigits2(destination, start, value);
+                start += 2;
+            }
+            else
+            {
+                Base10.WriteDigit(destination, start, value);
+                start += 1;
+            }
         }
     }
 }

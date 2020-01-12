@@ -8,55 +8,6 @@ namespace DhcpServer
 
     internal static class Base10
     {
-        private static readonly byte[] DigitCount = new byte[256]
-        {
-            // 01 02 03...
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-
-            // 33...
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-
-            // 65...
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-
-            // 97...
-            2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-
-            // 129...
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-
-            // 161...
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-
-            // 193...
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-
-            // 225...
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        };
-
-        public static byte UInt8DigitCount(byte value) => DigitCount[value];
-
-        public static int WriteUInt8(Span<char> destination, int start, byte value)
-        {
-            if (value > 99)
-            {
-                WriteDigit(destination, start, (byte)(value / 100));
-                WriteDigits2(destination, start + 1, (byte)(value % 100));
-                return start + 3;
-            }
-            else if (value > 9)
-            {
-                WriteDigits2(destination, start, value);
-                return start + 2;
-            }
-            else
-            {
-                WriteDigit(destination, start, value);
-                return start + 1;
-            }
-        }
-
         public static void WriteDigit(Span<char> destination, int start, byte d)
         {
             destination[start] = (char)(d + '0');

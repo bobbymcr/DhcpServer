@@ -951,6 +951,13 @@ SubscriberId={7331}
         }
 
         [TestMethod]
+        public void Option82Radius()
+        {
+            TestOption82Radius(
+                r => r.WriteUserName("me@x.com"), "010A6D6540782E636F6D", "UserName={6D6540782E636F6D}");
+        }
+
+        [TestMethod]
         public void WriteOptionRaw()
         {
             const string ExpectedOptions =
@@ -1016,6 +1023,34 @@ End={}
         private static void TestOption53(string expectedOption, DhcpMessageType messageType)
         {
             TestOption(o => o.WriteDhcpMsgTypeOption(messageType), expectedOption);
+        }
+
+        private static void TestOption82Radius(Action<RadiusAttributesBuffer> act, string expectedRadiusAttributesRaw, string expectedRadiusAttributes)
+        {
+            const string ExpectedOptionsWildcard =
+@"RelayAgentInformation={*}
+SubnetMask={FFFFFF00}
+End={}
+";
+            string expectedRelayAgentOptions =
+@"RadiusAttributes={" + expectedRadiusAttributesRaw + @"}
+LinkSelection={01020304}
+";
+            byte[] raw = new byte[300];
+            DhcpMessageBuffer output = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            DhcpRelayAgentSubOptionsBuffer buffer = output.WriteRelayAgentInformationOptionHeader();
+            RadiusAttributesBuffer radius = buffer.WriteRadiusAttributesHeader();
+            act(radius);
+            radius.End();
+            buffer.WriteLinkSelection(IP(1, 2, 3, 4));
+            buffer.End();
+            output.WriteSubnetMaskOption(IP(255, 255, 255, 0));
+            output.WriteEndOption();
+
+            RadiusAttributesString(output).Should().Be(expectedRadiusAttributes + Environment.NewLine);
+            RelayAgentOptionsString(output).Should().Be(expectedRelayAgentOptions);
+            OptionsString(output).Should().Match(ExpectedOptionsWildcard);
         }
 
         private static void TestOption(Action<DhcpMessageBuffer> act, string expectedOption)
@@ -1187,6 +1222,32 @@ End={}
                         sb.Append("={");
                         sb.Append(HexString(subOption.Data));
                         sb.AppendLine("}");
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string RadiusAttributesString(DhcpMessageBuffer buffer)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (DhcpOption option in buffer.Options)
+            {
+                if (option.Tag == DhcpOptionTag.RelayAgentInformation)
+                {
+                    foreach (DhcpSubOption subOption in option)
+                    {
+                        if (subOption.Code == (byte)DhcpRelayAgentSubOptionCode.RadiusAttributes)
+                        {
+                            foreach (RadiusAttribute attr in subOption.RadiusAttributes())
+                            {
+                                sb.Append(attr.Type);
+                                sb.Append("={");
+                                sb.Append(HexString(attr.Data));
+                                sb.AppendLine("}");
+                            }
+                        }
                     }
                 }
             }

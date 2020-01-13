@@ -34,5 +34,10 @@ namespace DhcpServer
         /// Subscriber ID
         /// </summary>
         SubscriberId = 6,
+
+        /// <summary>
+        /// RADIUS attributes
+        /// </summary>
+        RadiusAttributes = 7,
     }
 }

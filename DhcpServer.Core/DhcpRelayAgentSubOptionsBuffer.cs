@@ -77,6 +77,12 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes the header for the RADIUS attributes sub-option.
+        /// </summary>
+        /// <returns>A buffer to allow writing RADIUS attributes.</returns>
+        public RadiusAttributesBuffer WriteRadiusAttributesHeader() => new RadiusAttributesBuffer(this.buffer);
+
+        /// <summary>
         /// Marks the end of the relay agent information option.
         /// </summary>
         public void End() => this.buffer.EndContainerOption();

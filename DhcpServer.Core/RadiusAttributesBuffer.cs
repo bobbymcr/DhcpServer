@@ -40,6 +40,18 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the Service-Type attribute.
+        /// </summary>
+        /// <param name="type">The service type.</param>
+        public void WriteServiceType(RadiusServiceType type)
+        {
+            this.buffer.WriteOptionRaw((byte)RadiusAttributeType.ServiceType);
+            Memory<byte> slice = SkipLength(this.buffer);
+            this.buffer.WriteOptionRaw((uint)type);
+            SetLength(slice, 6);
+        }
+
+        /// <summary>
         /// Marks the end of the RADIUS attributes sub-option.
         /// </summary>
         public void End()

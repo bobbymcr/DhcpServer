@@ -104,7 +104,25 @@ namespace DhcpServer
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
         /// <param name="value">The data value.</param>
-        public void WriteRaw(int start, byte value) => this.options.Span[start] = value;
+        public void WriteRaw(int start, byte value)
+        {
+            Span<byte> span = this.options.Span;
+            span[start] = value;
+        }
+
+        /// <summary>
+        /// Writes raw data to the buffer.
+        /// </summary>
+        /// <param name="start">The starting index in the buffer.</param>
+        /// <param name="value">The data value.</param>
+        public void WriteRaw(int start, uint value)
+        {
+            Span<byte> span = this.options.Span;
+            span[start] = (byte)(value >> 24);
+            span[start + 1] = (byte)((value >> 16) & 0xFF);
+            span[start + 2] = (byte)((value >> 8) & 0xFF);
+            span[start + 3] = (byte)(value & 0xFF);
+        }
 
         /// <summary>
         /// Writes raw data to the buffer and advances the cursor.

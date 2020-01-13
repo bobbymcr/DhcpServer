@@ -202,7 +202,8 @@ namespace DhcpServer
         /// <remarks>At least one call to
         /// <see cref="WriteSubOptionHeader(byte, byte)"/>,
         /// <see cref="WriteSubOption(byte, ReadOnlySpan{char}, Encoding)"/>,
-        /// <see cref="WriteOptionRaw(byte)"/>, or
+        /// <see cref="WriteOptionRaw(byte)"/>,
+        /// <see cref="WriteOptionRaw(uint)"/>, or
         /// <see cref="WriteOptionRaw(ReadOnlySpan{char}, Encoding)"/>
         /// must be made after this.
         /// The container option must be terminated by an <see cref="EndContainerOption()"/> or
@@ -310,6 +311,16 @@ namespace DhcpServer
         /// </summary>
         /// <param name="value">The data value.</param>
         public void WriteOptionRaw(byte value) => this.options.WriteRaw(this.nextOption++, value);
+
+        /// <summary>
+        /// Writes raw option data to the buffer and advances the cursor.
+        /// </summary>
+        /// <param name="value">The data value.</param>
+        public void WriteOptionRaw(uint value)
+        {
+            this.options.WriteRaw(this.nextOption, value);
+            this.nextOption += 4;
+        }
 
         /// <summary>
         /// Writes raw option data to the buffer and advances the cursor.

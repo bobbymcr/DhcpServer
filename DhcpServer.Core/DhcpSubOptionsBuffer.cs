@@ -33,7 +33,7 @@ namespace DhcpServer
         public void WriteDataItem(byte code, ReadOnlySpan<byte> data)
         {
             var item = this.buffer.WriteSubOptionHeader(code, (byte)data.Length);
-            data.CopyTo(item.Data);
+            data.CopyTo(item.Data.Span);
         }
 
         /// <summary>

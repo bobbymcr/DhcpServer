@@ -9,14 +9,14 @@ namespace DhcpServer
     /// <summary>
     /// A value type representing a RADIUS attribute.
     /// </summary>
-    public readonly ref struct RadiusAttribute
+    public readonly struct RadiusAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RadiusAttribute"/> struct.
         /// </summary>
         /// <param name="type">The attribute type.</param>
         /// <param name="data">The attribute data.</param>
-        public RadiusAttribute(RadiusAttributeType type, Span<byte> data)
+        public RadiusAttribute(RadiusAttributeType type, Memory<byte> data)
         {
             this.Type = type;
             this.Data = data;
@@ -30,7 +30,7 @@ namespace DhcpServer
         /// <summary>
         /// Gets the attribute data.
         /// </summary>
-        public Span<byte> Data { get; }
+        public Memory<byte> Data { get; }
 
         /// <summary>
         /// Represents a sequence of RADIUS attributes.
@@ -58,9 +58,9 @@ namespace DhcpServer
         /// <summary>
         /// An enumerator which reads RADIUS attributes in sequential order.
         /// </summary>
-        public ref struct Enumerator
+        public struct Enumerator
         {
-            private readonly Span<byte> data;
+            private readonly Memory<byte> data;
 
             private RadiusAttribute current;
             private int pos;
@@ -69,7 +69,7 @@ namespace DhcpServer
             /// Initializes a new instance of the <see cref="Enumerator"/> struct.
             /// </summary>
             /// <param name="data">The RADIUS attributes sub-option data.</param>
-            public Enumerator(Span<byte> data)
+            public Enumerator(Memory<byte> data)
             {
                 this.data = data;
                 this.current = default;
@@ -92,8 +92,9 @@ namespace DhcpServer
                 int i = this.pos;
                 if (i < end)
                 {
-                    RadiusAttributeType type = (RadiusAttributeType)this.data[i++];
-                    byte length = (byte)(this.data[i++] - 2);
+                    Span<byte> span = this.data.Span;
+                    RadiusAttributeType type = (RadiusAttributeType)span[i++];
+                    byte length = (byte)(span[i++] - 2);
                     this.current = new RadiusAttribute(type, this.data.Slice(i, length));
                     this.pos = i + length;
                     return true;

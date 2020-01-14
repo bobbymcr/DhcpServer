@@ -1004,8 +1004,8 @@ End={}
 
             output.WriteContainerOptionHeader((DhcpOptionTag)254);
             DhcpSubOption sub1 = output.WriteSubOptionHeader(1, 2);
-            sub1.Data[0] = 3;
-            sub1.Data[1] = 4;
+            sub1.Data.Span[0] = 3;
+            sub1.Data.Span[1] = 4;
             output.EndContainerOption();
             DhcpRelayAgentSubOptionsBuffer buffer = output.WriteRelayAgentInformationOptionHeader();
             buffer.WriteAgentCircuitId("circ1");
@@ -1202,7 +1202,7 @@ End={}
                     {
                         sb.Append(subOption.Code);
                         sb.Append("={");
-                        sb.Append(HexString(subOption.Data));
+                        sb.Append(HexString(subOption.Data.Span));
                         sb.AppendLine("}");
                     }
                 }
@@ -1222,7 +1222,7 @@ End={}
                     {
                         sb.Append((DhcpRelayAgentSubOptionCode)subOption.Code);
                         sb.Append("={");
-                        sb.Append(HexString(subOption.Data));
+                        sb.Append(HexString(subOption.Data.Span));
                         sb.AppendLine("}");
                     }
                 }
@@ -1246,7 +1246,7 @@ End={}
                             {
                                 sb.Append(attr.Type);
                                 sb.Append("={");
-                                sb.Append(HexString(attr.Data));
+                                sb.Append(HexString(attr.Data.Span));
                                 sb.AppendLine("}");
                             }
                         }

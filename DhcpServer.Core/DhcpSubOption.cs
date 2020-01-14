@@ -13,8 +13,6 @@ namespace DhcpServer
     /// in its <see cref="Data"/> span.</remarks>
     public readonly struct DhcpSubOption
     {
-        private readonly Memory<byte> data;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpSubOption"/> struct.
         /// </summary>
@@ -23,7 +21,7 @@ namespace DhcpServer
         public DhcpSubOption(byte code, Memory<byte> data)
         {
             this.Code = code;
-            this.data = data;
+            this.Data = data;
         }
 
         /// <summary>
@@ -32,8 +30,8 @@ namespace DhcpServer
         public byte Code { get; }
 
         /// <summary>
-        /// Gets a span for the sub-option data.
+        /// Gets the sub-option data.
         /// </summary>
-        public Span<byte> Data => this.data.Span;
+        public Memory<byte> Data { get; }
     }
 }

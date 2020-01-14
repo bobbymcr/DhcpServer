@@ -118,7 +118,7 @@ namespace DhcpServer
             return false;
         }
 
-        private static void WriteHexByte(Span<char> destination, int start, ulong v)
+        private static void FormatHexByte(Span<char> destination, int start, ulong v)
         {
             byte b = (byte)v;
             destination[start] = HexDigit((b >> 4) & 0xF);
@@ -153,17 +153,17 @@ namespace DhcpServer
                 return false;
             }
 
-            WriteHexByte(destination, 0, this.value >> 40);
+            FormatHexByte(destination, 0, this.value >> 40);
             destination[2] = '-';
-            WriteHexByte(destination, 3, this.value >> 32);
+            FormatHexByte(destination, 3, this.value >> 32);
             destination[5] = '-';
-            WriteHexByte(destination, 6, this.value >> 24);
+            FormatHexByte(destination, 6, this.value >> 24);
             destination[8] = '-';
-            WriteHexByte(destination, 9, this.value >> 16);
+            FormatHexByte(destination, 9, this.value >> 16);
             destination[11] = '-';
-            WriteHexByte(destination, 12, this.value >> 8);
+            FormatHexByte(destination, 12, this.value >> 8);
             destination[14] = '-';
-            WriteHexByte(destination, 15, this.value & 0xFF);
+            FormatHexByte(destination, 15, this.value & 0xFF);
             charsWritten = 17;
             return true;
         }
@@ -176,12 +176,12 @@ namespace DhcpServer
                 return false;
             }
 
-            WriteHexByte(destination, 0, this.value >> 40);
-            WriteHexByte(destination, 2, this.value >> 32);
-            WriteHexByte(destination, 4, this.value >> 24);
-            WriteHexByte(destination, 6, this.value >> 16);
-            WriteHexByte(destination, 8, this.value >> 8);
-            WriteHexByte(destination, 10, this.value & 0xFF);
+            FormatHexByte(destination, 0, this.value >> 40);
+            FormatHexByte(destination, 2, this.value >> 32);
+            FormatHexByte(destination, 4, this.value >> 24);
+            FormatHexByte(destination, 6, this.value >> 16);
+            FormatHexByte(destination, 8, this.value >> 8);
+            FormatHexByte(destination, 10, this.value & 0xFF);
             charsWritten = 12;
             return true;
         }

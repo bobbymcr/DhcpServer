@@ -8,33 +8,33 @@ namespace DhcpServer
 
     internal static class Base10
     {
-        public static void WriteDigit(Span<char> destination, int start, byte d)
+        public static void FormatDigit(Span<char> destination, int start, byte d)
         {
             destination[start] = (char)(d + '0');
         }
 
-        public static void WriteDigits2(Span<char> destination, int start, byte dd)
+        public static void FormatDigits2(Span<char> destination, int start, byte dd)
         {
-            WriteDigit(destination, start, (byte)(dd / 10));
-            WriteDigit(destination, start + 1, (byte)(dd % 10));
+            FormatDigit(destination, start, (byte)(dd / 10));
+            FormatDigit(destination, start + 1, (byte)(dd % 10));
         }
 
-        public static void WriteDigits3(Span<char> destination, int start, ushort ddd)
+        public static void FormatDigits3(Span<char> destination, int start, ushort ddd)
         {
-            WriteDigit(destination, start, (byte)(ddd / 100));
-            WriteDigits2(destination, start + 1, (byte)(ddd % 100));
+            FormatDigit(destination, start, (byte)(ddd / 100));
+            FormatDigits2(destination, start + 1, (byte)(ddd % 100));
         }
 
-        public static void WriteDigits4(Span<char> destination, int start, ushort dddd)
+        public static void FormatDigits4(Span<char> destination, int start, ushort dddd)
         {
-            WriteDigit(destination, start, (byte)(dddd / 1000));
-            WriteDigits3(destination, start + 1, (ushort)(dddd % 1000));
+            FormatDigit(destination, start, (byte)(dddd / 1000));
+            FormatDigits3(destination, start + 1, (ushort)(dddd % 1000));
         }
 
-        public static void WriteDigits5(Span<char> destination, int start, ushort ddddd)
+        public static void FormatDigits5(Span<char> destination, int start, ushort ddddd)
         {
-            WriteDigit(destination, start, (byte)(ddddd / 10000));
-            WriteDigits4(destination, start + 1, (ushort)(ddddd % 10000));
+            FormatDigit(destination, start, (byte)(ddddd / 10000));
+            FormatDigits4(destination, start + 1, (ushort)(ddddd % 10000));
         }
     }
 }

@@ -110,13 +110,13 @@ namespace DhcpServer
             }
 
             charsWritten = 0;
-            WriteUInt8(destination, ref charsWritten, b0);
+            FormatUInt8(destination, ref charsWritten, b0);
             destination[charsWritten++] = '.';
-            WriteUInt8(destination, ref charsWritten, b1);
+            FormatUInt8(destination, ref charsWritten, b1);
             destination[charsWritten++] = '.';
-            WriteUInt8(destination, ref charsWritten, b2);
+            FormatUInt8(destination, ref charsWritten, b2);
             destination[charsWritten++] = '.';
-            WriteUInt8(destination, ref charsWritten, b3);
+            FormatUInt8(destination, ref charsWritten, b3);
             return true;
         }
 
@@ -137,21 +137,21 @@ namespace DhcpServer
             return false;
         }
 
-        private static void WriteUInt8(Span<char> destination, ref int start, byte value)
+        private static void FormatUInt8(Span<char> destination, ref int start, byte value)
         {
             if (value > 99)
             {
-                Base10.WriteDigits3(destination, start, value);
+                Base10.FormatDigits3(destination, start, value);
                 start += 3;
             }
             else if (value > 9)
             {
-                Base10.WriteDigits2(destination, start, value);
+                Base10.FormatDigits2(destination, start, value);
                 start += 2;
             }
             else
             {
-                Base10.WriteDigit(destination, start, value);
+                Base10.FormatDigit(destination, start, value);
                 start += 1;
             }
         }

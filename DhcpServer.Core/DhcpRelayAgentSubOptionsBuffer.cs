@@ -50,7 +50,7 @@ namespace DhcpServer
         public void WriteLinkSelection(IPAddressV4 subnet)
         {
             var option = this.buffer.WriteSubOptionHeader((byte)DhcpRelayAgentSubOptionCode.LinkSelection, 4);
-            subnet.CopyTo(option.Data.Span);
+            subnet.CopyTo(option.Data, 0);
         }
 
         /// <summary>
@@ -60,12 +60,7 @@ namespace DhcpServer
         public void WriteDocsisDeviceClass(DocsisDeviceClass deviceClass)
         {
             var option = this.buffer.WriteSubOptionHeader((byte)DhcpRelayAgentSubOptionCode.DocsisDeviceClass, 4);
-            uint value = (uint)deviceClass;
-            Span<byte> span = option.Data.Span;
-            span[0] = (byte)(value >> 24);
-            span[1] = (byte)((value >> 16) & 0xFF);
-            span[2] = (byte)((value >> 8) & 0xFF);
-            span[3] = (byte)(value & 0xFF);
+            ((uint)deviceClass).CopyTo(option.Data, 0);
         }
 
         /// <summary>

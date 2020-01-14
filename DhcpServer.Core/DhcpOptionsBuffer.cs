@@ -104,25 +104,14 @@ namespace DhcpServer
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
         /// <param name="value">The data value.</param>
-        public void WriteRaw(int start, byte value)
-        {
-            Span<byte> span = this.options.Span;
-            span[start] = value;
-        }
+        public void WriteRaw(int start, byte value) => value.CopyTo(this.options, start);
 
         /// <summary>
         /// Writes raw data to the buffer.
         /// </summary>
         /// <param name="start">The starting index in the buffer.</param>
         /// <param name="value">The data value.</param>
-        public void WriteRaw(int start, uint value)
-        {
-            Span<byte> span = this.options.Span;
-            span[start] = (byte)(value >> 24);
-            span[start + 1] = (byte)((value >> 16) & 0xFF);
-            span[start + 2] = (byte)((value >> 8) & 0xFF);
-            span[start + 3] = (byte)(value & 0xFF);
-        }
+        public void WriteRaw(int start, uint value) => value.CopyTo(this.options, start);
 
         /// <summary>
         /// Writes raw data to the buffer and advances the cursor.
@@ -142,7 +131,7 @@ namespace DhcpServer
         /// <param name="start">The starting index in the buffer.</param>
         public void End(int start)
         {
-            this.options.Span[start] = (byte)DhcpOptionTag.End;
+            ((byte)DhcpOptionTag.End).CopyTo(this.options, start);
         }
 
         private Memory<byte> SliceInner(int start, byte code, byte length)

@@ -87,7 +87,7 @@ namespace DhcpServer
                     return false;
                 }
 
-                Base10.WriteDigits5(destination, charsWritten, this.Port);
+                Base10.FormatDigits5(destination, charsWritten, this.Port);
                 charsWritten += 5;
             }
             else if (this.Port > 999)
@@ -98,7 +98,7 @@ namespace DhcpServer
                     return false;
                 }
 
-                Base10.WriteDigits4(destination, charsWritten, this.Port);
+                Base10.FormatDigits4(destination, charsWritten, this.Port);
                 charsWritten += 4;
             }
             else if (this.Port > 99)
@@ -109,7 +109,7 @@ namespace DhcpServer
                     return false;
                 }
 
-                Base10.WriteDigits3(destination, charsWritten, this.Port);
+                Base10.FormatDigits3(destination, charsWritten, this.Port);
                 charsWritten += 3;
             }
             else if (this.Port > 9)
@@ -120,7 +120,7 @@ namespace DhcpServer
                     return false;
                 }
 
-                Base10.WriteDigits2(destination, charsWritten, (byte)this.Port);
+                Base10.FormatDigits2(destination, charsWritten, (byte)this.Port);
                 charsWritten += 2;
             }
             else
@@ -131,7 +131,7 @@ namespace DhcpServer
                     return false;
                 }
 
-                Base10.WriteDigit(destination, charsWritten, (byte)this.Port);
+                Base10.FormatDigit(destination, charsWritten, (byte)this.Port);
                 charsWritten += 1;
             }
 

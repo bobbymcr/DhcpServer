@@ -11,8 +11,6 @@ namespace DhcpServer
     /// </summary>
     public readonly struct DhcpOption
     {
-        private readonly Memory<byte> data;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpOption"/> struct.
         /// </summary>
@@ -21,7 +19,7 @@ namespace DhcpServer
         public DhcpOption(DhcpOptionTag tag, Memory<byte> data)
         {
             this.Tag = tag;
-            this.data = data;
+            this.Data = data;
         }
 
         /// <summary>
@@ -32,13 +30,13 @@ namespace DhcpServer
         /// <summary>
         /// Gets a span for the option data.
         /// </summary>
-        public Span<byte> Data => this.data.Span;
+        public Memory<byte> Data { get; }
 
         /// <summary>
         /// Gets an enumerator which reads sub-options in sequential order.
         /// </summary>
         /// <returns>The sub-options enumerator.</returns>
-        public Enumerator GetEnumerator() => new Enumerator(this.data);
+        public Enumerator GetEnumerator() => new Enumerator(this.Data);
 
         /// <summary>
         /// An enumerator which reads sub-options in sequential order.

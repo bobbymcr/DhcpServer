@@ -900,7 +900,7 @@ namespace DhcpServer
         public static void WriteVendorSpecificOption(this DhcpMessageBuffer buffer, ReadOnlySpan<byte> data)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.VendorSpecific, (byte)data.Length);
-            data.CopyTo(option.Data);
+            data.CopyTo(option.Data.Span);
         }
 
         /// <summary>
@@ -1155,7 +1155,7 @@ namespace DhcpServer
         public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 1);
-            option.Data[0] = (byte)p1;
+            ((byte)p1).CopyTo(option.Data, 0);
         }
 
         /// <summary>
@@ -1167,8 +1167,8 @@ namespace DhcpServer
         public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 2);
-            option.Data[0] = (byte)p1;
-            option.Data[1] = (byte)p2;
+            ((byte)p1).CopyTo(option.Data, 0);
+            ((byte)p2).CopyTo(option.Data, 1);
         }
 
         /// <summary>
@@ -1181,9 +1181,9 @@ namespace DhcpServer
         public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2, DhcpOptionTag p3)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 3);
-            option.Data[0] = (byte)p1;
-            option.Data[1] = (byte)p2;
-            option.Data[2] = (byte)p3;
+            ((byte)p1).CopyTo(option.Data, 0);
+            ((byte)p2).CopyTo(option.Data, 1);
+            ((byte)p3).CopyTo(option.Data, 2);
         }
 
         /// <summary>
@@ -1197,10 +1197,10 @@ namespace DhcpServer
         public static void WriteParameterListOption(this DhcpMessageBuffer buffer, DhcpOptionTag p1, DhcpOptionTag p2, DhcpOptionTag p3, DhcpOptionTag p4)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ParameterList, 4);
-            option.Data[0] = (byte)p1;
-            option.Data[1] = (byte)p2;
-            option.Data[2] = (byte)p3;
-            option.Data[3] = (byte)p4;
+            ((byte)p1).CopyTo(option.Data, 0);
+            ((byte)p2).CopyTo(option.Data, 1);
+            ((byte)p3).CopyTo(option.Data, 2);
+            ((byte)p4).CopyTo(option.Data, 3);
         }
 
         /// <summary>
@@ -1261,8 +1261,8 @@ namespace DhcpServer
         public static void WriteClientIdOption(this DhcpMessageBuffer buffer, MacAddress id)
         {
             var option = buffer.WriteOptionHeader(DhcpOptionTag.ClientId, 7);
-            option.Data[0] = (byte)DhcpHardwareAddressType.Ethernet10Mb;
-            id.CopyTo(option.Data.Slice(1));
+            ((byte)DhcpHardwareAddressType.Ethernet10Mb).CopyTo(option.Data, 0);
+            id.CopyTo(option.Data.Slice(1).Span);
         }
 
         /// <summary>
@@ -1283,86 +1283,73 @@ namespace DhcpServer
         private static void WriteUInt8(DhcpMessageBuffer buffer, DhcpOptionTag tag, byte value)
         {
             var option = buffer.WriteOptionHeader(tag, 1);
-            option.Data[0] = value;
+            value.CopyTo(option.Data, 0);
         }
 
         private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1)
         {
             var option = buffer.WriteOptionHeader(tag, 2);
-            option.Data[0] = (byte)(v1 >> 8);
-            option.Data[1] = (byte)(v1 & 0xFF);
+            v1.CopyTo(option.Data, 0);
         }
 
         private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2)
         {
             var option = buffer.WriteOptionHeader(tag, 4);
-            option.Data[0] = (byte)(v1 >> 8);
-            option.Data[1] = (byte)(v1 & 0xFF);
-            option.Data[2] = (byte)(v2 >> 8);
-            option.Data[3] = (byte)(v2 & 0xFF);
+            v1.CopyTo(option.Data, 0);
+            v2.CopyTo(option.Data, 2);
         }
 
         private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2, ushort v3)
         {
             var option = buffer.WriteOptionHeader(tag, 6);
-            option.Data[0] = (byte)(v1 >> 8);
-            option.Data[1] = (byte)(v1 & 0xFF);
-            option.Data[2] = (byte)(v2 >> 8);
-            option.Data[3] = (byte)(v2 & 0xFF);
-            option.Data[4] = (byte)(v3 >> 8);
-            option.Data[5] = (byte)(v3 & 0xFF);
+            v1.CopyTo(option.Data, 0);
+            v2.CopyTo(option.Data, 2);
+            v3.CopyTo(option.Data, 4);
         }
 
         private static void WriteUInt16(DhcpMessageBuffer buffer, DhcpOptionTag tag, ushort v1, ushort v2, ushort v3, ushort v4)
         {
             var option = buffer.WriteOptionHeader(tag, 8);
-            option.Data[0] = (byte)(v1 >> 8);
-            option.Data[1] = (byte)(v1 & 0xFF);
-            option.Data[2] = (byte)(v2 >> 8);
-            option.Data[3] = (byte)(v2 & 0xFF);
-            option.Data[4] = (byte)(v3 >> 8);
-            option.Data[5] = (byte)(v3 & 0xFF);
-            option.Data[6] = (byte)(v4 >> 8);
-            option.Data[7] = (byte)(v4 & 0xFF);
+            v1.CopyTo(option.Data, 0);
+            v2.CopyTo(option.Data, 2);
+            v3.CopyTo(option.Data, 4);
+            v4.CopyTo(option.Data, 6);
         }
 
         private static void WriteUInt32(DhcpMessageBuffer buffer, DhcpOptionTag tag, uint value)
         {
             var option = buffer.WriteOptionHeader(tag, 4);
-            option.Data[0] = (byte)(value >> 24);
-            option.Data[1] = (byte)((value >> 16) & 0xFF);
-            option.Data[2] = (byte)((value >> 8) & 0xFF);
-            option.Data[3] = (byte)(value & 0xFF);
+            value.CopyTo(option.Data, 0);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1)
         {
             var option = buffer.WriteOptionHeader(tag, 4);
-            ip1.CopyTo(option.Data);
+            ip1.CopyTo(option.Data, 0);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2)
         {
             var option = buffer.WriteOptionHeader(tag, 8);
-            ip1.CopyTo(option.Data);
-            ip2.CopyTo(option.Data.Slice(4));
+            ip1.CopyTo(option.Data, 0);
+            ip2.CopyTo(option.Data, 4);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3)
         {
             var option = buffer.WriteOptionHeader(tag, 12);
-            ip1.CopyTo(option.Data);
-            ip2.CopyTo(option.Data.Slice(4));
-            ip3.CopyTo(option.Data.Slice(8));
+            ip1.CopyTo(option.Data, 0);
+            ip2.CopyTo(option.Data, 4);
+            ip3.CopyTo(option.Data, 8);
         }
 
         private static void WriteIPs(DhcpMessageBuffer buffer, DhcpOptionTag tag, IPAddressV4 ip1, IPAddressV4 ip2, IPAddressV4 ip3, IPAddressV4 ip4)
         {
             var option = buffer.WriteOptionHeader(tag, 16);
-            ip1.CopyTo(option.Data);
-            ip2.CopyTo(option.Data.Slice(4));
-            ip3.CopyTo(option.Data.Slice(8));
-            ip4.CopyTo(option.Data.Slice(12));
+            ip1.CopyTo(option.Data, 0);
+            ip2.CopyTo(option.Data, 4);
+            ip3.CopyTo(option.Data, 8);
+            ip4.CopyTo(option.Data, 12);
         }
     }
 }

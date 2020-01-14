@@ -1118,9 +1118,9 @@ End={}
             output.ServerHostName[0] = (byte)'S';
             output.BootFileName[0] = (byte)'B';
             DhcpOption msgType = output.WriteOptionHeader(DhcpOptionTag.DhcpMsgType, 1);
-            msgType.Data[0] = (byte)DhcpMessageType.Offer;
+            ((byte)DhcpMessageType.Offer).CopyTo(msgType.Data, 0);
             DhcpOption serverId = output.WriteOptionHeader(DhcpOptionTag.DhcpServerId, 4);
-            IP(10, 20, 30, 40).CopyTo(serverId.Data);
+            IP(10, 20, 30, 40).CopyTo(serverId.Data.Span);
             output.WritePadding(5);
             output.WriteEndOption();
 
@@ -1184,7 +1184,7 @@ End={}
             {
                 sb.Append(option.Tag);
                 sb.Append("={");
-                sb.Append(HexString(option.Data));
+                sb.Append(HexString(option.Data.Span));
                 sb.AppendLine("}");
             }
 

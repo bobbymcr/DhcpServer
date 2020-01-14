@@ -49,11 +49,8 @@ namespace DhcpServer.Perf
         public long SaveWithOptions()
         {
             this.buffer.WriteDhcpMsgTypeOption(DhcpMessageType.Discover);
-            var option2 = this.buffer.WriteOptionHeader(DhcpOptionTag.ClientId, 7);
-            option2.Data[0] = (byte)DhcpHardwareAddressType.Ethernet10Mb;
-            new MacAddress(0x000B8201FC42).CopyTo(option2.Data.Slice(1));
-            var option3 = this.buffer.WriteOptionHeader(DhcpOptionTag.AddressRequest, 4);
-            default(IPAddressV4).CopyTo(option3.Data);
+            this.buffer.WriteClientIdOption(new MacAddress(0x000B8201FC42));
+            this.buffer.WriteAddressRequestOption(default(IPAddressV4));
             this.buffer.WriteParameterListOption(
                 DhcpOptionTag.SubnetMask,
                 DhcpOptionTag.Router,

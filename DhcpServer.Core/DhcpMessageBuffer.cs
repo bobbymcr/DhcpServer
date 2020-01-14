@@ -20,7 +20,7 @@ namespace DhcpServer
         private const byte BootFileNameStart = 108;
         private const byte BootFileNameLength = 128;
 
-        private readonly MessageBuffer buffer;
+        private readonly Memory<byte> buffer;
 
         private DhcpOptionsBuffer options;
         private int nextOption;
@@ -33,7 +33,7 @@ namespace DhcpServer
         /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message.</exception>
         public DhcpMessageBuffer(Memory<byte> buffer)
         {
-            this.buffer = new MessageBuffer(buffer);
+            this.buffer = buffer;
             if (!this.SetOptions(buffer.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(buffer));
@@ -158,18 +158,18 @@ namespace DhcpServer
             }
 
             this.Length = length;
-            this.Opcode = (DhcpOpcode)this.buffer.ReadUInt8(0);
-            this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ReadUInt8(1);
-            this.HardwareAddressLength = this.buffer.ReadUInt8(2);
-            this.Hops = this.buffer.ReadUInt8(3);
-            this.TransactionId = this.buffer.ReadUInt32(4);
-            this.Seconds = this.buffer.ReadUInt16(8);
-            this.Flags = (DhcpFlags)this.buffer.ReadUInt16(10);
-            this.ClientIPAddress = this.ReadIP(12);
-            this.YourIPAddress = this.ReadIP(16);
-            this.ServerIPAddress = this.ReadIP(20);
-            this.GatewayIPAddress = this.ReadIP(24);
-            this.MagicCookie = (MagicCookie)this.buffer.ReadUInt32(236);
+            this.Opcode = (DhcpOpcode)this.buffer.ParseUInt8(0);
+            this.HardwareAddressType = (DhcpHardwareAddressType)this.buffer.ParseUInt8(1);
+            this.HardwareAddressLength = this.buffer.ParseUInt8(2);
+            this.Hops = this.buffer.ParseUInt8(3);
+            this.TransactionId = this.buffer.ParseUInt32(4);
+            this.Seconds = this.buffer.ParseUInt16(8);
+            this.Flags = (DhcpFlags)this.buffer.ParseUInt16(10);
+            this.ClientIPAddress = this.buffer.ParseIPAddressV4(12);
+            this.YourIPAddress = this.buffer.ParseIPAddressV4(16);
+            this.ServerIPAddress = this.buffer.ParseIPAddressV4(20);
+            this.GatewayIPAddress = this.buffer.ParseIPAddressV4(24);
+            this.MagicCookie = (MagicCookie)this.buffer.ParseUInt32(236);
             return true;
         }
 
@@ -179,18 +179,18 @@ namespace DhcpServer
         /// <returns>The total message length.</returns>
         public int Save()
         {
-            this.buffer.WriteUInt8(0, (byte)this.Opcode);
-            this.buffer.WriteUInt8(1, (byte)this.HardwareAddressType);
-            this.buffer.WriteUInt8(2, this.HardwareAddressLength);
-            this.buffer.WriteUInt8(3, this.Hops);
-            this.buffer.WriteUInt32(4, this.TransactionId);
-            this.buffer.WriteUInt16(8, this.Seconds);
-            this.buffer.WriteUInt16(10, (ushort)this.Flags);
-            this.WriteIP(this.ClientIPAddress, 12);
-            this.WriteIP(this.YourIPAddress, 16);
-            this.WriteIP(this.ServerIPAddress, 20);
-            this.WriteIP(this.GatewayIPAddress, 24);
-            this.buffer.WriteUInt32(236, (uint)this.MagicCookie);
+            ((byte)this.Opcode).CopyTo(this.buffer, 0);
+            ((byte)this.HardwareAddressType).CopyTo(this.buffer, 1);
+            this.HardwareAddressLength.CopyTo(this.buffer, 2);
+            this.Hops.CopyTo(this.buffer, 3);
+            this.TransactionId.CopyTo(this.buffer, 4);
+            this.Seconds.CopyTo(this.buffer, 8);
+            ((ushort)this.Flags).CopyTo(this.buffer, 10);
+            this.ClientIPAddress.CopyTo(this.buffer, 12);
+            this.YourIPAddress.CopyTo(this.buffer, 16);
+            this.ServerIPAddress.CopyTo(this.buffer, 20);
+            this.GatewayIPAddress.CopyTo(this.buffer, 24);
+            ((uint)this.MagicCookie).CopyTo(this.buffer, 236);
             int totalLength = this.nextOption + HeaderLength;
             this.nextOption = 0;
             return this.Length = totalLength;
@@ -349,10 +349,6 @@ namespace DhcpServer
         /// Writes an option end marker and advances the cursor.
         /// </summary>
         public void WriteEndOption() => this.options.End(this.nextOption++);
-
-        private void WriteIP(IPAddressV4 ip, int start) => ip.CopyTo(this.buffer.Span.Slice(start, 4));
-
-        private IPAddressV4 ReadIP(int start) => new IPAddressV4(this.buffer.ReadUInt32(start));
 
         private bool SetOptions(int length)
         {

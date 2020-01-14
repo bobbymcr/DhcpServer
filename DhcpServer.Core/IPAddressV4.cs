@@ -71,7 +71,7 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Converts the <see cref="IPAddressV4"/> to an unsigned 32-bit integer in host order.
+        /// Converts the <see cref="IPAddressV4"/> to an unsigned 32-bit integer in little-endian format.
         /// </summary>
         /// <param name="address">The address.</param>
         public static explicit operator uint(IPAddressV4 address)
@@ -85,16 +85,10 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Copies the address bytes into a destination span.
+        /// Copies the address bytes into a destination span in big-endian format.
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
-        public void CopyTo(Span<byte> destination)
-        {
-            destination[0] = (byte)(this.value >> 24);
-            destination[1] = (byte)(this.value >> 16);
-            destination[2] = (byte)(this.value >> 8);
-            destination[3] = (byte)(this.value & 0xFF);
-        }
+        public void CopyTo(Span<byte> destination) => this.value.CopyTo(destination);
 
         /// <summary>
         /// Tries to format the current IP address into the provided span.

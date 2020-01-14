@@ -9,6 +9,8 @@ namespace DhcpServer
     /// <summary>
     /// Provides extension methods involving <see cref="Memory{T}"/>.
     /// </summary>
+    // For performance reasons, these methods are "duplicated" here and in SpanExtensions.
+    // It is faster to index into the Memory buffer than to slice out a Span.
     public static class MemoryExtensions
     {
         /// <summary>
@@ -27,11 +29,11 @@ namespace DhcpServer
         /// Writes an unsigned 8-bit integer in big-endian format.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        /// <param name="buffer">The buffer.</param>
+        /// <param name="destination">The destination buffer.</param>
         /// <param name="start">The start index within the buffer.</param>
-        public static void CopyTo(this byte value, Memory<byte> buffer, int start)
+        public static void CopyTo(this byte value, Memory<byte> destination, int start)
         {
-            Span<byte> span = buffer.Span;
+            Span<byte> span = destination.Span;
             span[start] = value;
         }
 
@@ -53,11 +55,11 @@ namespace DhcpServer
         /// Writes an unsigned 16-bit integer in big-endian format.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        /// <param name="buffer">The buffer.</param>
+        /// <param name="destination">The destination buffer.</param>
         /// <param name="start">The start index within the buffer.</param>
-        public static void CopyTo(this ushort value, Memory<byte> buffer, int start)
+        public static void CopyTo(this ushort value, Memory<byte> destination, int start)
         {
-            Span<byte> span = buffer.Span;
+            Span<byte> span = destination.Span;
             span[start] = (byte)(value >> 8);
             span[start + 1] = (byte)(value & 0xFF);
         }
@@ -82,11 +84,11 @@ namespace DhcpServer
         /// Writes an unsigned 32-bit integer in big-endian format.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        /// <param name="buffer">The buffer.</param>
+        /// <param name="destination">The destination buffer.</param>
         /// <param name="start">The start index within the buffer.</param>
-        public static void CopyTo(this uint value, Memory<byte> buffer, int start)
+        public static void CopyTo(this uint value, Memory<byte> destination, int start)
         {
-            Span<byte> span = buffer.Span;
+            Span<byte> span = destination.Span;
             span[start] = (byte)(value >> 24);
             span[start + 1] = (byte)(value >> 16);
             span[start + 2] = (byte)(value >> 8);
@@ -108,11 +110,11 @@ namespace DhcpServer
         /// Writes an <see cref="IPAddressV4"/> in big-endian format.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        /// <param name="buffer">The buffer.</param>
+        /// <param name="destination">The destination buffer.</param>
         /// <param name="start">The start index within the buffer.</param>
-        public static void CopyTo(this IPAddressV4 value, Memory<byte> buffer, int start)
+        public static void CopyTo(this IPAddressV4 value, Memory<byte> destination, int start)
         {
-            value.CopyTo(buffer.Span.Slice(start, 4));
+            value.CopyTo(destination.Span.Slice(start, 4));
         }
     }
 }

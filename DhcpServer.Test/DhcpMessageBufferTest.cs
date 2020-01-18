@@ -30,11 +30,22 @@ namespace DhcpServer.Test
             int charsWritten = 0;
             foreach (DhcpOption option in buffer.Options)
             {
-                option.SubOptions.TryFormat(span, out charsWritten);
+                option.SubOptions.TryFormat(span, out charsWritten).Should().BeTrue();
                 break;
             }
 
             span.Slice(0, charsWritten).ToString().Should().Be(ExpectedSubOptions);
+        }
+
+        [TestMethod]
+        public void TryFormatSubOptionsDestTooSmall()
+        {
+            TestTryFormatSubOptionsDestTooSmall(0);
+            TestTryFormatSubOptionsDestTooSmall(1);
+            TestTryFormatSubOptionsDestTooSmall(2);
+            TestTryFormatSubOptionsDestTooSmall(4);
+            TestTryFormatSubOptionsDestTooSmall(8);
+            TestTryFormatSubOptionsDestTooSmall(16);
         }
 
         [TestMethod]
@@ -1421,6 +1432,26 @@ End={}
             }
 
             return sb.ToString();
+        }
+
+        private static void TestTryFormatSubOptionsDestTooSmall(int size)
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[size]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner = buffer.WriteRelayAgentInformationOptionHeader();
+            inner.WriteAgentCircuitId("xyz");
+            inner.WriteLinkSelection(IP(10, 1, 255, 0));
+            inner.End();
+
+            int charsWritten = -1;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                option.SubOptions.TryFormat(span, out charsWritten).Should().BeFalse();
+                break;
+            }
+
+            charsWritten.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(size);
         }
 
         private static void TestTryFormatOptionsDestTooSmall(int size)

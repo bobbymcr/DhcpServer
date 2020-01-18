@@ -118,33 +118,6 @@ namespace DhcpServer
             return false;
         }
 
-        private static void FormatHexByte(Span<char> destination, int start, ulong v)
-        {
-            byte b = (byte)v;
-            destination[start] = HexDigit((b >> 4) & 0xF);
-            destination[start + 1] = HexDigit(b & 0xF);
-        }
-
-        private static char HexDigit(int d)
-        {
-            switch (d)
-            {
-                case 0x0:
-                case 0x1:
-                case 0x2:
-                case 0x3:
-                case 0x4:
-                case 0x5:
-                case 0x6:
-                case 0x7:
-                case 0x8:
-                case 0x9:
-                    return (char)(d + '0');
-                default:
-                    return (char)(d - 0xA + 'A');
-            }
-        }
-
         private bool TryFormatHyphens(Span<char> destination, out int charsWritten)
         {
             if (destination.Length < 17)
@@ -153,17 +126,17 @@ namespace DhcpServer
                 return false;
             }
 
-            FormatHexByte(destination, 0, this.value >> 40);
+            Hex.Format(destination, 0, (byte)(this.value >> 40));
             destination[2] = '-';
-            FormatHexByte(destination, 3, this.value >> 32);
+            Hex.Format(destination, 3, (byte)(this.value >> 32));
             destination[5] = '-';
-            FormatHexByte(destination, 6, this.value >> 24);
+            Hex.Format(destination, 6, (byte)(this.value >> 24));
             destination[8] = '-';
-            FormatHexByte(destination, 9, this.value >> 16);
+            Hex.Format(destination, 9, (byte)(this.value >> 16));
             destination[11] = '-';
-            FormatHexByte(destination, 12, this.value >> 8);
+            Hex.Format(destination, 12, (byte)(this.value >> 8));
             destination[14] = '-';
-            FormatHexByte(destination, 15, this.value & 0xFF);
+            Hex.Format(destination, 15, (byte)(this.value & 0xFF));
             charsWritten = 17;
             return true;
         }
@@ -176,12 +149,12 @@ namespace DhcpServer
                 return false;
             }
 
-            FormatHexByte(destination, 0, this.value >> 40);
-            FormatHexByte(destination, 2, this.value >> 32);
-            FormatHexByte(destination, 4, this.value >> 24);
-            FormatHexByte(destination, 6, this.value >> 16);
-            FormatHexByte(destination, 8, this.value >> 8);
-            FormatHexByte(destination, 10, this.value & 0xFF);
+            Hex.Format(destination, 0, (byte)(this.value >> 40));
+            Hex.Format(destination, 2, (byte)(this.value >> 32));
+            Hex.Format(destination, 4, (byte)(this.value >> 24));
+            Hex.Format(destination, 6, (byte)(this.value >> 16));
+            Hex.Format(destination, 8, (byte)(this.value >> 8));
+            Hex.Format(destination, 10, (byte)(this.value & 0xFF));
             charsWritten = 12;
             return true;
         }

@@ -83,6 +83,29 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void TryFormatZeroedBuffer()
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+
+            buffer.TryFormat(span, out int charsWritten).Should().BeTrue();
+
+            span.Slice(0, charsWritten).ToString().Should().Be(
+                "op=None; htype=None; hlen=0; hops=0; " +
+                "xid=0x00000000; " +
+                "secs=0; flags=None; " +
+                "ciaddr=0.0.0.0; " +
+                "yiaddr=0.0.0.0; " +
+                "siaddr=0.0.0.0; " +
+                "giaddr=0.0.0.0; " +
+                "chaddr=; " +
+                "sname=''; " +
+                "file=''; " +
+                "magic=None; ");
+        }
+
+        [TestMethod]
         public void TooSmall()
         {
             Action act = () => new DhcpMessageBuffer(new Memory<byte>(new byte[239]));

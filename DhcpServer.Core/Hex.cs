@@ -8,6 +8,34 @@ namespace DhcpServer
 
     internal static class Hex
     {
+        public static bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> name, Memory<byte> data)
+        {
+            // Final result should be 'name={xxxx...}'
+            charsWritten = 0;
+            int hexCharLen = 2 * data.Length;
+            int requiredLength = name.Length + 3 + hexCharLen;
+            if (destination.Length < requiredLength)
+            {
+                return false;
+            }
+
+            name.CopyTo(destination);
+            charsWritten += name.Length;
+            destination[charsWritten++] = '=';
+            destination[charsWritten++] = '{';
+            Span<byte> raw = data.Span;
+            for (int i = 0; i < (hexCharLen / 2); ++i)
+            {
+                byte b = raw[i];
+                Hex.Format(destination, charsWritten + (2 * i), b);
+            }
+
+            charsWritten += hexCharLen;
+            destination[charsWritten++] = '}';
+
+            return true;
+        }
+
         public static void Format(Span<char> destination, int start, byte xx)
         {
             destination[start] = Digit((byte)((xx >> 4) & 0xF));

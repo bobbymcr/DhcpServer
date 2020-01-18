@@ -40,31 +40,7 @@ namespace DhcpServer
         /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
         public bool TryFormat(Span<char> destination, out int charsWritten)
         {
-            // Final result should be 'Type={xxxx...}'
-            charsWritten = 0;
-            ReadOnlySpan<char> type = this.Type.ToString();
-            int hexCharLen = 2 * this.Data.Length;
-            int requiredLength = type.Length + 3 + hexCharLen;
-            if (destination.Length < requiredLength)
-            {
-                return false;
-            }
-
-            type.CopyTo(destination);
-            charsWritten += type.Length;
-            destination[charsWritten++] = '=';
-            destination[charsWritten++] = '{';
-            Span<byte> raw = this.Data.Span;
-            for (int i = 0; i < (hexCharLen / 2); ++i)
-            {
-                byte b = raw[i];
-                Hex.Format(destination, charsWritten + (2 * i), b);
-            }
-
-            charsWritten += hexCharLen;
-            destination[charsWritten++] = '}';
-
-            return true;
+            return Hex.TryFormat(destination, out charsWritten, this.Type.ToString(), this.Data);
         }
 
         /// <summary>

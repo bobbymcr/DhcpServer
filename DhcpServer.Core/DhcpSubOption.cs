@@ -42,29 +42,9 @@ namespace DhcpServer
         /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
         public bool TryFormat(Span<char> destination, out int charsWritten)
         {
-            // Final result should be 'xx={xxxx...}'
-            charsWritten = 0;
-            int hexCharLen = 2 * this.Data.Length;
-            int requiredLength = 5 + hexCharLen;
-            if (destination.Length < requiredLength)
-            {
-                return false;
-            }
-
-            Hex.Format(destination, 0, this.Code);
-            charsWritten = 2;
-            destination[charsWritten++] = '=';
-            destination[charsWritten++] = '{';
-            Span<byte> raw = this.Data.Span;
-            for (int i = 0; i < (hexCharLen / 2); ++i)
-            {
-                byte b = raw[i];
-                Hex.Format(destination, charsWritten + (2 * i), b);
-            }
-
-            charsWritten += hexCharLen;
-            destination[charsWritten++] = '}';
-            return true;
+            Span<char> code = stackalloc char[2];
+            Hex.Format(code, 0, this.Code);
+            return Hex.TryFormat(destination, out charsWritten, code, this.Data);
         }
     }
 }

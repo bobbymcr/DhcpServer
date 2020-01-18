@@ -45,30 +45,7 @@ namespace DhcpServer
         /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
         public bool TryFormat(Span<char> destination, out int charsWritten)
         {
-            // Final result should be 'Tag={xxxxxx...}'
-            ReadOnlySpan<char> tag = this.Tag.ToString();
-            int hexCharLen = 2 * this.Data.Length;
-            int requiredLength = 3 + tag.Length + hexCharLen;
-            if (destination.Length < requiredLength)
-            {
-                charsWritten = 0;
-                return false;
-            }
-
-            tag.CopyTo(destination);
-            charsWritten = tag.Length;
-            destination[charsWritten++] = '=';
-            destination[charsWritten++] = '{';
-
-            for (int i = 0; i < (hexCharLen / 2); ++i)
-            {
-                byte b = this.Data.Span[i];
-                Hex.Format(destination, charsWritten + (2 * i), b);
-            }
-
-            charsWritten += hexCharLen;
-            destination[charsWritten++] = '}';
-            return true;
+            return Hex.TryFormat(destination, out charsWritten, this.Tag.ToString(), this.Data);
         }
 
         /// <summary>

@@ -13,6 +13,31 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TryFormatRadiusAttributesWrongOption()
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner = buffer.WriteRelayAgentInformationOptionHeader();
+            inner.WriteAgentCircuitId("zzz");
+            inner.End();
+
+            int charsWritten = -1;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                foreach (DhcpSubOption subOption in option.SubOptions)
+                {
+                    subOption.RadiusAttributes().TryFormat(span, out charsWritten).Should().BeTrue();
+                    break;
+                }
+
+                break;
+            }
+
+            charsWritten.Should().Be(0);
+        }
+
+        [TestMethod]
         public void TryFormatRadiusAttributes()
         {
             const string ExpectedRadiusAttributes =

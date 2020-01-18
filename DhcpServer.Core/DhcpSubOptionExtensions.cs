@@ -14,9 +14,15 @@ namespace DhcpServer
         /// </summary>
         /// <param name="subOption">The RADIUS attribute sub-option.</param>
         /// <returns>The RADIUS attributes sequence.</returns>
+        /// <remarks>An empty sequence is returned in the case of a mismatching sub-option.</remarks>
         public static RadiusAttribute.Sequence RadiusAttributes(this DhcpSubOption subOption)
         {
-            return new RadiusAttribute.Sequence(subOption);
+            if (subOption.Code == (byte)DhcpRelayAgentSubOptionCode.RadiusAttributes)
+            {
+                return new RadiusAttribute.Sequence(subOption);
+            }
+
+            return default;
         }
     }
 }

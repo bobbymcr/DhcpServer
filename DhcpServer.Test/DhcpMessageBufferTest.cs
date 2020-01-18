@@ -81,6 +81,17 @@ LinkSelection={0A01FF00}
         }
 
         [TestMethod]
+        public void TryFormatRelayAgentInformationSubOptionsDestTooSmall()
+        {
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(0);
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(1);
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(2);
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(4);
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(8);
+            TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(16);
+        }
+
+        [TestMethod]
         public void TryFormatSubOptions()
         {
             const string ExpectedSubOptions =
@@ -1523,6 +1534,26 @@ End={}
                     break;
                 }
 
+                break;
+            }
+
+            charsWritten.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(size);
+        }
+
+        private static void TestTryFormatRelayAgentInformationSubOptionsDestTooSmall(int size)
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[size]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner = buffer.WriteRelayAgentInformationOptionHeader();
+            inner.WriteAgentCircuitId("xyz");
+            inner.WriteLinkSelection(IP(10, 1, 255, 0));
+            inner.End();
+
+            int charsWritten = -1;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                option.RelayAgentInformation().TryFormat(span, out charsWritten).Should().BeFalse();
                 break;
             }
 

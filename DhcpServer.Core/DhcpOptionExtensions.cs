@@ -14,9 +14,15 @@ namespace DhcpServer
         /// </summary>
         /// <param name="option">The relay agent information DHCP option.</param>
         /// <returns>The DHCP relay agent information sequence.</returns>
+        /// <remarks>An empty sequence is returned in the case of a mismatching option.</remarks>
         public static DhcpRelayAgentInformationSubOption.Sequence RelayAgentInformation(this DhcpOption option)
         {
-            return new DhcpRelayAgentInformationSubOption.Sequence(option);
+            if (option.Tag == DhcpOptionTag.RelayAgentInformation)
+            {
+                return new DhcpRelayAgentInformationSubOption.Sequence(option);
+            }
+
+            return default;
         }
     }
 }

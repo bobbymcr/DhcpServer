@@ -81,6 +81,24 @@ ServiceType={00000001}
         }
 
         [TestMethod]
+        public void TryFormatRelayAgentInformationSubOptionsWrongOption()
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            buffer.WriteAddressRequestOption(IP(1, 255, 255, 255));
+
+            int charsWritten = -1;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                option.RelayAgentInformation().TryFormat(span, out charsWritten).Should().BeTrue();
+                break;
+            }
+
+            charsWritten.Should().Be(0);
+        }
+
+        [TestMethod]
         public void TryFormatRelayAgentInformationSubOptions()
         {
             const string ExpectedSubOptions =

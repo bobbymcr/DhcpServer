@@ -13,6 +13,27 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TryFormatOptions()
+        {
+            const string ExpectedOptions =
+@"DhcpMsgType={01}
+ClientId={01000B8201FC42}
+AddressRequest={00000000}
+ParameterList={0103062A}
+End={}
+";
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = PacketResource.Read("Request1", buffer.Span);
+            buffer.Load(length).Should().BeTrue();
+
+            buffer.Options.TryFormat(span, out int charsWritten).Should().BeTrue();
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
         public void TryFormat()
         {
             byte[] raw = new byte[500];

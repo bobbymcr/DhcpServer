@@ -539,6 +539,32 @@ namespace DhcpServer
             /// </summary>
             /// <returns>The options enumerator.</returns>
             public DhcpOptionsBuffer.Enumerator GetEnumerator() => this.options.GetEnumerator();
+
+            /// <summary>
+            /// Tries to format the current option sequence into the provided span of characters.
+            /// </summary>
+            /// <param name="destination">When this method returns, this options formatted as a span of characters.</param>
+            /// <param name="charsWritten">When this method returns, the number of characters that were written in <paramref name="destination"/>.</param>
+            /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+            public bool TryFormat(Span<char> destination, out int charsWritten)
+            {
+                // Final result should be options separated by newlines, e.g. '<option1>NL<option2>NL...'
+                charsWritten = 0;
+                foreach (DhcpOption option in this)
+                {
+                    bool result = option.TryFormat(destination.Slice(charsWritten), out int c);
+                    charsWritten += c;
+                    if (!result || destination.Length < (charsWritten + 2))
+                    {
+                        return false;
+                    }
+
+                    destination[charsWritten++] = '\r';
+                    destination[charsWritten++] = '\n';
+                }
+
+                return true;
+            }
         }
     }
 }

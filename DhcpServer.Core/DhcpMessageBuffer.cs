@@ -350,6 +350,159 @@ namespace DhcpServer
         /// </summary>
         public void WriteEndOption() => this.options.End(this.nextOption++);
 
+        /// <summary>
+        /// Tries to format the fields of the current message into the provided span of characters.
+        /// </summary>
+        /// <param name="destination">When this method returns, this message's fields formatted as a span of characters.</param>
+        /// <param name="charsWritten">When this method returns, the number of characters that were written in <paramref name="destination"/>.</param>
+        /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten)
+        {
+            charsWritten = 0;
+            return
+                TryFormatField(destination, ref charsWritten, "op", this.Opcode.ToString()) &&
+                TryFormatField(destination, ref charsWritten, "htype", this.HardwareAddressType.ToString()) &&
+                TryFormatField(destination, ref charsWritten, "hlen", this.HardwareAddressLength) &&
+                TryFormatField(destination, ref charsWritten, "hops", this.Hops) &&
+                TryFormatField(destination, ref charsWritten, "xid", this.TransactionId) &&
+                TryFormatField(destination, ref charsWritten, "secs", this.Seconds) &&
+                TryFormatField(destination, ref charsWritten, "flags", this.Flags.ToString()) &&
+                TryFormatField(destination, ref charsWritten, "ciaddr", this.ClientIPAddress) &&
+                TryFormatField(destination, ref charsWritten, "yiaddr", this.YourIPAddress) &&
+                TryFormatField(destination, ref charsWritten, "siaddr", this.ServerIPAddress) &&
+                TryFormatField(destination, ref charsWritten, "giaddr", this.GatewayIPAddress) &&
+                TryFormatField(destination, ref charsWritten, "chaddr", this.ClientHardwareAddress) &&
+                TryFormatFieldAscii(destination, ref charsWritten, "sname", this.ServerHostName) &&
+                TryFormatFieldAscii(destination, ref charsWritten, "file", this.BootFileName) &&
+                TryFormatField(destination, ref charsWritten, "magic", this.MagicCookie.ToString());
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ReadOnlySpan<char> value)
+        {
+            Span<char> slice = destination.Slice(charsWritten);
+
+            // Final result should be "field=value; "
+            int requiredLength = field.Length + value.Length + 3;
+            if (slice.Length < requiredLength)
+            {
+                return false;
+            }
+
+            field.CopyTo(slice);
+            slice[field.Length] = '=';
+            value.CopyTo(slice.Slice(field.Length + 1));
+            slice[requiredLength - 2] = ';';
+            slice[requiredLength - 1] = ' ';
+
+            charsWritten += requiredLength;
+            return true;
+        }
+
+        private static bool TryFormatFieldAscii(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
+        {
+            int n = raw.Length;
+            Span<char> value = stackalloc char[n + 2];
+            value[0] = '\'';
+            int i = 0;
+            while (i < n)
+            {
+                char c = (char)raw[i];
+                if (c == '\0')
+                {
+                    break;
+                }
+
+                value[++i] = c;
+            }
+
+            value[++i] = '\'';
+
+            return TryFormatField(destination, ref charsWritten, field, value.Slice(0, i + 1));
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
+        {
+            Span<char> value = stackalloc char[raw.Length * 2];
+            for (int i = 0; i < raw.Length; ++i)
+            {
+                Hex.Format(value, 2 * i, raw[i]);
+            }
+
+            return TryFormatField(destination, ref charsWritten, field, value);
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, IPAddressV4 ip)
+        {
+            Span<char> value = stackalloc char[15];
+            ip.TryFormat(value, out int len);
+            return TryFormatField(destination, ref charsWritten, field, value.Slice(0, len));
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ushort num)
+        {
+            Span<char> value = stackalloc char[5];
+            if (num > 9999)
+            {
+                Base10.FormatDigits5(value, 0, num);
+            }
+            else if (num > 999)
+            {
+                Base10.FormatDigits4(value, 0, num);
+                value = value.Slice(0, 4);
+            }
+            else if (num > 99)
+            {
+                Base10.FormatDigits3(value, 0, num);
+                value = value.Slice(0, 3);
+            }
+            else if (num > 9)
+            {
+                Base10.FormatDigits2(value, 0, (byte)num);
+                value = value.Slice(0, 2);
+            }
+            else
+            {
+                Base10.FormatDigit(value, 0, (byte)num);
+                value = value.Slice(0, 1);
+            }
+
+            return TryFormatField(destination, ref charsWritten, field, value);
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, uint num)
+        {
+            Span<char> value = stackalloc char[10];
+            value[0] = '0';
+            value[1] = 'x';
+            Hex.Format(value, 2, (byte)(num >> 24));
+            Hex.Format(value, 4, (byte)(num >> 16));
+            Hex.Format(value, 6, (byte)(num >> 8));
+            Hex.Format(value, 8, (byte)(num & 0xFF));
+
+            return TryFormatField(destination, ref charsWritten, field, value);
+        }
+
+        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, byte num)
+        {
+            Span<char> value = stackalloc char[3];
+            if (num > 99)
+            {
+                Base10.FormatDigits3(value, 0, num);
+            }
+            else if (num > 9)
+            {
+                Base10.FormatDigits2(value, 0, num);
+                value = value.Slice(0, 2);
+            }
+            else
+            {
+                Base10.FormatDigit(value, 0, num);
+                value = value.Slice(0, 1);
+            }
+
+            return TryFormatField(destination, ref charsWritten, field, value);
+        }
+
         private bool SetOptions(int length)
         {
             if (length >= HeaderLength)

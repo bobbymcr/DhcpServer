@@ -13,6 +13,41 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TryFormat()
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = PacketResource.Read("Request1", buffer.Span);
+            buffer.Load(length).Should().BeTrue();
+            buffer.Hops = 2;
+            buffer.YourIPAddress = IP(5, 6, 7, 8);
+            buffer.ServerIPAddress = IP(9, 10, 11, 12);
+            buffer.GatewayIPAddress = IP(255, 255, 255, 255);
+            buffer.ServerHostName[0] = (byte)'h';
+            buffer.ServerHostName[1] = (byte)'s';
+            buffer.BootFileName[0] = (byte)'x';
+            buffer.BootFileName[1] = (byte)'y';
+            buffer.BootFileName[2] = (byte)'z';
+
+            buffer.TryFormat(span, out int charsWritten).Should().BeTrue();
+
+            span.Slice(0, charsWritten).ToString().Should().Be(
+                "op=Request; htype=Ethernet10Mb; hlen=6; hops=2; " +
+                "xid=0x00003D1D; " +
+                "secs=258; flags=Broadcast; " +
+                "ciaddr=1.2.3.4; " +
+                "yiaddr=5.6.7.8; " +
+                "siaddr=9.10.11.12; " +
+                "giaddr=255.255.255.255; " +
+                "chaddr=000B8201FC42; " +
+                "sname='hs'; " +
+                "file='xyz'; " +
+                "magic=Dhcp; ");
+            charsWritten.Should().Be(223);
+        }
+
+        [TestMethod]
         public void TooSmall()
         {
             Action act = () => new DhcpMessageBuffer(new Memory<byte>(new byte[239]));

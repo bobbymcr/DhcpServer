@@ -45,6 +45,17 @@ ServiceType={00000001}
         }
 
         [TestMethod]
+        public void TryFormatRadiusAttributesDestTooSmall()
+        {
+            TestTryFormatRadiusAttributesDestTooSmall(0);
+            TestTryFormatRadiusAttributesDestTooSmall(1);
+            TestTryFormatRadiusAttributesDestTooSmall(2);
+            TestTryFormatRadiusAttributesDestTooSmall(4);
+            TestTryFormatRadiusAttributesDestTooSmall(8);
+            TestTryFormatRadiusAttributesDestTooSmall(16);
+        }
+
+        [TestMethod]
         public void TryFormatSubOptions()
         {
             const string ExpectedSubOptions =
@@ -1464,6 +1475,33 @@ End={}
             }
 
             return sb.ToString();
+        }
+
+        private static void TestTryFormatRadiusAttributesDestTooSmall(int size)
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[size]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner1 = buffer.WriteRelayAgentInformationOptionHeader();
+            var inner2 = inner1.WriteRadiusAttributesHeader();
+            inner2.WriteUserName("a@z");
+            inner2.WriteServiceType(RadiusServiceType.Login);
+            inner2.End();
+            inner1.End();
+
+            int charsWritten = -1;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                foreach (DhcpSubOption subOption in option.SubOptions)
+                {
+                    subOption.RadiusAttributes().TryFormat(span, out charsWritten).Should().BeFalse();
+                    break;
+                }
+
+                break;
+            }
+
+            charsWritten.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(size);
         }
 
         private static void TestTryFormatSubOptionsDestTooSmall(int size)

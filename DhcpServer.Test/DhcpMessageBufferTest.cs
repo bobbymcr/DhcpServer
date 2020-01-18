@@ -13,6 +13,38 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TryFormatRadiusAttributes()
+        {
+            const string ExpectedRadiusAttributes =
+@"UserName={61407A}
+ServiceType={00000001}
+";
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner1 = buffer.WriteRelayAgentInformationOptionHeader();
+            var inner2 = inner1.WriteRadiusAttributesHeader();
+            inner2.WriteUserName("a@z");
+            inner2.WriteServiceType(RadiusServiceType.Login);
+            inner2.End();
+            inner1.End();
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                foreach (DhcpSubOption subOption in option.SubOptions)
+                {
+                    subOption.RadiusAttributes().TryFormat(span, out charsWritten).Should().BeTrue();
+                    break;
+                }
+
+                break;
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedRadiusAttributes);
+        }
+
+        [TestMethod]
         public void TryFormatSubOptions()
         {
             const string ExpectedSubOptions =

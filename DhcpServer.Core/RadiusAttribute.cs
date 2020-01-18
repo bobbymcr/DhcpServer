@@ -33,6 +33,41 @@ namespace DhcpServer
         public Memory<byte> Data { get; }
 
         /// <summary>
+        /// Tries to format this attribute into the provided span of characters.
+        /// </summary>
+        /// <param name="destination">When this method returns, this attribute formatted as a span of characters.</param>
+        /// <param name="charsWritten">When this method returns, the number of characters that were written in <paramref name="destination"/>.</param>
+        /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten)
+        {
+            // Final result should be 'Type={xxxx...}'
+            charsWritten = 0;
+            ReadOnlySpan<char> type = this.Type.ToString();
+            int hexCharLen = 2 * this.Data.Length;
+            int requiredLength = type.Length + 3 + hexCharLen;
+            if (destination.Length < requiredLength)
+            {
+                return false;
+            }
+
+            type.CopyTo(destination);
+            charsWritten += type.Length;
+            destination[charsWritten++] = '=';
+            destination[charsWritten++] = '{';
+            Span<byte> raw = this.Data.Span;
+            for (int i = 0; i < (hexCharLen / 2); ++i)
+            {
+                byte b = raw[i];
+                Hex.Format(destination, charsWritten + (2 * i), b);
+            }
+
+            charsWritten += hexCharLen;
+            destination[charsWritten++] = '}';
+
+            return true;
+        }
+
+        /// <summary>
         /// Represents a sequence of RADIUS attributes.
         /// </summary>
         public readonly struct Sequence
@@ -53,6 +88,32 @@ namespace DhcpServer
             /// </summary>
             /// <returns>The RADIUS attributes enumerator.</returns>
             public Enumerator GetEnumerator() => new Enumerator(this.subOption.Data);
+
+            /// <summary>
+            /// Tries to format the current RADIUS attribute sequence into the provided span of characters.
+            /// </summary>
+            /// <param name="destination">When this method returns, the attributes formatted as a span of characters.</param>
+            /// <param name="charsWritten">When this method returns, the number of characters that were written in <paramref name="destination"/>.</param>
+            /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
+            public bool TryFormat(Span<char> destination, out int charsWritten)
+            {
+                // Final result should be attributes separated by newlines, e.g. '<attr1>NL<att2>NL...'
+                charsWritten = 0;
+                foreach (RadiusAttribute attribute in this)
+                {
+                    bool result = attribute.TryFormat(destination.Slice(charsWritten), out int c);
+                    charsWritten += c;
+                    if (!result || destination.Length < (charsWritten + 2))
+                    {
+                        return false;
+                    }
+
+                    destination[charsWritten++] = '\r';
+                    destination[charsWritten++] = '\n';
+                }
+
+                return true;
+            }
         }
 
         /// <summary>

@@ -56,6 +56,31 @@ ServiceType={00000001}
         }
 
         [TestMethod]
+        public void TryFormatRelayAgentInformationSubOptions()
+        {
+            const string ExpectedSubOptions =
+@"AgentCircuitId={78797A}
+LinkSelection={0A01FF00}
+";
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner = buffer.WriteRelayAgentInformationOptionHeader();
+            inner.WriteAgentCircuitId("xyz");
+            inner.WriteLinkSelection(IP(10, 1, 255, 0));
+            inner.End();
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                option.RelayAgentInformation().TryFormat(span, out charsWritten).Should().BeTrue();
+                break;
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedSubOptions);
+        }
+
+        [TestMethod]
         public void TryFormatSubOptions()
         {
             const string ExpectedSubOptions =

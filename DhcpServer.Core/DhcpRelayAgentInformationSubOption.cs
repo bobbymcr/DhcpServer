@@ -128,15 +128,18 @@ namespace DhcpServer
                 charsWritten = 0;
                 foreach (DhcpRelayAgentInformationSubOption subOption in this)
                 {
-                    bool result = subOption.TryFormat(destination.Slice(charsWritten), out int c);
-                    charsWritten += c;
-                    if (!result || destination.Length < (charsWritten + 2))
+                    if (!subOption.TryFormat(destination.Slice(charsWritten), out int c))
                     {
                         return false;
                     }
 
-                    destination[charsWritten++] = '\r';
-                    destination[charsWritten++] = '\n';
+                    charsWritten += c;
+                    if (!Field.TryAppend(destination.Slice(charsWritten), out c, Environment.NewLine))
+                    {
+                        return false;
+                    }
+
+                    charsWritten += c;
                 }
 
                 return true;

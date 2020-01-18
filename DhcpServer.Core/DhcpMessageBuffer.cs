@@ -551,15 +551,18 @@ namespace DhcpServer
                 charsWritten = 0;
                 foreach (DhcpOption option in this)
                 {
-                    bool result = option.TryFormat(destination.Slice(charsWritten), out int c);
-                    charsWritten += c;
-                    if (!result || destination.Length < (charsWritten + 2))
+                    if (!option.TryFormat(destination.Slice(charsWritten), out int c))
                     {
                         return false;
                     }
 
-                    destination[charsWritten++] = '\r';
-                    destination[charsWritten++] = '\n';
+                    charsWritten += c;
+                    if (!Field.TryAppend(destination.Slice(charsWritten), out c, Environment.NewLine))
+                    {
+                        return false;
+                    }
+
+                    charsWritten += c;
                 }
 
                 return true;

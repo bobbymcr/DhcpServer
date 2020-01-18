@@ -47,6 +47,20 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void TryFormatDestTooSmall()
+        {
+            TestTryFormatDestTooSmall(0);
+            TestTryFormatDestTooSmall(1);
+            TestTryFormatDestTooSmall(2);
+            TestTryFormatDestTooSmall(5);
+            TestTryFormatDestTooSmall(10);
+            TestTryFormatDestTooSmall(20);
+            TestTryFormatDestTooSmall(50);
+            TestTryFormatDestTooSmall(100);
+            TestTryFormatDestTooSmall(200);
+        }
+
+        [TestMethod]
         public void TryFormatNotNullTerminated()
         {
             byte[] raw = new byte[500];
@@ -1348,6 +1362,27 @@ End={}
             }
 
             return sb.ToString();
+        }
+
+        private static void TestTryFormatDestTooSmall(int size)
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[size]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = PacketResource.Read("Request1", buffer.Span);
+            buffer.Load(length).Should().BeTrue();
+            buffer.Hops = 2;
+            buffer.YourIPAddress = IP(5, 6, 7, 8);
+            buffer.ServerIPAddress = IP(9, 10, 11, 12);
+            buffer.GatewayIPAddress = IP(255, 255, 255, 255);
+            buffer.ServerHostName[0] = (byte)'h';
+            buffer.ServerHostName[1] = (byte)'s';
+            buffer.BootFileName[0] = (byte)'x';
+            buffer.BootFileName[1] = (byte)'y';
+            buffer.BootFileName[2] = (byte)'z';
+
+            buffer.TryFormat(span, out int charsWritten).Should().BeFalse();
+            charsWritten.Should().BeLessOrEqualTo(size);
         }
     }
 }

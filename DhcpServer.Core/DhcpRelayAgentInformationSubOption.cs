@@ -99,6 +99,8 @@ namespace DhcpServer
         /// </summary>
         public readonly struct Sequence
         {
+            private static readonly Field.TryFormatFunc<DhcpRelayAgentInformationSubOption> CachedTryFmt = TryFmt;
+
             private readonly DhcpOption option;
 
             /// <summary>
@@ -124,25 +126,23 @@ namespace DhcpServer
             /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
             public bool TryFormat(Span<char> destination, out int charsWritten)
             {
-                // Final result should be relay agent information sub-options separated by newlines, e.g. '<sub1>NL<sub2>NL...'
                 charsWritten = 0;
                 foreach (DhcpRelayAgentInformationSubOption subOption in this)
                 {
-                    if (!subOption.TryFormat(destination.Slice(charsWritten), out int c))
+                    bool result = Field.TryFormatWithNewline(destination.Slice(charsWritten), out int c, subOption, CachedTryFmt);
+                    charsWritten += c;
+                    if (!result)
                     {
                         return false;
                     }
-
-                    charsWritten += c;
-                    if (!Field.TryAppend(destination.Slice(charsWritten), out c, Environment.NewLine))
-                    {
-                        return false;
-                    }
-
-                    charsWritten += c;
                 }
 
                 return true;
+            }
+
+            private static bool TryFmt(DhcpRelayAgentInformationSubOption obj, Span<char> destination, out int charsWritten)
+            {
+                return obj.TryFormat(destination, out charsWritten);
             }
         }
     }

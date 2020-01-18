@@ -48,6 +48,8 @@ namespace DhcpServer
         /// </summary>
         public readonly struct Sequence
         {
+            private static readonly Field.TryFormatFunc<RadiusAttribute> CachedTryFmt = TryFmt;
+
             private readonly DhcpSubOption subOption;
 
             /// <summary>
@@ -73,25 +75,23 @@ namespace DhcpServer
             /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
             public bool TryFormat(Span<char> destination, out int charsWritten)
             {
-                // Final result should be attributes separated by newlines, e.g. '<attr1>NL<att2>NL...'
                 charsWritten = 0;
                 foreach (RadiusAttribute attribute in this)
                 {
-                    if (!attribute.TryFormat(destination.Slice(charsWritten), out int c))
+                    bool result = Field.TryFormatWithNewline(destination.Slice(charsWritten), out int c, attribute, CachedTryFmt);
+                    charsWritten += c;
+                    if (!result)
                     {
                         return false;
                     }
-
-                    charsWritten += c;
-                    if (!Field.TryAppend(destination.Slice(charsWritten), out c, Environment.NewLine))
-                    {
-                        return false;
-                    }
-
-                    charsWritten += c;
                 }
 
                 return true;
+            }
+
+            private static bool TryFmt(RadiusAttribute obj, Span<char> destination, out int charsWritten)
+            {
+                return obj.TryFormat(destination, out charsWritten);
             }
         }
 

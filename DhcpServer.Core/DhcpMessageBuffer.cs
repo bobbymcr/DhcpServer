@@ -522,6 +522,8 @@ namespace DhcpServer
         /// </summary>
         public readonly struct OptionsSequence
         {
+            private static readonly Field.TryFormatFunc<DhcpOption> CachedTryFmt = TryFmt;
+
             private readonly DhcpOptionsBuffer options;
 
             /// <summary>
@@ -547,25 +549,23 @@ namespace DhcpServer
             /// <returns><c>true</c> if the formatting was successful; otherwise, <c>false</c>.</returns>
             public bool TryFormat(Span<char> destination, out int charsWritten)
             {
-                // Final result should be options separated by newlines, e.g. '<option1>NL<option2>NL...'
                 charsWritten = 0;
                 foreach (DhcpOption option in this)
                 {
-                    if (!option.TryFormat(destination.Slice(charsWritten), out int c))
+                    bool result = Field.TryFormatWithNewline(destination.Slice(charsWritten), out int c, option, CachedTryFmt);
+                    charsWritten += c;
+                    if (!result)
                     {
                         return false;
                     }
-
-                    charsWritten += c;
-                    if (!Field.TryAppend(destination.Slice(charsWritten), out c, Environment.NewLine))
-                    {
-                        return false;
-                    }
-
-                    charsWritten += c;
                 }
 
                 return true;
+            }
+
+            private static bool TryFmt(DhcpOption obj, Span<char> destination, out int charsWritten)
+            {
+                return obj.TryFormat(destination, out charsWritten);
             }
         }
     }

@@ -13,6 +13,31 @@ namespace DhcpServer.Test
     public sealed class DhcpMessageBufferTest
     {
         [TestMethod]
+        public void TryFormatSubOptions()
+        {
+            const string ExpectedSubOptions =
+@"01={78797A}
+05={0A01FF00}
+";
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[500]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            var inner = buffer.WriteRelayAgentInformationOptionHeader();
+            inner.WriteAgentCircuitId("xyz");
+            inner.WriteLinkSelection(IP(10, 1, 255, 0));
+            inner.End();
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer.Options)
+            {
+                option.SubOptions.TryFormat(span, out charsWritten);
+                break;
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedSubOptions);
+        }
+
+        [TestMethod]
         public void TryFormatOptions()
         {
             const string ExpectedOptions =
@@ -31,6 +56,19 @@ End={}
             buffer.Options.TryFormat(span, out int charsWritten).Should().BeTrue();
 
             span.Slice(0, charsWritten).ToString().Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
+        public void TryFormatOptionsDestTooSmall()
+        {
+            TestTryFormatOptionsDestTooSmall(0);
+            TestTryFormatOptionsDestTooSmall(1);
+            TestTryFormatOptionsDestTooSmall(2);
+            TestTryFormatOptionsDestTooSmall(4);
+            TestTryFormatOptionsDestTooSmall(8);
+            TestTryFormatOptionsDestTooSmall(16);
+            TestTryFormatOptionsDestTooSmall(32);
+            TestTryFormatOptionsDestTooSmall(64);
         }
 
         [TestMethod]
@@ -1326,7 +1364,7 @@ End={}
             {
                 if ((byte)option.Tag == tag)
                 {
-                    foreach (DhcpSubOption subOption in option)
+                    foreach (DhcpSubOption subOption in option.SubOptions)
                     {
                         sb.Append(subOption.Code);
                         sb.Append("={");
@@ -1346,7 +1384,7 @@ End={}
             {
                 if (option.Tag == DhcpOptionTag.RelayAgentInformation)
                 {
-                    foreach (DhcpSubOption subOption in option)
+                    foreach (DhcpSubOption subOption in option.SubOptions)
                     {
                         sb.Append((DhcpRelayAgentSubOptionCode)subOption.Code);
                         sb.Append("={");
@@ -1366,7 +1404,7 @@ End={}
             {
                 if (option.Tag == DhcpOptionTag.RelayAgentInformation)
                 {
-                    foreach (DhcpSubOption subOption in option)
+                    foreach (DhcpSubOption subOption in option.SubOptions)
                     {
                         if (subOption.Code == (byte)DhcpRelayAgentSubOptionCode.RadiusAttributes)
                         {
@@ -1383,6 +1421,18 @@ End={}
             }
 
             return sb.ToString();
+        }
+
+        private static void TestTryFormatOptionsDestTooSmall(int size)
+        {
+            byte[] raw = new byte[500];
+            Span<char> span = new Span<char>(new char[size]);
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
+            int length = PacketResource.Read("Request1", buffer.Span);
+            buffer.Load(length).Should().BeTrue();
+
+            buffer.Options.TryFormat(span, out int charsWritten).Should().BeFalse();
+            charsWritten.Should().BeLessOrEqualTo(size);
         }
 
         private static void TestTryFormatDestTooSmall(int size)

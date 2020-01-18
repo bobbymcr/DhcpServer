@@ -360,45 +360,44 @@ namespace DhcpServer
         {
             charsWritten = 0;
             return
-                TryFormatField(destination, ref charsWritten, "op", this.Opcode.ToString()) &&
-                TryFormatField(destination, ref charsWritten, "htype", this.HardwareAddressType.ToString()) &&
-                TryFormatField(destination, ref charsWritten, "hlen", this.HardwareAddressLength) &&
-                TryFormatField(destination, ref charsWritten, "hops", this.Hops) &&
-                TryFormatField(destination, ref charsWritten, "xid", this.TransactionId) &&
-                TryFormatField(destination, ref charsWritten, "secs", this.Seconds) &&
-                TryFormatField(destination, ref charsWritten, "flags", this.Flags.ToString()) &&
-                TryFormatField(destination, ref charsWritten, "ciaddr", this.ClientIPAddress) &&
-                TryFormatField(destination, ref charsWritten, "yiaddr", this.YourIPAddress) &&
-                TryFormatField(destination, ref charsWritten, "siaddr", this.ServerIPAddress) &&
-                TryFormatField(destination, ref charsWritten, "giaddr", this.GatewayIPAddress) &&
-                TryFormatField(destination, ref charsWritten, "chaddr", this.ClientHardwareAddress) &&
-                TryFormatFieldAscii(destination, ref charsWritten, "sname", this.ServerHostName) &&
-                TryFormatFieldAscii(destination, ref charsWritten, "file", this.BootFileName) &&
-                TryFormatField(destination, ref charsWritten, "magic", this.MagicCookie.ToString());
+                NextField(destination, ref charsWritten, "op", this.Opcode.ToString()) &&
+                NextField(destination, ref charsWritten, "htype", this.HardwareAddressType.ToString()) &&
+                NextField(destination, ref charsWritten, "hlen", this.HardwareAddressLength) &&
+                NextField(destination, ref charsWritten, "hops", this.Hops) &&
+                NextField(destination, ref charsWritten, "xid", this.TransactionId) &&
+                NextField(destination, ref charsWritten, "secs", this.Seconds) &&
+                NextField(destination, ref charsWritten, "flags", this.Flags.ToString()) &&
+                NextField(destination, ref charsWritten, "ciaddr", this.ClientIPAddress) &&
+                NextField(destination, ref charsWritten, "yiaddr", this.YourIPAddress) &&
+                NextField(destination, ref charsWritten, "siaddr", this.ServerIPAddress) &&
+                NextField(destination, ref charsWritten, "giaddr", this.GatewayIPAddress) &&
+                NextField(destination, ref charsWritten, "chaddr", this.ClientHardwareAddress) &&
+                NextFieldAscii(destination, ref charsWritten, "sname", this.ServerHostName) &&
+                NextFieldAscii(destination, ref charsWritten, "file", this.BootFileName) &&
+                LastField(destination, ref charsWritten, "magic", this.MagicCookie.ToString());
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ReadOnlySpan<char> value)
+        private static bool LastField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ReadOnlySpan<char> value)
         {
-            Span<char> slice = destination.Slice(charsWritten);
+            bool result = Field.TryFormat(destination.Slice(charsWritten), out int c, field, value);
+            charsWritten += c;
+            return result;
+        }
 
-            // Final result should be "field=value; "
-            int requiredLength = field.Length + value.Length + 3;
-            if (slice.Length < requiredLength)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ReadOnlySpan<char> value)
+        {
+            bool result = false;
+            if (Field.TryFormat(destination.Slice(charsWritten), out int c, field, value))
             {
-                return false;
+                charsWritten += c;
+                result = Field.TryAppend(destination.Slice(charsWritten), out c, "; ");
+                charsWritten += c;
             }
 
-            field.CopyTo(slice);
-            slice[field.Length] = '=';
-            value.CopyTo(slice.Slice(field.Length + 1));
-            slice[requiredLength - 2] = ';';
-            slice[requiredLength - 1] = ' ';
-
-            charsWritten += requiredLength;
-            return true;
+            return result;
         }
 
-        private static bool TryFormatFieldAscii(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
+        private static bool NextFieldAscii(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
         {
             int n = raw.Length;
             Span<char> value = stackalloc char[n + 2];
@@ -417,10 +416,10 @@ namespace DhcpServer
 
             value[++i] = '\'';
 
-            return TryFormatField(destination, ref charsWritten, field, value.Slice(0, i + 1));
+            return NextField(destination, ref charsWritten, field, value.Slice(0, i + 1));
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, Span<byte> raw)
         {
             Span<char> value = stackalloc char[raw.Length * 2];
             for (int i = 0; i < raw.Length; ++i)
@@ -428,17 +427,17 @@ namespace DhcpServer
                 Hex.Format(value, 2 * i, raw[i]);
             }
 
-            return TryFormatField(destination, ref charsWritten, field, value);
+            return NextField(destination, ref charsWritten, field, value);
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, IPAddressV4 ip)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, IPAddressV4 ip)
         {
             Span<char> value = stackalloc char[15];
             ip.TryFormat(value, out int len);
-            return TryFormatField(destination, ref charsWritten, field, value.Slice(0, len));
+            return NextField(destination, ref charsWritten, field, value.Slice(0, len));
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ushort num)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, ushort num)
         {
             Span<char> value = stackalloc char[5];
             if (num > 9999)
@@ -466,10 +465,10 @@ namespace DhcpServer
                 value = value.Slice(0, 1);
             }
 
-            return TryFormatField(destination, ref charsWritten, field, value);
+            return NextField(destination, ref charsWritten, field, value);
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, uint num)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, uint num)
         {
             Span<char> value = stackalloc char[10];
             value[0] = '0';
@@ -479,10 +478,10 @@ namespace DhcpServer
             Hex.Format(value, 6, (byte)(num >> 8));
             Hex.Format(value, 8, (byte)(num & 0xFF));
 
-            return TryFormatField(destination, ref charsWritten, field, value);
+            return NextField(destination, ref charsWritten, field, value);
         }
 
-        private static bool TryFormatField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, byte num)
+        private static bool NextField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> field, byte num)
         {
             Span<char> value = stackalloc char[3];
             if (num > 99)
@@ -500,7 +499,7 @@ namespace DhcpServer
                 value = value.Slice(0, 1);
             }
 
-            return TryFormatField(destination, ref charsWritten, field, value);
+            return NextField(destination, ref charsWritten, field, value);
         }
 
         private bool SetOptions(int length)

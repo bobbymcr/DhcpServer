@@ -192,7 +192,7 @@ End={}
                 "chaddr=000B8201FC42; " +
                 "sname='hs'; " +
                 "file='xyz'; " +
-                "magic=Dhcp; ");
+                "magic=Dhcp");
         }
 
         [TestMethod]
@@ -242,7 +242,7 @@ End={}
                 "sname='zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'; " +
                 "file='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'; " +
-                "magic=Dhcp; ");
+                "magic=Dhcp");
         }
 
         [TestMethod]
@@ -265,7 +265,7 @@ End={}
                 "chaddr=; " +
                 "sname=''; " +
                 "file=''; " +
-                "magic=None; ");
+                "magic=None");
         }
 
         [TestMethod]

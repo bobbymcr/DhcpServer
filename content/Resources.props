@@ -1,25 +1,10 @@
 <Project>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Overload1.bin">
-      <Link>Overload1.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Overload2.bin">
-      <Link>Overload2.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Overload3.bin">
-      <Link>Overload3.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)OverloadInvalid.bin">
-      <Link>OverloadInvalid.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)OverloadMultiple.bin">
-      <Link>OverloadMultiple.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Request1.bin">
-      <Link>Request1.bin</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Reply1.bin">
-      <Link>Reply1.bin</Link>
+    <BinFile Include="$(MSBuildThisFileDirectory)*.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="@(BinFile)">
+      <Link>%(filename)%(extension)</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

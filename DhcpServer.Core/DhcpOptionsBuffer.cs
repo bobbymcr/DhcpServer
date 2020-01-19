@@ -221,7 +221,16 @@ namespace DhcpServer
                         length = 0;
                         break;
                     default:
-                        length = span[i++];
+                        if (i++ != end)
+                        {
+                            length = span[i - 1];
+                        }
+                        else
+                        {
+                            // Corrupt option -- handled below
+                            length = 0;
+                        }
+
                         break;
                 }
 

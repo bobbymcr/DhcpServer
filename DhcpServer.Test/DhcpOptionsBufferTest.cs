@@ -40,6 +40,34 @@ End={01FFABCD000000000000}
         }
 
         [TestMethod]
+        public void EnumerateCorruptOptionTooShort()
+        {
+            const string ExpectedOptions =
+@"AddressRequest={01020304}
+End={0F}
+";
+            Memory<byte> options = new Memory<byte>(new byte[8]);
+            DhcpOptionsBuffer buffer = new DhcpOptionsBuffer(options, Memory<byte>.Empty, Memory<byte>.Empty);
+            buffer.Slice(0, DhcpOptionTag.Pad, 1);
+            DhcpOption ar = buffer.Slice(1, DhcpOptionTag.AddressRequest, 4);
+            new IPAddressV4(1, 2, 3, 4).CopyTo(ar.Data.Span);
+            buffer.WriteRaw(7, 0xF);
+            Span<char> span = new Span<char>(new char[100]);
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer)
+            {
+                Span<char> destination = span.Slice(charsWritten);
+                option.TryFormat(destination, out int c).Should().BeTrue();
+                destination[c++] = '\r';
+                destination[c++] = '\n';
+                charsWritten += c;
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedOptions);
+        }
+
+        [TestMethod]
         public void EnumerateCorruptSubOption()
         {
             const string ExpectedSubOptions =

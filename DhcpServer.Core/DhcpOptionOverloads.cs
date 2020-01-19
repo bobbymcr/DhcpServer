@@ -26,5 +26,10 @@ namespace DhcpServer
         /// The 'sname' field is used to hold options.
         /// </summary>
         SName = 0x2,
+
+        /// <summary>
+        /// Both fields are used to hold options.
+        /// </summary>
+        Both = File | SName,
     }
 }

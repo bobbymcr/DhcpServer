@@ -211,7 +211,7 @@ namespace DhcpServer
                 int i = this.pos;
                 Span<byte> span = this.buffer.Span;
                 DhcpOptionTag tag = (DhcpOptionTag)span[i++];
-                byte length;
+                int length;
                 switch (tag)
                 {
                     case DhcpOptionTag.Pad:
@@ -225,7 +225,19 @@ namespace DhcpServer
                         break;
                 }
 
-                this.current = new DhcpOption(tag, this.buffer.Slice(i, length));
+                Memory<byte> data;
+                if ((i + length) <= end)
+                {
+                    data = this.buffer.Slice(i, length);
+                }
+                else
+                {
+                    // Corrupt option; return raw payload wrapped in an 'End' option
+                    tag = DhcpOptionTag.End;
+                    data = this.buffer.Slice(i - 2);
+                }
+
+                this.current = new DhcpOption(tag, data);
                 switch (tag)
                 {
                     case DhcpOptionTag.Overload:

@@ -11,6 +11,11 @@ namespace DhcpServer
     public enum RadiusAttributeType : byte
     {
         /// <summary>
+        /// Unspecified type
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// User-Name
         /// </summary>
         UserName = 1,

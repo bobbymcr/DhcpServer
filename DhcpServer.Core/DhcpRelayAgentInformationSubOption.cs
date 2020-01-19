@@ -33,6 +33,21 @@ namespace DhcpServer
         public Memory<byte> Data { get; }
 
         /// <summary>
+        /// Gets the sequence of RADIUS attributes from the current sub-option.
+        /// </summary>
+        /// <returns>The RADIUS attributes sequence.</returns>
+        /// <remarks>An empty sequence is returned in the case of a mismatching sub-option.</remarks>
+        public RadiusAttribute.Sequence RadiusAttributes()
+        {
+            if (this.Code == DhcpRelayAgentSubOptionCode.RadiusAttributes)
+            {
+                return new RadiusAttribute.Sequence(this.Data);
+            }
+
+            return default;
+        }
+
+        /// <summary>
         /// Tries to format the current relay agent information sub-option into the provided span of characters.
         /// </summary>
         /// <param name="destination">When this method returns, the relay agent information sub-option formatted as a span of characters.</param>

@@ -50,22 +50,22 @@ namespace DhcpServer
         {
             private static readonly Field.TryFormatFunc<RadiusAttribute> CachedTryFmt = TryFmt;
 
-            private readonly DhcpSubOption subOption;
+            private readonly Memory<byte> data;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Sequence"/> struct.
             /// </summary>
-            /// <param name="subOption">The RADIUS attributes sub-option.</param>
-            public Sequence(DhcpSubOption subOption)
+            /// <param name="data">The RADIUS attributes sub-option data.</param>
+            public Sequence(Memory<byte> data)
             {
-                this.subOption = subOption;
+                this.data = data;
             }
 
             /// <summary>
             /// Gets an enumerator which reads RADIUS attributes in sequential order.
             /// </summary>
             /// <returns>The RADIUS attributes enumerator.</returns>
-            public Enumerator GetEnumerator() => new Enumerator(this.subOption.Data);
+            public Enumerator GetEnumerator() => new Enumerator(this.data);
 
             /// <summary>
             /// Tries to format the current RADIUS attribute sequence into the provided span of characters.
@@ -134,7 +134,15 @@ namespace DhcpServer
                 {
                     Span<byte> span = this.data.Span;
                     RadiusAttributeType type = (RadiusAttributeType)span[i++];
-                    byte length = (byte)(span[i++] - 2);
+                    int length = (byte)(span[i++] - 2);
+                    if ((i + length) > end)
+                    {
+                        // Corrupt attribute; return raw payload wrapped in a 'None' attribute
+                        type = RadiusAttributeType.None;
+                        i -= 2;
+                        length = end - i;
+                    }
+
                     this.current = new RadiusAttribute(type, this.data.Slice(i, length));
                     this.pos = i + length;
                     return true;

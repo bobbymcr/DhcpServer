@@ -19,7 +19,7 @@ namespace DhcpServer
         {
             if (subOption.Code == (byte)DhcpRelayAgentSubOptionCode.RadiusAttributes)
             {
-                return new RadiusAttribute.Sequence(subOption);
+                return new RadiusAttribute.Sequence(subOption.Data);
             }
 
             return default;

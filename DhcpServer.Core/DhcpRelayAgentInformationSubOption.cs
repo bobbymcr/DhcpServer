@@ -82,7 +82,15 @@ namespace DhcpServer
                 if (i < end)
                 {
                     DhcpRelayAgentSubOptionCode code = (DhcpRelayAgentSubOptionCode)span[i++];
-                    byte length = span[i++];
+                    int length = span[i++];
+                    if ((i + length) > end)
+                    {
+                        // Corrupt sub-option; return raw payload wrapped in a 'None' sub-option
+                        code = DhcpRelayAgentSubOptionCode.None;
+                        i -= 2;
+                        length = end - i;
+                    }
+
                     this.current = new DhcpRelayAgentInformationSubOption(code, this.data.Slice(i, length));
                     this.pos = i + length;
                     return true;

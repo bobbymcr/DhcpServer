@@ -11,6 +11,11 @@ namespace DhcpServer
     public enum DhcpRelayAgentSubOptionCode : byte
     {
         /// <summary>
+        /// Unspecified sub-option
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// Agent circuit ID
         /// </summary>
         AgentCircuitId = 1,

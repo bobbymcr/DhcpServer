@@ -134,7 +134,17 @@ namespace DhcpServer
                 {
                     Span<byte> span = this.data.Span;
                     RadiusAttributeType type = (RadiusAttributeType)span[i++];
-                    int length = (byte)(span[i++] - 2);
+                    int length;
+                    if (i++ != end)
+                    {
+                        length = (byte)(span[i - 1] - 2);
+                    }
+                    else
+                    {
+                        // Corrupt attribute -- handled below
+                        length = 0;
+                    }
+
                     if ((i + length) > end)
                     {
                         // Corrupt attribute; return raw payload wrapped in a 'None' attribute

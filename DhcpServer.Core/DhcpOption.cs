@@ -139,7 +139,15 @@ namespace DhcpServer
                 if (i < end)
                 {
                     byte code = span[i++];
-                    byte length = code != 255 ? span[i++] : (byte)(end - i);
+                    int length = code != 255 ? span[i++] : (end - i);
+                    if ((i + length) > end)
+                    {
+                        // Corrupt sub-option; return raw payload wrapped in an 'End' sub-option
+                        code = 255;
+                        i -= 2;
+                        length = end - i;
+                    }
+
                     this.current = new DhcpSubOption(code, this.data.Slice(i, length));
                     this.pos = i + length;
                     return true;

@@ -38,5 +38,42 @@ End={01FFABCD000000000000}
 
             span.Slice(0, charsWritten).ToString().Should().Be(ExpectedOptions);
         }
+
+        [TestMethod]
+        public void EnumerateCorruptSubOption()
+        {
+            const string ExpectedSubOptions =
+@"02={06}
+FF={0B0A06}
+";
+            Memory<byte> options = new Memory<byte>(new byte[17]);
+            DhcpOptionsBuffer buffer = new DhcpOptionsBuffer(options, Memory<byte>.Empty, Memory<byte>.Empty);
+            int i = 0;
+            buffer.Slice(i++, DhcpOptionTag.Pad, 1);
+            buffer.WriteRaw(i++, 1); // option tag
+            buffer.WriteRaw(i++, 6); // option length
+            buffer.WriteRaw(i++, 2); // sub-option #1 code
+            buffer.WriteRaw(i++, 1); // sub-option #1 length
+            buffer.WriteRaw(i++, 6); // sub-option #1 data
+            buffer.WriteRaw(i++, 11); // sub-option #2 code
+            buffer.WriteRaw(i++, 10); // sub-option #2 length (BAD)
+            buffer.WriteRaw(i++, 6); // sub-option #2 data
+            Span<char> span = new Span<char>(new char[100]);
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer)
+            {
+                foreach (DhcpSubOption subOption in option.SubOptions)
+                {
+                    Span<char> destination = span.Slice(charsWritten);
+                    subOption.TryFormat(destination, out int c).Should().BeTrue();
+                    destination[c++] = '\r';
+                    destination[c++] = '\n';
+                    charsWritten += c;
+                }
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedSubOptions);
+        }
     }
 }

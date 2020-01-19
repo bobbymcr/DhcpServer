@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SharpFuzz" Version="1.6.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DhcpServer.Core\DhcpServer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="..\content\Request1.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestCases\Request1.bin</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <Target Name="InstrumentForFuzzing" AfterTargets="Build">
+    <Message Text="Instrumenting code to be fuzzed..." Importance="high" />
+    <Exec Command="sharpfuzz $(OutputPath)DhcpServer.Core.dll" />
+  </Target>
+</Project>

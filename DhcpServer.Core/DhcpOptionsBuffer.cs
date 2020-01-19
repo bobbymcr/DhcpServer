@@ -252,7 +252,12 @@ namespace DhcpServer
                 switch (tag)
                 {
                     case DhcpOptionTag.Overload:
-                        this.SetOverloads((DhcpOptionOverloads)span[i]);
+                        // Assume invalid unless length is exactly 1
+                        if (length == 1)
+                        {
+                            this.SetOverloads((DhcpOptionOverloads)span[i]);
+                        }
+
                         break;
                     case DhcpOptionTag.End:
                         this.pos = end;

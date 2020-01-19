@@ -15,15 +15,25 @@ namespace DhcpServer.Test
         [TestMethod]
         public void BadInputs()
         {
-            Test("Fuzz001", 300);
+            TestHang("Fuzz001", 300);
+            TestCrash("Fuzz002", 300);
         }
 
-        private static void Test(string name, int size)
+        private static void TestHang(string name, int size)
         {
             FuzzedBuffer buffer = new FuzzedBuffer(name, size);
 
             buffer.ExecutionTimeOf(b => b.Run())
                 .Should().BeLessThan(TimeSpan.FromSeconds(5.0d), because: "{0} should not hang", name);
+        }
+
+        private static void TestCrash(string name, int size)
+        {
+            FuzzedBuffer buffer = new FuzzedBuffer(name, size);
+
+            Action act = () => buffer.Run();
+
+            act.Should().NotThrow(because: "{0} should not crash", name);
         }
 
         private sealed class FuzzedBuffer

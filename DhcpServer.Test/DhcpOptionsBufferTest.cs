@@ -105,6 +105,41 @@ FF={0B0A06}
         }
 
         [TestMethod]
+        public void EnumerateCorruptSubOptionTooShort()
+        {
+            const string ExpectedSubOptions =
+@"02={06}
+FF={0B}
+";
+            Memory<byte> options = new Memory<byte>(new byte[7]);
+            DhcpOptionsBuffer buffer = new DhcpOptionsBuffer(options, Memory<byte>.Empty, Memory<byte>.Empty);
+            int i = 0;
+            buffer.Slice(i++, DhcpOptionTag.Pad, 1);
+            buffer.WriteRaw(i++, 1); // option tag
+            buffer.WriteRaw(i++, 4); // option length
+            buffer.WriteRaw(i++, 2); // sub-option #1 code
+            buffer.WriteRaw(i++, 1); // sub-option #1 length
+            buffer.WriteRaw(i++, 6); // sub-option #1 data
+            buffer.WriteRaw(i++, 11); // sub-option #2 code
+            Span<char> span = new Span<char>(new char[100]);
+
+            int charsWritten = 0;
+            foreach (DhcpOption option in buffer)
+            {
+                foreach (DhcpSubOption subOption in option.SubOptions)
+                {
+                    Span<char> destination = span.Slice(charsWritten);
+                    subOption.TryFormat(destination, out int c).Should().BeTrue();
+                    destination[c++] = '\r';
+                    destination[c++] = '\n';
+                    charsWritten += c;
+                }
+            }
+
+            span.Slice(0, charsWritten).ToString().Should().Be(ExpectedSubOptions);
+        }
+
+        [TestMethod]
         public void EnumerateCorruptRelayAgentInformation()
         {
             const string ExpectedSubOptions =

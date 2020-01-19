@@ -133,17 +133,37 @@ namespace DhcpServer
             /// <c>false</c> if the enumerator has passed the end.</returns>
             public bool MoveNext()
             {
+                const byte EndCode = 255;
                 Span<byte> span = this.data.Span;
                 int end = span.Length;
                 int i = this.pos;
                 if (i < end)
                 {
                     byte code = span[i++];
-                    int length = code != 255 ? span[i++] : (end - i);
+                    int length;
+                    switch (code)
+                    {
+                        case EndCode:
+                            length = end - i;
+                            break;
+                        default:
+                            if (i++ != end)
+                            {
+                                length = span[i - 1];
+                            }
+                            else
+                            {
+                                // Corrupt sub-option -- handled below
+                                length = 0;
+                            }
+
+                            break;
+                    }
+
                     if ((i + length) > end)
                     {
                         // Corrupt sub-option; return raw payload wrapped in an 'End' sub-option
-                        code = 255;
+                        code = EndCode;
                         i -= 2;
                         length = end - i;
                     }

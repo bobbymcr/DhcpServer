@@ -15,9 +15,15 @@ namespace DhcpServer.Fuzz
         private static Memory<char> chars;
         private static Lazy<DhcpMessageBuffer> lazyBuffer;
 
-        private static void Main()
+        private static void Main(string[] args)
         {
-            bytes = new Memory<byte>(new byte[300]);
+            ushort size = 300;
+            if (args.Length > 0)
+            {
+                size = ushort.Parse(args[0]);
+            }
+
+            bytes = new Memory<byte>(new byte[size]);
             chars = new Memory<char>(new char[65536]);
             lazyBuffer = new Lazy<DhcpMessageBuffer>(() => new DhcpMessageBuffer(bytes));
             Fuzzer.Run(Run);

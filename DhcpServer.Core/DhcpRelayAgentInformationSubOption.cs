@@ -97,7 +97,17 @@ namespace DhcpServer
                 if (i < end)
                 {
                     DhcpRelayAgentSubOptionCode code = (DhcpRelayAgentSubOptionCode)span[i++];
-                    int length = span[i++];
+                    int length;
+                    if (i++ != end)
+                    {
+                        length = span[i - 1];
+                    }
+                    else
+                    {
+                        // Corrupt sub-option -- handled below
+                        length = 0;
+                    }
+
                     if ((i + length) > end)
                     {
                         // Corrupt sub-option; return raw payload wrapped in a 'None' sub-option

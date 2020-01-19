@@ -12,6 +12,9 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)OverloadInvalid.bin">
       <Link>OverloadInvalid.bin</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)OverloadMultiple.bin">
+      <Link>OverloadMultiple.bin</Link>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Request1.bin">
       <Link>Request1.bin</Link>
     </EmbeddedResource>

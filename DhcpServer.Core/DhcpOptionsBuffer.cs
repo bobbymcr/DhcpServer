@@ -159,7 +159,8 @@ namespace DhcpServer
             private readonly DhcpOptionsBuffer parent;
 
             private DhcpOption current;
-            private int pos;
+            private ushort pos;
+            private bool overloadSeen;
             private DhcpOptionOverloads overloads;
             private Memory<byte> buffer;
 
@@ -172,6 +173,7 @@ namespace DhcpServer
                 this.parent = parent;
                 this.current = default;
                 this.pos = 0;
+                this.overloadSeen = false;
                 this.overloads = DhcpOptionOverloads.None;
                 this.buffer = this.parent.options;
             }
@@ -190,7 +192,7 @@ namespace DhcpServer
             {
                 do
                 {
-                    int end = this.buffer.Length;
+                    ushort end = (ushort)this.buffer.Length;
                     if (this.pos < end)
                     {
                         if (this.NextOption(end))
@@ -206,9 +208,9 @@ namespace DhcpServer
                 while (true);
             }
 
-            private bool NextOption(int end)
+            private bool NextOption(ushort end)
             {
-                int i = this.pos;
+                ushort i = this.pos;
                 Span<byte> span = this.buffer.Span;
                 DhcpOptionTag tag = (DhcpOptionTag)span[i++];
                 int length;
@@ -250,20 +252,26 @@ namespace DhcpServer
                 switch (tag)
                 {
                     case DhcpOptionTag.Overload:
-                        DhcpOptionOverloads value = (DhcpOptionOverloads)span[i];
-                        if ((value | DhcpOptionOverloads.Both) == DhcpOptionOverloads.Both)
-                        {
-                            this.overloads = value;
-                        }
-
+                        this.SetOverloads((DhcpOptionOverloads)span[i]);
                         break;
                     case DhcpOptionTag.End:
                         this.pos = end;
                         return true;
                 }
 
-                this.pos = i + length;
+                this.pos = (ushort)(i + length);
                 return true;
+            }
+
+            private void SetOverloads(DhcpOptionOverloads value)
+            {
+                // Only process a valid overload value, and only set once!
+                // Otherwise, we may never finish enumerating
+                if (!this.overloadSeen && ((value | DhcpOptionOverloads.Both) == DhcpOptionOverloads.Both))
+                {
+                    this.overloads = value;
+                    this.overloadSeen = true;
+                }
             }
 
             private bool NextBuffer()

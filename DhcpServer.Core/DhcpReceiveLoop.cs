@@ -43,7 +43,7 @@ namespace DhcpServer
             {
                 try
                 {
-                    int length = await this.socket.ReceiveAsync(buffer, token);
+                    ushort length = (ushort)await this.socket.ReceiveAsync(buffer, token);
                     if (messageBuffer.Load(length))
                     {
                         await callbacks.OnReceiveAsync(messageBuffer, token);

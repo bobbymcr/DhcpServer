@@ -183,7 +183,7 @@ End={}
             byte[] raw = new byte[500];
             Span<char> span = new Span<char>(new char[500]);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
             buffer.Load(length).Should().BeTrue();
 
             buffer.Options.TryFormat(span, out int charsWritten).Should().BeTrue();
@@ -210,7 +210,7 @@ End={}
             byte[] raw = new byte[500];
             Span<char> span = new Span<char>(new char[500]);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
             buffer.Load(length).Should().BeTrue();
             buffer.Hops = 2;
             buffer.YourIPAddress = IP(5, 6, 7, 8);
@@ -258,7 +258,7 @@ End={}
             byte[] raw = new byte[500];
             Span<char> span = new Span<char>(new char[500]);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
             buffer.Load(length).Should().BeTrue();
             buffer.Hops = 2;
             buffer.YourIPAddress = IP(5, 6, 7, 8);
@@ -320,6 +320,14 @@ End={}
         }
 
         [TestMethod]
+        public void TooBig()
+        {
+            Action act = () => new DhcpMessageBuffer(new Memory<byte>(new byte[65537]));
+
+            act.Should().Throw<ArgumentOutOfRangeException>().Which.ParamName.Should().Be("buffer");
+        }
+
+        [TestMethod]
         public void TooLongHardwareAddressLength()
         {
             byte[] raw = new byte[500];
@@ -370,7 +378,7 @@ End={}
 ";
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
 
             buffer.Load(length).Should().BeTrue();
 
@@ -464,7 +472,7 @@ End={}
 ";
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Reply1", buffer.Span);
+            ushort length = PacketResource.Read("Reply1", buffer.Span);
 
             buffer.Load(length).Should().BeTrue();
 
@@ -1371,7 +1379,7 @@ LinkSelection={01020304}
         {
             byte[] raw = new byte[500];
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read(name, buffer.Span);
+            ushort length = PacketResource.Read(name, buffer.Span);
 
             buffer.Load(length).Should().BeTrue();
 
@@ -1423,7 +1431,7 @@ End={}
             output.WritePadding(5);
             output.WriteEndOption();
 
-            int length = output.Save();
+            ushort length = output.Save();
             output.Length.Should().Be(length);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
             buffer.Load(length).Should().BeTrue();
@@ -1628,7 +1636,7 @@ End={}
             byte[] raw = new byte[500];
             Span<char> span = new Span<char>(new char[size]);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
             buffer.Load(length).Should().BeTrue();
 
             buffer.Options.TryFormat(span, out int charsWritten).Should().BeFalse();
@@ -1640,7 +1648,7 @@ End={}
             byte[] raw = new byte[500];
             Span<char> span = new Span<char>(new char[size]);
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(raw));
-            int length = PacketResource.Read("Request1", buffer.Span);
+            ushort length = PacketResource.Read("Request1", buffer.Span);
             buffer.Load(length).Should().BeTrue();
             buffer.Hops = 2;
             buffer.YourIPAddress = IP(5, 6, 7, 8);

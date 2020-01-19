@@ -11,12 +11,12 @@ namespace DhcpServer
 
     internal static class PacketResource
     {
-        public static int Read(string name, Span<byte> destination)
+        public static ushort Read(string name, Span<byte> destination)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             string fullName = assembly.GetManifestResourceNames().First(n => n.EndsWith("." + name + ".bin"));
             using Stream stream = assembly.GetManifestResourceStream(fullName);
-            return stream.Read(destination);
+            return (ushort)stream.Read(destination);
         }
     }
 }

@@ -23,14 +23,14 @@ namespace DhcpServer
         private readonly Memory<byte> buffer;
 
         private DhcpOptionsBuffer options;
-        private int nextOption;
-        private int containerStart;
+        private ushort nextOption;
+        private ushort containerStart;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpMessageBuffer"/> class.
         /// </summary>
         /// <param name="buffer">The underlying buffer.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The buffer is too small to hold a valid message or larger than 64 KB.</exception>
         public DhcpMessageBuffer(Memory<byte> buffer)
         {
             this.buffer = buffer;
@@ -43,8 +43,8 @@ namespace DhcpServer
         /// <summary>
         /// Gets the length of the currently buffered message.
         /// </summary>
-        /// <remarks>This value is set after a successful <see cref="Load(int)"/> or <see cref="Save"/> operation.</remarks>
-        public int Length { get; private set; }
+        /// <remarks>This value is set after a successful <see cref="Load(ushort)"/> or <see cref="Save"/> operation.</remarks>
+        public ushort Length { get; private set; }
 
         /// <summary>
         /// Gets a span for the underlying buffer.
@@ -150,7 +150,7 @@ namespace DhcpServer
         /// </summary>
         /// <param name="length">The length of the message.</param>
         /// <returns><c>true</c> if the length is enough to contain a valid message, <c>false</c> otherwise.</returns>
-        public bool Load(int length)
+        public bool Load(ushort length)
         {
             if (!this.SetOptions(length))
             {
@@ -177,7 +177,7 @@ namespace DhcpServer
         /// Saves message data to the underlying buffer and resets the cursor.
         /// </summary>
         /// <returns>The total message length.</returns>
-        public int Save()
+        public ushort Save()
         {
             ((byte)this.Opcode).CopyTo(this.buffer, 0);
             ((byte)this.HardwareAddressType).CopyTo(this.buffer, 1);
@@ -191,7 +191,7 @@ namespace DhcpServer
             this.ServerIPAddress.CopyTo(this.buffer, 20);
             this.GatewayIPAddress.CopyTo(this.buffer, 24);
             ((uint)this.MagicCookie).CopyTo(this.buffer, 236);
-            int totalLength = this.nextOption + HeaderLength;
+            ushort totalLength = (ushort)(this.nextOption + HeaderLength);
             this.nextOption = 0;
             return this.Length = totalLength;
         }
@@ -226,7 +226,7 @@ namespace DhcpServer
         public DhcpSubOption WriteSubOptionHeader(byte code, byte length)
         {
             DhcpSubOption subOption = this.options.SliceSub(this.nextOption, code, length);
-            this.nextOption += 2 + length;
+            this.nextOption += (ushort)(2 + length);
             return subOption;
         }
 
@@ -241,7 +241,7 @@ namespace DhcpServer
         public DhcpSubOption WriteSubOption(byte code, ReadOnlySpan<char> chars, Encoding encoding)
         {
             DhcpSubOption option = this.options.WriteSub(this.nextOption, code, chars, encoding);
-            this.nextOption += 2 + option.Data.Length;
+            this.nextOption += (ushort)(2 + option.Data.Length);
             return option;
         }
 
@@ -269,7 +269,7 @@ namespace DhcpServer
         {
             this.WriteEndOption();
             data.CopyTo(this.Span.Slice(HeaderLength + this.nextOption));
-            this.nextOption += data.Length;
+            this.nextOption += (ushort)data.Length;
             this.Span[HeaderLength + this.containerStart + 1] = (byte)(this.nextOption - this.containerStart - 2);
         }
 
@@ -282,7 +282,7 @@ namespace DhcpServer
         public DhcpOption WriteOptionHeader(DhcpOptionTag tag, byte length)
         {
             DhcpOption option = this.options.Slice(this.nextOption, tag, length);
-            this.nextOption += 2 + length;
+            this.nextOption += (ushort)(2 + length);
             return option;
         }
 
@@ -296,7 +296,7 @@ namespace DhcpServer
         public DhcpOption WriteOption(DhcpOptionTag tag, ReadOnlySpan<char> chars, Encoding encoding)
         {
             DhcpOption option = this.options.Write(this.nextOption, tag, chars, encoding);
-            this.nextOption += 2 + option.Data.Length;
+            this.nextOption += (ushort)(2 + option.Data.Length);
             return option;
         }
 
@@ -504,7 +504,7 @@ namespace DhcpServer
 
         private bool SetOptions(int length)
         {
-            if (length >= HeaderLength)
+            if (length >= HeaderLength && length <= ushort.MaxValue)
             {
                 this.options = new DhcpOptionsBuffer(
                     this.buffer.Slice(HeaderLength, length - HeaderLength),

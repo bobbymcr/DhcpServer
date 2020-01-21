@@ -34,5 +34,10 @@ namespace DhcpServer
         /// Framed-Pool
         /// </summary>
         FramedPool = 88,
+
+        /// <summary>
+        /// Framed-IPv6-Pool
+        /// </summary>
+        FramedIPv6Pool = 100,
     }
 }

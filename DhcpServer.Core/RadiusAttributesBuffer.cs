@@ -76,6 +76,18 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes UTF-8 encoded data for the Framed-IPv6-Pool attribute.
+        /// </summary>
+        /// <param name="name">The name of an assigned pool for IPv6 prefixes.</param>
+        public void WriteFramedIPv6Pool(ReadOnlySpan<char> name)
+        {
+            this.buffer.WriteOptionRaw((byte)RadiusAttributeType.FramedIPv6Pool);
+            Memory<byte> slice = SkipLength(this.buffer);
+            byte length = this.buffer.WriteOptionRaw(name, Encoding.UTF8);
+            SetLength(slice, (byte)(2 + length));
+        }
+
+        /// <summary>
         /// Marks the end of the RADIUS attributes sub-option.
         /// </summary>
         public void End()

@@ -127,6 +127,38 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void PacketTooLarge()
+        {
+            StubInputSocket socket = new StubInputSocket();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+            byte[] raw = new byte[500];
+            Memory<byte> inputBuffer = new Memory<byte>(raw);
+            int receiveCount = 0;
+            DhcpError error = default;
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            void ErrorCallback(DhcpError e, CancellationToken t)
+            {
+                error = e;
+                cts.Cancel();
+                t.ThrowIfCancellationRequested();
+            }
+
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++receiveCount, ErrorCallback);
+
+            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
+
+            task.IsCompleted.Should().BeFalse();
+
+            error.Code.Should().Be(DhcpErrorCode.None);
+
+            Complete(socket, "LargeRequest1", 65536);
+
+            task.IsCanceled.Should().BeTrue();
+            receiveCount.Should().Be(0);
+            error.Code.Should().Be(DhcpErrorCode.PacketTooLarge);
+        }
+
+        [TestMethod]
         public void BufferTooSmall()
         {
             StubInputSocket socket = new StubInputSocket();
@@ -216,7 +248,7 @@ namespace DhcpServer.Test
 
         private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
         {
-            byte[] raw = new byte[500];
+            byte[] raw = new byte[66000];
             Span<byte> packet = new Memory<byte>(raw).Span;
             int actualLength = PacketResource.Read(resourceName, packet);
             if (length == -1)

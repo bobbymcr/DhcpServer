@@ -28,5 +28,10 @@ namespace DhcpServer
         /// There was an error while using the buffer.
         /// </summary>
         BufferError = 3,
+
+        /// <summary>
+        /// The packet exceeds the maximum allowed size.
+        /// </summary>
+        PacketTooLarge = 4,
     }
 }

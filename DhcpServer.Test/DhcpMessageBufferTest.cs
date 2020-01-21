@@ -1316,6 +1316,8 @@ SubscriberId={7331}
                 r => r.WriteUserName("me@x.com"), "010A6D6540782E636F6D", "UserName={6D6540782E636F6D}");
             TestOption82Radius(
                 r => r.WriteServiceType(RadiusServiceType.Login), "060600000001", "ServiceType={00000001}");
+            TestOption82Radius(
+                r => r.WriteSessionTimeout(0x12345678), "1B0612345678", "SessionTimeout={12345678}");
         }
 
         [TestMethod]

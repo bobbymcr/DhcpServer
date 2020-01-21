@@ -24,5 +24,10 @@ namespace DhcpServer
         /// Service-Type
         /// </summary>
         ServiceType = 6,
+
+        /// <summary>
+        /// Session-Timeout
+        /// </summary>
+        SessionTimeout = 27,
     }
 }

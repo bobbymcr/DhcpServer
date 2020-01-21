@@ -52,6 +52,18 @@ namespace DhcpServer
         }
 
         /// <summary>
+        /// Writes data for the Session-Timeout attribute.
+        /// </summary>
+        /// <param name="timeout">The timeout in seconds.</param>
+        public void WriteSessionTimeout(uint timeout)
+        {
+            this.buffer.WriteOptionRaw((byte)RadiusAttributeType.SessionTimeout);
+            Memory<byte> slice = SkipLength(this.buffer);
+            this.buffer.WriteOptionRaw(timeout);
+            SetLength(slice, 6);
+        }
+
+        /// <summary>
         /// Marks the end of the RADIUS attributes sub-option.
         /// </summary>
         public void End()

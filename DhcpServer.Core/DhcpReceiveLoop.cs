@@ -44,7 +44,7 @@ namespace DhcpServer
                 try
                 {
                     int length = await this.socket.ReceiveAsync(buffer, token);
-                    if (length > ushort.MaxValue)
+                    if ((length > ushort.MaxValue) || (length > buffer.Length))
                     {
                         await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooLarge), token);
                     }

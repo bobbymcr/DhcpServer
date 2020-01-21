@@ -29,5 +29,10 @@ namespace DhcpServer
         /// Session-Timeout
         /// </summary>
         SessionTimeout = 27,
+
+        /// <summary>
+        /// Framed-Pool
+        /// </summary>
+        FramedPool = 88,
     }
 }

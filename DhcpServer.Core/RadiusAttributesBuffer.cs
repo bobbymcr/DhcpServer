@@ -28,7 +28,7 @@ namespace DhcpServer
         }
 
         /// <summary>
-        /// Writes UTF-8 encoding data for the User-Name attribute.
+        /// Writes UTF-8 encoded data for the User-Name attribute.
         /// </summary>
         /// <param name="text">The text data.</param>
         public void WriteUserName(ReadOnlySpan<char> text)
@@ -61,6 +61,18 @@ namespace DhcpServer
             Memory<byte> slice = SkipLength(this.buffer);
             this.buffer.WriteOptionRaw(timeout);
             SetLength(slice, 6);
+        }
+
+        /// <summary>
+        /// Writes UTF-8 encoded data for the Framed-Pool attribute.
+        /// </summary>
+        /// <param name="name">The name of an assigned address pool.</param>
+        public void WriteFramedPool(ReadOnlySpan<char> name)
+        {
+            this.buffer.WriteOptionRaw((byte)RadiusAttributeType.FramedPool);
+            Memory<byte> slice = SkipLength(this.buffer);
+            byte length = this.buffer.WriteOptionRaw(name, Encoding.UTF8);
+            SetLength(slice, (byte)(2 + length));
         }
 
         /// <summary>

@@ -1318,6 +1318,8 @@ SubscriberId={7331}
                 r => r.WriteServiceType(RadiusServiceType.Login), "060600000001", "ServiceType={00000001}");
             TestOption82Radius(
                 r => r.WriteSessionTimeout(0x12345678), "1B0612345678", "SessionTimeout={12345678}");
+            TestOption82Radius(
+                r => r.WriteFramedPool("xyz"), "580578797A", "FramedPool={78797A}");
         }
 
         [TestMethod]

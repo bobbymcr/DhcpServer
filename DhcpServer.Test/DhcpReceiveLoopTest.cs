@@ -96,6 +96,26 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void ThrowOnReceive()
+        {
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
+            Exception exception = new InvalidOperationException("unhandled");
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) =>
+            {
+                throw exception;
+            });
+
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
+
+            channelFactory.Channels[0].Complete("Request1");
+
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+        }
+
+        [TestMethod]
         public void Error()
         {
             StubInputChannelFactory channelFactory = new StubInputChannelFactory();

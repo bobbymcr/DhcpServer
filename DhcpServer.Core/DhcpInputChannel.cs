@@ -8,12 +8,20 @@ namespace DhcpServer
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal sealed class DhcpInputChannel
+    /// <summary>
+    /// Represents a strongly-typed DHCP datagram input channel.
+    /// </summary>
+    public sealed class DhcpInputChannel
     {
         private readonly IInputSocket socket;
         private readonly Memory<byte> rawBuffer;
         private readonly DhcpMessageBuffer buffer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DhcpInputChannel"/> class.
+        /// </summary>
+        /// <param name="socket">The input socket.</param>
+        /// <param name="rawBuffer">The underlying buffer to hold received data.</param>
         public DhcpInputChannel(IInputSocket socket, Memory<byte> rawBuffer)
         {
             this.socket = socket;
@@ -21,6 +29,11 @@ namespace DhcpServer
             this.buffer = new DhcpMessageBuffer(this.rawBuffer);
         }
 
+        /// <summary>
+        /// Receives a DHCP message from the channel.
+        /// </summary>
+        /// <param name="token">Used to signal that the operation should be canceled.</param>
+        /// <returns>A <see cref="Task{TResult}"/> containing the message buffer and, if failed, the error.</returns>
         public async Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
         {
             try

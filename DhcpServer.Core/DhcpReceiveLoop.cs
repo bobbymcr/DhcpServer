@@ -33,11 +33,11 @@ namespace DhcpServer
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
         public Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
-            DhcpMessageChannel channel = new DhcpMessageChannel(this.socket, buffer);
+            DhcpInputChannel channel = new DhcpInputChannel(this.socket, buffer);
             return this.RunAsync(channel, callbacks, token);
         }
 
-        private async Task RunAsync(DhcpMessageChannel channel, IDhcpReceiveCallbacks callbacks, CancellationToken token)
+        private async Task RunAsync(DhcpInputChannel channel, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
             while (true)
             {

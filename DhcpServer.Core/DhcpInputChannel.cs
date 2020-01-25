@@ -1,4 +1,4 @@
-﻿// <copyright file="DhcpMessageChannel.cs" company="Brian Rogers">
+﻿// <copyright file="DhcpInputChannel.cs" company="Brian Rogers">
 // Copyright (c) Brian Rogers. All rights reserved.
 // </copyright>
 
@@ -8,13 +8,13 @@ namespace DhcpServer
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal sealed class DhcpMessageChannel
+    internal sealed class DhcpInputChannel
     {
         private readonly IInputSocket socket;
         private readonly Memory<byte> rawBuffer;
         private readonly DhcpMessageBuffer buffer;
 
-        public DhcpMessageChannel(IInputSocket socket, Memory<byte> rawBuffer)
+        public DhcpInputChannel(IInputSocket socket, Memory<byte> rawBuffer)
         {
             this.socket = socket;
             this.rawBuffer = rawBuffer;

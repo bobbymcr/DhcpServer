@@ -59,6 +59,19 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void ThrowOnCreate()
+        {
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks();
+            Memory<byte> badBuffer = new Memory<byte>(new byte[0]);
+
+            Action act = () => loop.RunAsync(badBuffer, callbacks, CancellationToken.None);
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [TestMethod]
         public void ThrowOnSocketReceive()
         {
             Exception exception = new InvalidOperationException("unhandled");

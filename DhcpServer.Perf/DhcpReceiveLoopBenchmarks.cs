@@ -24,7 +24,7 @@ namespace DhcpServer.Perf
         private byte[] rawSendBuffer;
         private Memory<byte> sendBuffer;
 
-        [Params(10, 100, 1000)]
+        [Params(1000)]
         public int N { get; set; }
 
         [GlobalSetup]
@@ -75,7 +75,10 @@ namespace DhcpServer.Perf
 
         private async Task SendAsync()
         {
-            for (int i = 0; i < this.N; ++i)
+            // Send slightly more than the expected number of messages
+            // in case some get dropped.
+            int n = (int)(this.N * 1.1);
+            for (int i = 0; i < n; ++i)
             {
                 await this.socket.SendAsync(this.sendBuffer, this.endpoint);
             }

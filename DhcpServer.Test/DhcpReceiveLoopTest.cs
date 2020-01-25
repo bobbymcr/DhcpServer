@@ -132,6 +132,26 @@ namespace DhcpServer.Test
             count.Should().Be(1);
         }
 
+        [TestMethod]
+        public void ThrowOnError()
+        {
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
+            Exception exception = new InvalidOperationException("unhandled");
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onError: (e, t) =>
+            {
+                throw exception;
+            });
+
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
+
+            channelFactory.Channels[0].Complete(new DhcpError(DhcpErrorCode.SocketError));
+
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+        }
+
         private sealed class StubInputChannelFactory : IDhcpInputChannelFactory
         {
             private readonly Action onReceive;

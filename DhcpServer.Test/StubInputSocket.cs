@@ -20,6 +20,7 @@ namespace DhcpServer.Test
 
         public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             var next = Tuple.Create(buffer, new TaskCompletionSource<int>());
             this.pending.Enqueue(next);
             return new ValueTask<int>(next.Item2.Task);

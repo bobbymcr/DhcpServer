@@ -23,7 +23,7 @@ namespace DhcpServer.Test
 
             task.IsCompleted.Should().BeFalse();
 
-            Complete(socket, "Request1");
+            socket.Complete("Request1");
 
             task.IsCompleted.Should().BeTrue();
             (DhcpMessageBuffer buffer, DhcpError error) = task.Result;
@@ -55,7 +55,7 @@ namespace DhcpServer.Test
 
             task.IsCompleted.Should().BeFalse();
 
-            Complete(socket, "Request1", 50);
+            socket.Complete("Request1", 50);
 
             task.IsCompleted.Should().BeTrue();
             (_, DhcpError error) = task.Result;
@@ -72,7 +72,7 @@ namespace DhcpServer.Test
 
             task.IsCompleted.Should().BeFalse();
 
-            Complete(socket, "LargeRequest1", 65536);
+            socket.Complete("LargeRequest1", 65536);
 
             task.IsCompleted.Should().BeTrue();
             (_, DhcpError error) = task.Result;
@@ -89,7 +89,7 @@ namespace DhcpServer.Test
 
             task.IsCompleted.Should().BeFalse();
 
-            Complete(socket, "LargeRequest1", 600);
+            socket.Complete("LargeRequest1", 600);
 
             task.IsCompleted.Should().BeTrue();
             (_, DhcpError error) = task.Result;
@@ -143,50 +143,6 @@ namespace DhcpServer.Test
             task.IsFaulted.Should().BeTrue();
             task.Exception.Should().NotBeNull();
             task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
-        }
-
-        private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
-        {
-            byte[] raw = new byte[66000];
-            Span<byte> packet = new Memory<byte>(raw).Span;
-            int actualLength = PacketResource.Read(resourceName, packet);
-            if (length == -1)
-            {
-                length = actualLength;
-            }
-
-            socket.Complete(packet.Slice(0, length));
-        }
-
-        private sealed class StubInputSocket : IInputSocket
-        {
-            private Memory<byte> buffer;
-            private TaskCompletionSource<int> next;
-
-            public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
-            {
-                token.ThrowIfCancellationRequested();
-                this.buffer = buffer;
-                this.next = new TaskCompletionSource<int>();
-                return new ValueTask<int>(this.next.Task);
-            }
-
-            public void Complete(ReadOnlySpan<byte> input)
-            {
-                Span<byte> output = this.buffer.Span;
-                int safeLength = Math.Min(input.Length, output.Length);
-                for (int i = 0; i < safeLength; ++i)
-                {
-                    output[i] = input[i];
-                }
-
-                this.next.SetResult(input.Length);
-            }
-
-            public void Complete(Exception exception)
-            {
-                this.next.SetException(exception);
-            }
         }
     }
 }

@@ -9,19 +9,19 @@ namespace DhcpServer
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Provides the ability to continuously receive and process DHCP messages from a datagram socket.
+    /// Provides the ability to continuously receive and process DHCP messages from one or more channels.
     /// </summary>
     public sealed class DhcpReceiveLoop
     {
-        private readonly IInputSocket socket;
+        private readonly Func<Memory<byte>, IDhcpInputChannel> channelFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpReceiveLoop"/> class.
         /// </summary>
-        /// <param name="socket">The input socket where messages will be received.</param>
-        public DhcpReceiveLoop(IInputSocket socket)
+        /// <param name="channelFactory">The input channel factory.</param>
+        public DhcpReceiveLoop(Func<Memory<byte>, IDhcpInputChannel> channelFactory)
         {
-            this.socket = socket;
+            this.channelFactory = channelFactory;
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace DhcpServer
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
         public Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
-            IDhcpInputChannel channel = new DhcpInputChannel(this.socket, buffer);
+            IDhcpInputChannel channel = this.channelFactory(buffer);
             return this.RunAsync(channel, callbacks, token);
         }
 

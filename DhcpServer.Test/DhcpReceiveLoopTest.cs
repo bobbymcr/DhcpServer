@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
@@ -14,335 +15,222 @@ namespace DhcpServer.Test
     public sealed class DhcpReceiveLoopTest
     {
         [TestMethod]
-        public void RunAndReceiveTwo()
+        public void RunOneReceiveTwo()
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
-            DhcpMessageBuffer[] messages = new DhcpMessageBuffer[1];
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => messages[0] = m);
+            List<StubInputChannel> channels = new List<StubInputChannel>();
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
+            {
+                StubInputChannel channel = new StubInputChannel(b);
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            int count = 0;
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
 
-            Task task = loop.RunAsync(inputBuffer, callbacks, CancellationToken.None);
-
-            task.IsCompleted.Should().BeFalse();
-            messages[0].Should().BeNull();
-
-            Complete(socket, "Request1");
-
-            task.IsCompleted.Should().BeFalse();
-            messages[0].Should().NotBeNull();
-            messages[0].Opcode.Should().Be(DhcpOpcode.Request);
-            messages[0].TransactionId.Should().Be(0x00003D1D);
-
-            messages[0] = null;
-            Complete(socket, "Reply1");
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
 
             task.IsCompleted.Should().BeFalse();
-            messages[0].Should().NotBeNull();
-            messages[0].Opcode.Should().Be(DhcpOpcode.Reply);
-            messages[0].TransactionId.Should().Be(0x3903F326);
+            StubInputChannel channel = channels.Should().ContainSingle().Which;
+
+            channel.Complete("Request1");
+            channel.Buffer.Opcode = DhcpOpcode.None;
+            channel.Complete("Request1");
+
+            task.IsCompleted.Should().BeFalse();
+            count.Should().Be(2);
+        }
+
+        [TestMethod]
+        public void RunTwoReceiveTwo()
+        {
+            List<StubInputChannel> channels = new List<StubInputChannel>();
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
+            {
+                StubInputChannel channel = new StubInputChannel(b);
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            int count = 0;
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
+
+            Task task1 = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
+            Task task2 = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
+
+            task1.IsCompleted.Should().BeFalse();
+            task2.IsCompleted.Should().BeFalse();
+            channels.Should().HaveCount(2);
+
+            channels[0].Complete("Request1");
+            channels[1].Complete("Request1");
+
+            task1.IsCompleted.Should().BeFalse();
+            task2.IsCompleted.Should().BeFalse();
+            count.Should().Be(2);
         }
 
         [TestMethod]
         public void CancelRightAway()
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
+            List<StubInputChannel> channels = new List<StubInputChannel>();
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
+            {
+                StubInputChannel channel = new StubInputChannel(b);
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
             int count = 0;
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++count);
-
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
             using CancellationTokenSource cts = new CancellationTokenSource();
+
             cts.Cancel();
-            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, cts.Token);
 
             task.IsCanceled.Should().BeTrue();
             count.Should().Be(0);
         }
 
         [TestMethod]
-        public void CancelDuringProcess()
+        public void CancelOnReceive()
         {
-            int count = 0;
+            List<StubInputChannel> channels = new List<StubInputChannel>();
             using CancellationTokenSource cts = new CancellationTokenSource();
-            void Callback(DhcpMessageBuffer m, CancellationToken t)
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
+            {
+                StubInputChannel channel = new StubInputChannel(b, onReceive: () => cts.Cancel());
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            int count = 0;
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) =>
             {
                 ++count;
-                if (m.Opcode == DhcpOpcode.Request)
-                {
-                    cts.Cancel();
-                }
-
                 t.ThrowIfCancellationRequested();
-            }
+            });
 
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(Callback);
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, cts.Token);
 
-            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
-
-            task.IsCanceled.Should().BeFalse();
-
-            Complete(socket, "Request1");
+            channels[0].Complete("Request1");
 
             task.IsCanceled.Should().BeTrue();
             count.Should().Be(1);
         }
 
         [TestMethod]
-        public void PacketTooSmall()
+        public void Error()
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
-            int receiveCount = 0;
-            DhcpError error = default;
-            using CancellationTokenSource cts = new CancellationTokenSource();
-            void ErrorCallback(DhcpError e, CancellationToken t)
+            List<StubInputChannel> channels = new List<StubInputChannel>();
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
             {
-                error = e;
-                cts.Cancel();
-                t.ThrowIfCancellationRequested();
-            }
+                StubInputChannel channel = new StubInputChannel(b);
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            List<DhcpError> errors = new List<DhcpError>();
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onError: (e, t) => errors.Add(e));
 
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++receiveCount, ErrorCallback);
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
 
-            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
+            channels[0].Complete(new DhcpError(DhcpErrorCode.BufferError));
 
             task.IsCompleted.Should().BeFalse();
-
-            error.Code.Should().Be(DhcpErrorCode.None);
-
-            Complete(socket, "Request1", 50);
-
-            task.IsCanceled.Should().BeTrue();
-            receiveCount.Should().Be(0);
-            error.Code.Should().Be(DhcpErrorCode.PacketTooSmall);
+            errors.Should().ContainSingle().Which.Code.Should().Be(DhcpErrorCode.BufferError);
         }
 
         [TestMethod]
-        public void PacketTooLarge()
+        public void CancelOnError()
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
-            int receiveCount = 0;
-            DhcpError error = default;
+            List<StubInputChannel> channels = new List<StubInputChannel>();
             using CancellationTokenSource cts = new CancellationTokenSource();
-            void ErrorCallback(DhcpError e, CancellationToken t)
+            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
             {
-                error = e;
-                cts.Cancel();
-                t.ThrowIfCancellationRequested();
-            }
-
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++receiveCount, ErrorCallback);
-
-            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
-
-            task.IsCompleted.Should().BeFalse();
-
-            error.Code.Should().Be(DhcpErrorCode.None);
-
-            Complete(socket, "LargeRequest1", 65536);
-
-            task.IsCanceled.Should().BeTrue();
-            receiveCount.Should().Be(0);
-            error.Code.Should().Be(DhcpErrorCode.PacketTooLarge);
-        }
-
-        [TestMethod]
-        public void PacketTooLargeForBuffer()
-        {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            byte[] raw = new byte[500];
-            Memory<byte> inputBuffer = new Memory<byte>(raw);
-            int receiveCount = 0;
-            DhcpError error = default;
-            using CancellationTokenSource cts = new CancellationTokenSource();
-            void ErrorCallback(DhcpError e, CancellationToken t)
-            {
-                error = e;
-                cts.Cancel();
-                t.ThrowIfCancellationRequested();
-            }
-
-            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks((m, t) => ++receiveCount, ErrorCallback);
-
-            Task task = loop.RunAsync(inputBuffer, callbacks, cts.Token);
-
-            task.IsCompleted.Should().BeFalse();
-
-            error.Code.Should().Be(DhcpErrorCode.None);
-
-            Complete(socket, "LargeRequest1", 600);
-
-            task.IsCanceled.Should().BeTrue();
-            receiveCount.Should().Be(0);
-            error.Code.Should().Be(DhcpErrorCode.PacketTooLarge);
-        }
-
-        [TestMethod]
-        public void BufferTooSmall()
-        {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
+                StubInputChannel channel = new StubInputChannel(b, onReceive: () => cts.Cancel());
+                channels.Add(channel);
+                return channel;
+            };
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
             int count = 0;
-            Task task;
-
-            Action act = () => task = loop.RunAsync(new Memory<byte>(new byte[1]), new StubDhcpReceiveCallbacks((m, t) => ++count), CancellationToken.None);
-
-            act.Should().Throw<ArgumentOutOfRangeException>();
-        }
-
-        [TestMethod]
-        public void ReceiveWithSocketError()
-        {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            int count = 0;
-            DhcpError error = default;
-            using CancellationTokenSource cts = new CancellationTokenSource();
-            void ErrorCallback(DhcpError e, CancellationToken t)
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onError: (e, t) =>
             {
-                error = e;
-                cts.Cancel();
+                ++count;
                 t.ThrowIfCancellationRequested();
-            }
+            });
 
-            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks((m, t) => ++count, ErrorCallback), cts.Token);
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, cts.Token);
 
-            task.IsCompleted.Should().BeFalse();
-            error.Code.Should().Be(DhcpErrorCode.None);
+            channels[0].Complete(new DhcpError(DhcpErrorCode.SocketError));
 
-            Exception inner = new Exception();
-            Exception exception = new DhcpException(DhcpErrorCode.SocketError, inner);
-            socket.Complete(exception);
-
-            count.Should().Be(0);
-            error.Code.Should().Be(DhcpErrorCode.SocketError);
-            error.Exception.Should().BeSameAs(exception);
-            error.Exception.InnerException.Should().BeSameAs(inner);
             task.IsCanceled.Should().BeTrue();
+            count.Should().Be(1);
         }
 
-        [TestMethod]
-        public void ReceiveWithGenericCallbackException()
+        private sealed class StubInputChannel : IDhcpInputChannel
         {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            Exception exception = new Exception();
-            void Callback(DhcpMessageBuffer m, CancellationToken t)
+            private readonly Action onReceive;
+
+            private TaskCompletionSource<(DhcpMessageBuffer, DhcpError)> next;
+
+            public StubInputChannel(Memory<byte> rawBuffer, Action onReceive = null)
             {
-                if (m.Opcode == DhcpOpcode.Request)
-                {
-                    throw exception;
-                }
+                this.Buffer = new DhcpMessageBuffer(rawBuffer);
+                this.onReceive = onReceive ?? (() => { });
             }
 
-            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks(Callback), CancellationToken.None);
+            public DhcpMessageBuffer Buffer { get; }
 
-            task.IsCompleted.Should().BeFalse();
-
-            Complete(socket, "Request1");
-
-            task.IsFaulted.Should().BeTrue();
-            task.Exception.Should().NotBeNull();
-            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
-        }
-
-        [TestMethod]
-        public void ReceiveWithGenericReceiveException()
-        {
-            StubInputSocket socket = new StubInputSocket();
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(socket);
-            Exception exception = new Exception();
-            int count = 0;
-            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), new StubDhcpReceiveCallbacks((m, t) => ++count), CancellationToken.None);
-
-            task.IsCompleted.Should().BeFalse();
-
-            socket.Complete(exception);
-
-            count.Should().Be(0);
-            task.IsFaulted.Should().BeTrue();
-            task.Exception.Should().NotBeNull();
-            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
-        }
-
-        private static void Complete(StubInputSocket socket, string resourceName, int length = -1)
-        {
-            byte[] raw = new byte[66000];
-            Span<byte> packet = new Memory<byte>(raw).Span;
-            int actualLength = PacketResource.Read(resourceName, packet);
-            if (length == -1)
-            {
-                length = actualLength;
-            }
-
-            socket.Complete(packet.Slice(0, length));
-        }
-
-        private sealed class StubInputSocket : IInputSocket
-        {
-            private Memory<byte> buffer;
-            private TaskCompletionSource<int> next;
-
-            public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
+            public Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
             {
                 token.ThrowIfCancellationRequested();
-                this.buffer = buffer;
-                this.next = new TaskCompletionSource<int>();
-                return new ValueTask<int>(this.next.Task);
+                this.onReceive();
+                this.next = new TaskCompletionSource<(DhcpMessageBuffer, DhcpError)>();
+                return this.next.Task;
             }
 
-            public void Complete(ReadOnlySpan<byte> input)
+            public void Complete(string resourceName)
             {
-                Span<byte> output = this.buffer.Span;
-                int safeLength = Math.Min(input.Length, output.Length);
-                for (int i = 0; i < safeLength; ++i)
-                {
-                    output[i] = input[i];
-                }
-
-                this.next.SetResult(input.Length);
+                byte[] raw = new byte[66000];
+                Span<byte> packet = new Memory<byte>(raw).Span;
+                ushort actualLength = PacketResource.Read(resourceName, packet);
+                packet.Slice(0, actualLength).CopyTo(this.Buffer.Span);
+                this.Buffer.Load(actualLength);
+                this.next.SetResult((this.Buffer, default));
             }
 
-            public void Complete(Exception exception)
+            public void Complete(DhcpError error)
             {
-                this.next.SetException(exception);
+                this.next.SetResult((this.Buffer, error));
             }
         }
 
         private sealed class StubDhcpReceiveCallbacks : IDhcpReceiveCallbacks
         {
+            private static readonly ValueTask Completed = new ValueTask(Task.CompletedTask);
+
             private readonly Action<DhcpMessageBuffer, CancellationToken> onReceive;
             private readonly Action<DhcpError, CancellationToken> onError;
 
-            public StubDhcpReceiveCallbacks(Action<DhcpMessageBuffer, CancellationToken> onReceive, Action<DhcpError, CancellationToken> onError = null)
+            public StubDhcpReceiveCallbacks(
+                Action<DhcpMessageBuffer, CancellationToken> onReceive = null,
+                Action<DhcpError, CancellationToken> onError = null)
             {
-                this.onReceive = onReceive;
-                this.onError = onError;
-            }
-
-            public ValueTask OnReceiveAsync(DhcpMessageBuffer message, CancellationToken token)
-            {
-                this.onReceive(message, token);
-                return new ValueTask(Task.CompletedTask);
+                this.onReceive = onReceive ?? ((m, t) => { });
+                this.onError = onError ?? ((e, t) => { });
             }
 
             public ValueTask OnErrorAsync(DhcpError error, CancellationToken token)
             {
                 this.onError(error, token);
-                return new ValueTask(Task.CompletedTask);
+                return Completed;
+            }
+
+            public ValueTask OnReceiveAsync(DhcpMessageBuffer message, CancellationToken token)
+            {
+                this.onReceive(message, token);
+                return Completed;
             }
         }
     }

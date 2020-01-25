@@ -83,7 +83,25 @@ namespace DhcpServer.Test
             error.Code.Should().Be(DhcpErrorCode.None);
             events.Should().ContainInOrder(
                 "ReceiveStart(1)",
-                "ReceiveEnd(1, True, None)");
+                "ReceiveEnd(1, True, None, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveThrow()
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
+            using CancellationTokenSource cts = new CancellationTokenSource();
+
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            cts.Cancel();
+            Task task = channel.ReceiveAsync(cts.Token);
+
+            task.IsCanceled.Should().BeTrue();
+            events.Should().ContainInOrder(
+                "ReceiveStart(1)",
+                "ReceiveEnd(1, False, None, OperationCanceledException)");
         }
 
         private sealed class StubInputChannelEvents : IDhcpInputChannelEvents
@@ -100,9 +118,10 @@ namespace DhcpServer.Test
                 this.events.Add($"{nameof(this.ReceiveStart)}({id})");
             }
 
-            public void ReceiveEnd(int id, bool succeeded, DhcpError error)
+            public void ReceiveEnd(int id, bool succeeded, DhcpError error, Exception exception)
             {
-                this.events.Add($"{nameof(this.ReceiveEnd)}({id}, {succeeded}, {error.Code})");
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{nameof(this.ReceiveEnd)}({id}, {succeeded}, {error.Code}, {type})");
             }
         }
 
@@ -152,6 +171,7 @@ namespace DhcpServer.Test
 
                 public Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
                 {
+                    token.ThrowIfCancellationRequested();
                     return Task.FromResult((this.buffer, this.error));
                 }
             }

@@ -47,9 +47,17 @@ namespace DhcpServer
             public async Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
             {
                 this.channelEvents.ReceiveStart(this.id);
-                var result = await this.inner.ReceiveAsync(token);
-                this.channelEvents.ReceiveEnd(this.id, true, result.Item2);
-                return result;
+                try
+                {
+                    var result = await this.inner.ReceiveAsync(token);
+                    this.channelEvents.ReceiveEnd(this.id, true, result.Item2, null);
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    this.channelEvents.ReceiveEnd(this.id, false, default, e);
+                    throw;
+                }
             }
         }
     }

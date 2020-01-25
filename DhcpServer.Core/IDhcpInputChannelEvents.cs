@@ -25,6 +25,7 @@ namespace DhcpServer
         /// <param name="id">The channel identifier.</param>
         /// <param name="succeeded">Whether the operation succeeded or not.</param>
         /// <param name="error">The error returned from the operation.</param>
-        void ReceiveEnd(int id, bool succeeded, DhcpError error);
+        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        void ReceiveEnd(int id, bool succeeded, DhcpError error, Exception exception);
     }
 }

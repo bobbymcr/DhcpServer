@@ -17,23 +17,32 @@ namespace DhcpServer
         /// </summary>
         /// <param name="inner">The inner factory.</param>
         /// <param name="factoryEvents">The events for the factory.</param>
+        /// <param name="channelEvents">The events for the channel.</param>
         /// <returns>A new factory instance wrapping the inner factory.</returns>
-        public static IDhcpInputChannelFactory WithEvents(this IDhcpInputChannelFactory inner, IDhcpInputChannelFactoryEvents factoryEvents)
+        public static IDhcpInputChannelFactory WithEvents(
+            this IDhcpInputChannelFactory inner,
+            IDhcpInputChannelFactoryEvents factoryEvents,
+            IDhcpInputChannelEvents channelEvents)
         {
-            return new DhcpInputChannelFactoryWithEvents(inner, factoryEvents);
+            return new DhcpInputChannelFactoryWithEvents(inner, factoryEvents, channelEvents);
         }
 
         private sealed class DhcpInputChannelFactoryWithEvents : IDhcpInputChannelFactory
         {
             private readonly IDhcpInputChannelFactory inner;
             private readonly IDhcpInputChannelFactoryEvents factoryEvents;
+            private readonly IDhcpInputChannelEvents channelEvents;
 
             private int lastId;
 
-            public DhcpInputChannelFactoryWithEvents(IDhcpInputChannelFactory inner, IDhcpInputChannelFactoryEvents factoryEvents)
+            public DhcpInputChannelFactoryWithEvents(
+                IDhcpInputChannelFactory inner,
+                IDhcpInputChannelFactoryEvents factoryEvents,
+                IDhcpInputChannelEvents channelEvents)
             {
                 this.inner = inner;
                 this.factoryEvents = factoryEvents;
+                this.channelEvents = channelEvents;
             }
 
             public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
@@ -42,7 +51,8 @@ namespace DhcpServer
                 this.factoryEvents.CreateChannelStart(id, rawBuffer.Length);
                 try
                 {
-                    IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer);
+                    IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer)
+                        .WithEvents(id, this.channelEvents);
                     this.factoryEvents.CreateChannelEnd(id, true, null);
                     return channel;
                 }

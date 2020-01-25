@@ -19,7 +19,7 @@ namespace DhcpServer.Test
         {
             List<string> events = new List<string>();
             StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
 
             IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
             Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
@@ -38,7 +38,7 @@ namespace DhcpServer.Test
         {
             List<string> events = new List<string>();
             StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
 
             Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
 
@@ -53,7 +53,7 @@ namespace DhcpServer.Test
         {
             List<string> events = new List<string>();
             StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
 
             IDhcpInputChannel channel1 = outer.CreateChannel(new Memory<byte>(new byte[500]));
             IDhcpInputChannel channel2 = outer.CreateChannel(new Memory<byte>(new byte[499]));
@@ -66,6 +66,44 @@ namespace DhcpServer.Test
                 "CreateChannelEnd(1, True, <null>)",
                 "CreateChannelStart(2, 499)",
                 "CreateChannelEnd(2, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceive()
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
+
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            (_, DhcpError error) = task.Result;
+            error.Code.Should().Be(DhcpErrorCode.None);
+            events.Should().ContainInOrder(
+                "ReceiveStart(1)",
+                "ReceiveEnd(1, True, None)");
+        }
+
+        private sealed class StubInputChannelEvents : IDhcpInputChannelEvents
+        {
+            private readonly IList<string> events;
+
+            public StubInputChannelEvents(IList<string> events)
+            {
+                this.events = events;
+            }
+
+            public void ReceiveStart(int id)
+            {
+                this.events.Add($"{nameof(this.ReceiveStart)}({id})");
+            }
+
+            public void ReceiveEnd(int id, bool succeeded, DhcpError error)
+            {
+                this.events.Add($"{nameof(this.ReceiveEnd)}({id}, {succeeded}, {error.Code})");
+            }
         }
 
         private sealed class StubInputChannelFactoryEvents : IDhcpInputChannelFactoryEvents

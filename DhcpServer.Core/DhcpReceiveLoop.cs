@@ -41,26 +41,38 @@ namespace DhcpServer
         {
             while (true)
             {
-                try
+                DhcpError error = await this.ReceiveAsync(buffer, messageBuffer, token);
+                if (error.Code == DhcpErrorCode.None)
                 {
-                    int length = await this.socket.ReceiveAsync(buffer, token);
-                    if ((length > ushort.MaxValue) || (length > buffer.Length))
-                    {
-                        await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooLarge), token);
-                    }
-                    else if (messageBuffer.Load((ushort)length))
-                    {
-                        await callbacks.OnReceiveAsync(messageBuffer, token);
-                    }
-                    else
-                    {
-                        await callbacks.OnErrorAsync(new DhcpError(DhcpErrorCode.PacketTooSmall), token);
-                    }
+                    await callbacks.OnReceiveAsync(messageBuffer, token);
                 }
-                catch (DhcpException e)
+                else
                 {
-                    await callbacks.OnErrorAsync(new DhcpError(e), token);
+                    await callbacks.OnErrorAsync(error, token);
                 }
+            }
+        }
+
+        private async Task<DhcpError> ReceiveAsync(Memory<byte> buffer, DhcpMessageBuffer messageBuffer, CancellationToken token)
+        {
+            try
+            {
+                int length = await this.socket.ReceiveAsync(buffer, token);
+                if ((length > ushort.MaxValue) || (length > buffer.Length))
+                {
+                    return new DhcpError(DhcpErrorCode.PacketTooLarge);
+                }
+
+                if (!messageBuffer.Load((ushort)length))
+                {
+                    return new DhcpError(DhcpErrorCode.PacketTooSmall);
+                }
+
+                return new DhcpError(DhcpErrorCode.None);
+            }
+            catch (DhcpException e)
+            {
+                return new DhcpError(e);
             }
         }
     }

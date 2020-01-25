@@ -4,6 +4,8 @@
 
 namespace DhcpServer
 {
+    using System;
+
     /// <summary>
     /// Operational events for an <see cref="IDhcpInputChannelFactory"/>.
     /// </summary>
@@ -20,6 +22,8 @@ namespace DhcpServer
         /// Denotes the end of a call to
         /// <see cref="IDhcpInputChannelFactory.CreateChannel(System.Memory{byte})"/>.
         /// </summary>
-        void CreateChannelEnd();
+        /// <param name="succeeded">Whether the operation succeeded or not.</param>
+        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        void CreateChannelEnd(bool succeeded, Exception exception);
     }
 }

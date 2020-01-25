@@ -31,7 +31,23 @@ namespace DhcpServer.Test
             error.Code.Should().Be(DhcpErrorCode.None);
             events.Should().ContainInOrder(
                 "CreateChannelStart(500)",
-                "CreateChannelEnd()");
+                "CreateChannelEnd(True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsCreateChannelWithException()
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            using CancellationTokenSource cts = new CancellationTokenSource();
+
+            Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+            events.Should().ContainInOrder(
+                "CreateChannelStart(0)",
+                "CreateChannelEnd(False, ArgumentOutOfRangeException)");
         }
 
         private sealed class StubInputChannelFactoryEvents : IDhcpInputChannelFactoryEvents
@@ -48,9 +64,10 @@ namespace DhcpServer.Test
                 this.events.Add($"{nameof(this.CreateChannelStart)}({bufferSize})");
             }
 
-            public void CreateChannelEnd()
+            public void CreateChannelEnd(bool succeeded, Exception exception)
             {
-                this.events.Add($"{nameof(this.CreateChannelEnd)}()");
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{nameof(this.CreateChannelEnd)}({succeeded}, {type})");
             }
         }
 

@@ -36,9 +36,17 @@ namespace DhcpServer
             public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
             {
                 this.factoryEvents.CreateChannelStart(rawBuffer.Length);
-                IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer);
-                this.factoryEvents.CreateChannelEnd();
-                return channel;
+                try
+                {
+                    IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer);
+                    this.factoryEvents.CreateChannelEnd(true, null);
+                    return channel;
+                }
+                catch (Exception e)
+                {
+                    this.factoryEvents.CreateChannelEnd(false, e);
+                    throw;
+                }
             }
         }
     }

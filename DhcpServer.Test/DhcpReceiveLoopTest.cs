@@ -59,6 +59,23 @@ namespace DhcpServer.Test
         }
 
         [TestMethod]
+        public void ThrowOnSocketReceive()
+        {
+            Exception exception = new InvalidOperationException("unhandled");
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory(onReceive: () =>
+            {
+                throw exception;
+            });
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
+            StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks();
+            Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
+
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+        }
+
+        [TestMethod]
         public void CancelRightAway()
         {
             StubInputChannelFactory channelFactory = new StubInputChannelFactory();

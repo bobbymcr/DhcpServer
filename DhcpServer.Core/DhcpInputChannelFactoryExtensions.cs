@@ -5,6 +5,7 @@
 namespace DhcpServer
 {
     using System;
+    using System.Threading;
 
     /// <summary>
     /// Contains extension methods for <see cref="IDhcpInputChannelFactory"/>.
@@ -27,6 +28,8 @@ namespace DhcpServer
             private readonly IDhcpInputChannelFactory inner;
             private readonly IDhcpInputChannelFactoryEvents factoryEvents;
 
+            private int lastId;
+
             public DhcpInputChannelFactoryWithEvents(IDhcpInputChannelFactory inner, IDhcpInputChannelFactoryEvents factoryEvents)
             {
                 this.inner = inner;
@@ -35,16 +38,17 @@ namespace DhcpServer
 
             public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
             {
-                this.factoryEvents.CreateChannelStart(rawBuffer.Length);
+                int id = Interlocked.Increment(ref this.lastId);
+                this.factoryEvents.CreateChannelStart(id, rawBuffer.Length);
                 try
                 {
                     IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer);
-                    this.factoryEvents.CreateChannelEnd(true, null);
+                    this.factoryEvents.CreateChannelEnd(id, true, null);
                     return channel;
                 }
                 catch (Exception e)
                 {
-                    this.factoryEvents.CreateChannelEnd(false, e);
+                    this.factoryEvents.CreateChannelEnd(id, false, e);
                     throw;
                 }
             }

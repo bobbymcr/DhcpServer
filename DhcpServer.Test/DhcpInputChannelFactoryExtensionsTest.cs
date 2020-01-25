@@ -20,7 +20,6 @@ namespace DhcpServer.Test
             List<string> events = new List<string>();
             StubInputChannelFactory inner = new StubInputChannelFactory();
             IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
-            using CancellationTokenSource cts = new CancellationTokenSource();
 
             IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
             Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
@@ -30,8 +29,8 @@ namespace DhcpServer.Test
             buffer.Should().BeSameAs(inner.Buffer);
             error.Code.Should().Be(DhcpErrorCode.None);
             events.Should().ContainInOrder(
-                "CreateChannelStart(500)",
-                "CreateChannelEnd(True, <null>)");
+                "CreateChannelStart(1, 500)",
+                "CreateChannelEnd(1, True, <null>)");
         }
 
         [TestMethod]
@@ -40,14 +39,33 @@ namespace DhcpServer.Test
             List<string> events = new List<string>();
             StubInputChannelFactory inner = new StubInputChannelFactory();
             IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
-            using CancellationTokenSource cts = new CancellationTokenSource();
 
             Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
 
             act.Should().Throw<ArgumentOutOfRangeException>();
             events.Should().ContainInOrder(
-                "CreateChannelStart(0)",
-                "CreateChannelEnd(False, ArgumentOutOfRangeException)");
+                "CreateChannelStart(1, 0)",
+                "CreateChannelEnd(1, False, ArgumentOutOfRangeException)");
+        }
+
+        [TestMethod]
+        public void WithEventsCreateTwoChannels()
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+
+            IDhcpInputChannel channel1 = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            IDhcpInputChannel channel2 = outer.CreateChannel(new Memory<byte>(new byte[499]));
+
+            channel1.Should().NotBeNull();
+            channel2.Should().NotBeNull();
+            channel1.Should().NotBeSameAs(channel2);
+            events.Should().ContainInOrder(
+                "CreateChannelStart(1, 500)",
+                "CreateChannelEnd(1, True, <null>)",
+                "CreateChannelStart(2, 499)",
+                "CreateChannelEnd(2, True, <null>)");
         }
 
         private sealed class StubInputChannelFactoryEvents : IDhcpInputChannelFactoryEvents
@@ -59,15 +77,15 @@ namespace DhcpServer.Test
                 this.events = events;
             }
 
-            public void CreateChannelStart(int bufferSize)
+            public void CreateChannelStart(int id, int bufferSize)
             {
-                this.events.Add($"{nameof(this.CreateChannelStart)}({bufferSize})");
+                this.events.Add($"{nameof(this.CreateChannelStart)}({id}, {bufferSize})");
             }
 
-            public void CreateChannelEnd(bool succeeded, Exception exception)
+            public void CreateChannelEnd(int id, bool succeeded, Exception exception)
             {
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{nameof(this.CreateChannelEnd)}({succeeded}, {type})");
+                this.events.Add($"{nameof(this.CreateChannelEnd)}({id}, {succeeded}, {type})");
             }
         }
 

@@ -9,9 +9,9 @@ namespace DhcpServer
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents a strongly-typed DHCP datagram input channel.
+    /// A DHCP input channel based on a datagram socket.
     /// </summary>
-    public sealed class DhcpInputChannel
+    public sealed class DhcpInputChannel : IDhcpInputChannel
     {
         private readonly IInputSocket socket;
         private readonly Memory<byte> rawBuffer;

@@ -33,47 +33,67 @@ namespace DhcpServer
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
         public Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
-            DhcpMessageBuffer messageBuffer = new DhcpMessageBuffer(buffer);
-            return this.RunAsync(buffer, messageBuffer, callbacks, token);
+            DhcpMessageChannel channel = new DhcpMessageChannel(this.socket, buffer);
+            return this.RunAsync(channel, callbacks, token);
         }
 
-        private async Task RunAsync(Memory<byte> buffer, DhcpMessageBuffer messageBuffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
+        private async Task RunAsync(DhcpMessageChannel channel, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
             while (true)
             {
-                DhcpError error = await this.ReceiveAsync(buffer, messageBuffer, token);
-                if (error.Code == DhcpErrorCode.None)
+                (DhcpMessageBuffer buffer, DhcpError error) = await channel.ReceiveAsync(token);
+                if (error.Code != DhcpErrorCode.None)
                 {
-                    await callbacks.OnReceiveAsync(messageBuffer, token);
+                    await callbacks.OnErrorAsync(error, token);
                 }
                 else
                 {
-                    await callbacks.OnErrorAsync(error, token);
+                    await callbacks.OnReceiveAsync(buffer, token);
                 }
             }
         }
 
-        private async Task<DhcpError> ReceiveAsync(Memory<byte> buffer, DhcpMessageBuffer messageBuffer, CancellationToken token)
+        private sealed class DhcpMessageChannel
         {
-            try
-            {
-                int length = await this.socket.ReceiveAsync(buffer, token);
-                if ((length > ushort.MaxValue) || (length > buffer.Length))
-                {
-                    return new DhcpError(DhcpErrorCode.PacketTooLarge);
-                }
+            private readonly IInputSocket socket;
+            private readonly Memory<byte> rawBuffer;
+            private readonly DhcpMessageBuffer buffer;
 
-                if (!messageBuffer.Load((ushort)length))
-                {
-                    return new DhcpError(DhcpErrorCode.PacketTooSmall);
-                }
-
-                return new DhcpError(DhcpErrorCode.None);
-            }
-            catch (DhcpException e)
+            public DhcpMessageChannel(IInputSocket socket, Memory<byte> rawBuffer)
             {
-                return new DhcpError(e);
+                this.socket = socket;
+                this.rawBuffer = rawBuffer;
+                this.buffer = new DhcpMessageBuffer(this.rawBuffer);
             }
+
+            public async Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
+            {
+                try
+                {
+                    int length = await this.socket.ReceiveAsync(this.rawBuffer, token);
+                    if ((length > ushort.MaxValue) || (length > this.rawBuffer.Length))
+                    {
+                        return this.Error(DhcpErrorCode.PacketTooLarge);
+                    }
+
+                    if (!this.buffer.Load((ushort)length))
+                    {
+                        return this.Error(DhcpErrorCode.PacketTooSmall);
+                    }
+
+                    return this.OK();
+                }
+                catch (DhcpException e)
+                {
+                    return this.Error(e);
+                }
+            }
+
+            private (DhcpMessageBuffer, DhcpError) OK() => (this.buffer, default);
+
+            private (DhcpMessageBuffer, DhcpError) Error(DhcpErrorCode error) => (this.buffer, new DhcpError(error));
+
+            private (DhcpMessageBuffer, DhcpError) Error(DhcpException error) => (this.buffer, new DhcpError(error));
         }
     }
 }

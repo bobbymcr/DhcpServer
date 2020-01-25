@@ -13,13 +13,13 @@ namespace DhcpServer
     /// </summary>
     public sealed class DhcpReceiveLoop
     {
-        private readonly Func<Memory<byte>, IDhcpInputChannel> channelFactory;
+        private readonly IDhcpInputChannelFactory channelFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DhcpReceiveLoop"/> class.
         /// </summary>
         /// <param name="channelFactory">The input channel factory.</param>
-        public DhcpReceiveLoop(Func<Memory<byte>, IDhcpInputChannel> channelFactory)
+        public DhcpReceiveLoop(IDhcpInputChannelFactory channelFactory)
         {
             this.channelFactory = channelFactory;
         }
@@ -33,7 +33,7 @@ namespace DhcpServer
         /// <returns>A <see cref="Task"/> tracking the asynchronous operation.</returns>
         public Task RunAsync(Memory<byte> buffer, IDhcpReceiveCallbacks callbacks, CancellationToken token)
         {
-            IDhcpInputChannel channel = this.channelFactory(buffer);
+            IDhcpInputChannel channel = this.channelFactory.CreateChannel(buffer);
             return this.RunAsync(channel, callbacks, token);
         }
 

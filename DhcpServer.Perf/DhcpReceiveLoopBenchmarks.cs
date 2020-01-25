@@ -33,7 +33,7 @@ namespace DhcpServer.Perf
             this.endpoint = new IPEndpointV4(IPAddressV4.Loopback, 67);
             this.socket = new DhcpSocket(this.endpoint);
             DhcpInputChannelFactory channelFactory = new DhcpInputChannelFactory(this.socket);
-            this.loop = new DhcpReceiveLoop(channelFactory.CreateChannel);
+            this.loop = new DhcpReceiveLoop(channelFactory);
             this.rawReceiveBuffer = new byte[500];
             this.receiveBuffer = new Memory<byte>(this.rawReceiveBuffer);
             this.callbacks = new Callbacks();

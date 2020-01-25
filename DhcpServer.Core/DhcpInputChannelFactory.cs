@@ -9,7 +9,7 @@ namespace DhcpServer
     /// <summary>
     /// Creates <see cref="DhcpInputChannel"/> instances using a shared input socket.
     /// </summary>
-    public sealed class DhcpInputChannelFactory
+    public sealed class DhcpInputChannelFactory : IDhcpInputChannelFactory
     {
         private readonly IInputSocket socket;
 
@@ -22,11 +22,7 @@ namespace DhcpServer
             this.socket = socket;
         }
 
-        /// <summary>
-        /// Creates a new input channel instance.
-        /// </summary>
-        /// <param name="rawBuffer">The underlying buffer for received data.</param>
-        /// <returns>The channel instance.</returns>
+        /// <inheritdoc/>
         public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
         {
             return new DhcpInputChannel(this.socket, rawBuffer);

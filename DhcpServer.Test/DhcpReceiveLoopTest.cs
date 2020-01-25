@@ -17,21 +17,15 @@ namespace DhcpServer.Test
         [TestMethod]
         public void RunOneReceiveTwo()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b);
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             int count = 0;
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
 
             Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
 
             task.IsCompleted.Should().BeFalse();
-            StubInputChannel channel = channels.Should().ContainSingle().Which;
+            StubInputChannel channel = channelFactory.Channels.Should().ContainSingle().Which;
 
             channel.Complete("Request1");
             channel.Buffer.Opcode = DhcpOpcode.None;
@@ -44,14 +38,8 @@ namespace DhcpServer.Test
         [TestMethod]
         public void RunTwoReceiveTwo()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b);
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             int count = 0;
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
 
@@ -60,10 +48,10 @@ namespace DhcpServer.Test
 
             task1.IsCompleted.Should().BeFalse();
             task2.IsCompleted.Should().BeFalse();
-            channels.Should().HaveCount(2);
+            channelFactory.Channels.Should().HaveCount(2);
 
-            channels[0].Complete("Request1");
-            channels[1].Complete("Request1");
+            channelFactory.Channels[0].Complete("Request1");
+            channelFactory.Channels[1].Complete("Request1");
 
             task1.IsCompleted.Should().BeFalse();
             task2.IsCompleted.Should().BeFalse();
@@ -73,14 +61,8 @@ namespace DhcpServer.Test
         [TestMethod]
         public void CancelRightAway()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b);
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             int count = 0;
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) => count += (int)m.Opcode);
             using CancellationTokenSource cts = new CancellationTokenSource();
@@ -95,15 +77,9 @@ namespace DhcpServer.Test
         [TestMethod]
         public void CancelOnReceive()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
             using CancellationTokenSource cts = new CancellationTokenSource();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b, onReceive: () => cts.Cancel());
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory(onReceive: () => cts.Cancel());
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             int count = 0;
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onReceive: (m, t) =>
             {
@@ -113,7 +89,7 @@ namespace DhcpServer.Test
 
             Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, cts.Token);
 
-            channels[0].Complete("Request1");
+            channelFactory.Channels[0].Complete("Request1");
 
             task.IsCanceled.Should().BeTrue();
             count.Should().Be(1);
@@ -122,20 +98,14 @@ namespace DhcpServer.Test
         [TestMethod]
         public void Error()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b);
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory();
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             List<DhcpError> errors = new List<DhcpError>();
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onError: (e, t) => errors.Add(e));
 
             Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, CancellationToken.None);
 
-            channels[0].Complete(new DhcpError(DhcpErrorCode.BufferError));
+            channelFactory.Channels[0].Complete(new DhcpError(DhcpErrorCode.BufferError));
 
             task.IsCompleted.Should().BeFalse();
             errors.Should().ContainSingle().Which.Code.Should().Be(DhcpErrorCode.BufferError);
@@ -144,15 +114,9 @@ namespace DhcpServer.Test
         [TestMethod]
         public void CancelOnError()
         {
-            List<StubInputChannel> channels = new List<StubInputChannel>();
             using CancellationTokenSource cts = new CancellationTokenSource();
-            Func<Memory<byte>, IDhcpInputChannel> createChannel = b =>
-            {
-                StubInputChannel channel = new StubInputChannel(b, onReceive: () => cts.Cancel());
-                channels.Add(channel);
-                return channel;
-            };
-            DhcpReceiveLoop loop = new DhcpReceiveLoop(createChannel);
+            StubInputChannelFactory channelFactory = new StubInputChannelFactory(onReceive: () => cts.Cancel());
+            DhcpReceiveLoop loop = new DhcpReceiveLoop(channelFactory);
             int count = 0;
             StubDhcpReceiveCallbacks callbacks = new StubDhcpReceiveCallbacks(onError: (e, t) =>
             {
@@ -162,10 +126,30 @@ namespace DhcpServer.Test
 
             Task task = loop.RunAsync(new Memory<byte>(new byte[500]), callbacks, cts.Token);
 
-            channels[0].Complete(new DhcpError(DhcpErrorCode.SocketError));
+            channelFactory.Channels[0].Complete(new DhcpError(DhcpErrorCode.SocketError));
 
             task.IsCanceled.Should().BeTrue();
             count.Should().Be(1);
+        }
+
+        private sealed class StubInputChannelFactory : IDhcpInputChannelFactory
+        {
+            private readonly Action onReceive;
+
+            public StubInputChannelFactory(Action onReceive = null)
+            {
+                this.onReceive = onReceive ?? (() => { });
+                this.Channels = new List<StubInputChannel>();
+            }
+
+            public IList<StubInputChannel> Channels { get; }
+
+            public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
+            {
+                StubInputChannel channel = new StubInputChannel(rawBuffer, this.onReceive);
+                this.Channels.Add(channel);
+                return channel;
+            }
         }
 
         private sealed class StubInputChannel : IDhcpInputChannel
@@ -174,10 +158,10 @@ namespace DhcpServer.Test
 
             private TaskCompletionSource<(DhcpMessageBuffer, DhcpError)> next;
 
-            public StubInputChannel(Memory<byte> rawBuffer, Action onReceive = null)
+            public StubInputChannel(Memory<byte> rawBuffer, Action onReceive)
             {
                 this.Buffer = new DhcpMessageBuffer(rawBuffer);
-                this.onReceive = onReceive ?? (() => { });
+                this.onReceive = onReceive;
             }
 
             public DhcpMessageBuffer Buffer { get; }

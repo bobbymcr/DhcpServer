@@ -5,6 +5,7 @@
 namespace DhcpServer.Test
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using DhcpServer.Events;
@@ -29,6 +30,66 @@ namespace DhcpServer.Test
             task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
         }
 
+        [TestMethod]
+        public void WithEventsRestoresActivityIdOnEnd()
+        {
+            List<string> events = new List<string>();
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(new byte[500]));
+            DhcpError error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
+            StubInputChannel inner = new StubInputChannel(buffer, error);
+            IDhcpInputChannel outer = inner.WithEvents(1, new StubInputChannelEvents(events));
+
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-cccccccccccc"));
+            inner.Pending = new TaskCompletionSource<(DhcpMessageBuffer, DhcpError)>();
+            Task<(DhcpMessageBuffer, DhcpError)> task = outer.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-dddddddddddd"));
+            inner.Pending.SetResult((buffer, error));
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Item1.Should().BeSameAs(buffer);
+            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>)");
+        }
+
+        private static string ActivityPrefix()
+        {
+            Guid id = ActivityScope.CurrentId;
+            if (id == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return id.ToString("D") + "/";
+        }
+
+        private sealed class StubInputChannelEvents : IDhcpInputChannelEvents
+        {
+            private readonly IList<string> events;
+
+            public StubInputChannelEvents(IList<string> events)
+            {
+                this.events = events;
+            }
+
+            public void ReceiveStart(DhcpChannelId id)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id})");
+            }
+
+            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type})");
+            }
+        }
+
         private sealed class StubInputChannel : IDhcpInputChannel
         {
             private readonly DhcpMessageBuffer buffer;
@@ -40,9 +101,16 @@ namespace DhcpServer.Test
                 this.error = error;
             }
 
+            public TaskCompletionSource<(DhcpMessageBuffer, DhcpError)> Pending { get; set; }
+
             public Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
             {
-                return Task.FromResult((this.buffer, this.error));
+                if (this.Pending == null)
+                {
+                    return Task.FromResult((this.buffer, this.error));
+                }
+
+                return this.Pending.Task;
             }
         }
     }

@@ -52,16 +52,26 @@ namespace DhcpServer.Events
             public async Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
             {
                 this.channelEvents.ReceiveStart(this.id);
+                Guid activityId = ActivityScope.CurrentId;
                 try
                 {
                     var result = await this.inner.ReceiveAsync(token);
-                    this.channelEvents.ReceiveEnd(this.id, result.Item2.Code == DhcpErrorCode.None, result.Item2, null);
+                    this.OnEnd(activityId, result.Item2, null);
                     return result;
                 }
                 catch (Exception e)
                 {
-                    this.channelEvents.ReceiveEnd(this.id, false, default, e);
+                    this.OnEnd(activityId, default, e);
                     throw;
+                }
+            }
+
+            private void OnEnd(Guid activityId, DhcpError error, Exception exception)
+            {
+                using (new ActivityScope(activityId))
+                {
+                    bool succeeded = (error.Code == DhcpErrorCode.None) && (exception == null);
+                    this.channelEvents.ReceiveEnd(this.id, succeeded, error, exception);
                 }
             }
         }

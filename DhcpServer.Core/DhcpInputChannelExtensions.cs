@@ -22,7 +22,7 @@ namespace DhcpServer
         /// <returns>A new channel instance wrapping the inner channel.</returns>
         public static IDhcpInputChannel WithEvents(
             this IDhcpInputChannel inner,
-            int id,
+            DhcpChannelId id,
             IDhcpInputChannelEvents channelEvents = null)
         {
             if (channelEvents != null)
@@ -36,12 +36,12 @@ namespace DhcpServer
         private sealed class DhcpInputChannelWithEvents : IDhcpInputChannel
         {
             private readonly IDhcpInputChannel inner;
-            private readonly int id;
+            private readonly DhcpChannelId id;
             private readonly IDhcpInputChannelEvents channelEvents;
 
             public DhcpInputChannelWithEvents(
                 IDhcpInputChannel inner,
-                int id,
+                DhcpChannelId id,
                 IDhcpInputChannelEvents channelEvents)
             {
                 this.inner = inner;

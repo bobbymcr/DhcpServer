@@ -17,7 +17,7 @@ namespace DhcpServer
         /// </summary>
         /// <param name="id">The channel identifier.</param>
         /// <param name="bufferSize">The buffer size.</param>
-        void CreateChannelStart(int id, int bufferSize);
+        void CreateChannelStart(DhcpChannelId id, int bufferSize);
 
         /// <summary>
         /// Denotes the end of a call to
@@ -26,6 +26,6 @@ namespace DhcpServer
         /// <param name="id">The channel identifier.</param>
         /// <param name="succeeded">Whether the operation succeeded or not.</param>
         /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
-        void CreateChannelEnd(int id, bool succeeded, Exception exception);
+        void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception);
     }
 }

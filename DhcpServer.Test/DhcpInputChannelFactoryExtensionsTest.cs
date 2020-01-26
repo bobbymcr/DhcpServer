@@ -145,15 +145,15 @@ namespace DhcpServer.Test
                 this.events = events;
             }
 
-            public void ReceiveStart(int id)
+            public void ReceiveStart(DhcpChannelId id)
             {
-                this.events.Add($"{nameof(this.ReceiveStart)}({id})");
+                this.events.Add($"{nameof(this.ReceiveStart)}({(int)id})");
             }
 
-            public void ReceiveEnd(int id, bool succeeded, DhcpError error, Exception exception)
+            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
             {
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{nameof(this.ReceiveEnd)}({id}, {succeeded}, {error.Code}, {type})");
+                this.events.Add($"{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type})");
             }
         }
 
@@ -166,15 +166,15 @@ namespace DhcpServer.Test
                 this.events = events;
             }
 
-            public void CreateChannelStart(int id, int bufferSize)
+            public void CreateChannelStart(DhcpChannelId id, int bufferSize)
             {
-                this.events.Add($"{nameof(this.CreateChannelStart)}({id}, {bufferSize})");
+                this.events.Add($"{nameof(this.CreateChannelStart)}({(int)id}, {bufferSize})");
             }
 
-            public void CreateChannelEnd(int id, bool succeeded, Exception exception)
+            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception)
             {
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{nameof(this.CreateChannelEnd)}({id}, {succeeded}, {type})");
+                this.events.Add($"{nameof(this.CreateChannelEnd)}({(int)id}, {succeeded}, {type})");
             }
         }
 

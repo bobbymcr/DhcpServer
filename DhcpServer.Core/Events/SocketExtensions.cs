@@ -45,11 +45,11 @@ namespace DhcpServer.Events
                 {
                     this.socketEvents.SendStart(this.id, buffer.Length, endpoint);
                     await this.inner.SendAsync(buffer, endpoint);
-                    this.OnEnd(activityId, null);
+                    this.OnEndSend(activityId, null);
                 }
                 catch (Exception e)
                 {
-                    this.OnEnd(activityId, e);
+                    this.OnEndSend(activityId, e);
                     throw;
                 }
             }
@@ -58,13 +58,17 @@ namespace DhcpServer.Events
             {
                 Guid activityId = ActivityScope.CurrentId;
                 this.socketEvents.ReceiveStart(this.id, buffer.Length);
-                int result = await this.inner.ReceiveAsync(buffer, token);
-                using (new ActivityScope(activityId))
+                try
                 {
-                    this.socketEvents.ReceiveEnd(this.id, result, true, null);
+                    int result = await this.inner.ReceiveAsync(buffer, token);
+                    this.OnEndReceive(activityId, result, null);
+                    return result;
                 }
-
-                return result;
+                catch (Exception e)
+                {
+                    this.OnEndReceive(activityId, -1, e);
+                    throw;
+                }
             }
 
             public void Dispose()
@@ -72,11 +76,19 @@ namespace DhcpServer.Events
                 throw new NotImplementedException();
             }
 
-            private void OnEnd(Guid activityId, Exception exception)
+            private void OnEndSend(Guid activityId, Exception exception)
             {
                 using (new ActivityScope(activityId))
                 {
                     this.socketEvents.SendEnd(this.id, exception == null, exception);
+                }
+            }
+
+            private void OnEndReceive(Guid activityId, int result, Exception exception)
+            {
+                using (new ActivityScope(activityId))
+                {
+                    this.socketEvents.ReceiveEnd(this.id, result, exception == null, exception);
                 }
             }
         }

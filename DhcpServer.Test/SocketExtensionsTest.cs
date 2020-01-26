@@ -71,7 +71,6 @@ namespace DhcpServer.Test
             List<string> events = new List<string>();
             StubSocket inner = new StubSocket();
             ISocket outer = inner.WithEvents(1, new StubSocketEvents(events));
-            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(1, 2, 3, 4), 5566);
             Memory<byte> buffer = new Memory<byte>(new byte[500]);
 
             using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000033330000"));
@@ -87,6 +86,29 @@ namespace DhcpServer.Test
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000033330000/ReceiveStart(1, 500)",
                 "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveException()
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = inner.WithEvents(2, new StubSocketEvents(events));
+            Memory<byte> buffer = new Memory<byte>(new byte[499]);
+
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000044440000"));
+            ValueTask<int> task = outer.ReceiveAsync(buffer, cts.Token);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
+            cts.Cancel();
+
+            task.IsCanceled.Should().BeTrue();
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-000044440000/ReceiveStart(2, 499)",
+                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException)");
         }
 
         private static string ActivityPrefix()
@@ -119,6 +141,7 @@ namespace DhcpServer.Test
             public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
             {
                 this.pending = new TaskCompletionSource<int>();
+                token.Register(() => this.pending.SetCanceled());
                 return new ValueTask<int>(this.pending.Task);
             }
 

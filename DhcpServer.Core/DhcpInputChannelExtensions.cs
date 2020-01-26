@@ -23,7 +23,7 @@ namespace DhcpServer
         public static IDhcpInputChannel WithEvents(
             this IDhcpInputChannel inner,
             int id,
-            IDhcpInputChannelEvents channelEvents)
+            IDhcpInputChannelEvents channelEvents = null)
         {
             if (channelEvents != null)
             {

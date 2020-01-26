@@ -25,7 +25,12 @@ namespace DhcpServer
             int id,
             IDhcpInputChannelEvents channelEvents)
         {
-            return new DhcpInputChannelWithEvents(inner, id, channelEvents);
+            if (channelEvents != null)
+            {
+                return new DhcpInputChannelWithEvents(inner, id, channelEvents);
+            }
+
+            return inner;
         }
 
         private sealed class DhcpInputChannelWithEvents : IDhcpInputChannel

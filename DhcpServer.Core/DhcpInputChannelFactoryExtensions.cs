@@ -21,10 +21,15 @@ namespace DhcpServer
         /// <returns>A new factory instance wrapping the inner factory.</returns>
         public static IDhcpInputChannelFactory WithEvents(
             this IDhcpInputChannelFactory inner,
-            IDhcpInputChannelFactoryEvents factoryEvents,
-            IDhcpInputChannelEvents channelEvents)
+            IDhcpInputChannelFactoryEvents factoryEvents = null,
+            IDhcpInputChannelEvents channelEvents = null)
         {
-            return new DhcpInputChannelFactoryWithEvents(inner, factoryEvents, channelEvents);
+            if ((factoryEvents != null) || (channelEvents != null))
+            {
+                return new DhcpInputChannelFactoryWithEvents(inner, factoryEvents, channelEvents);
+            }
+
+            return inner;
         }
 
         private sealed class DhcpInputChannelFactoryWithEvents : IDhcpInputChannelFactory
@@ -48,17 +53,17 @@ namespace DhcpServer
             public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
             {
                 int id = Interlocked.Increment(ref this.lastId);
-                this.factoryEvents.CreateChannelStart(id, rawBuffer.Length);
+                this.factoryEvents?.CreateChannelStart(id, rawBuffer.Length);
                 try
                 {
                     IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer)
                         .WithEvents(id, this.channelEvents);
-                    this.factoryEvents.CreateChannelEnd(id, true, null);
+                    this.factoryEvents?.CreateChannelEnd(id, true, null);
                     return channel;
                 }
                 catch (Exception e)
                 {
-                    this.factoryEvents.CreateChannelEnd(id, false, e);
+                    this.factoryEvents?.CreateChannelEnd(id, false, e);
                     throw;
                 }
             }

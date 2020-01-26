@@ -2,7 +2,7 @@
 // Copyright (c) Brian Rogers. All rights reserved.
 // </copyright>
 
-namespace DhcpServer
+namespace DhcpServer.Events
 {
     using System;
 

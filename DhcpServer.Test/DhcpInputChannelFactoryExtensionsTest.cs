@@ -8,6 +8,7 @@ namespace DhcpServer.Test
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using DhcpServer.Events;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -2,7 +2,7 @@
 // Copyright (c) Brian Rogers. All rights reserved.
 // </copyright>
 
-namespace DhcpServer
+namespace DhcpServer.Events
 {
     /// <summary>
     /// An identifier for a <see cref="IDhcpInputChannel"/>, used in operational events.

@@ -41,11 +41,16 @@ namespace DhcpServer.Events
             public async Task SendAsync(ReadOnlyMemory<byte> buffer, IPEndpointV4 endpoint)
             {
                 Guid activityId = ActivityScope.CurrentId;
-                this.socketEvents.SendStart(this.id, buffer.Length, endpoint);
-                await this.inner.SendAsync(buffer, endpoint);
-                using (new ActivityScope(activityId))
+                try
                 {
-                    this.socketEvents.SendEnd(this.id, true, null);
+                    this.socketEvents.SendStart(this.id, buffer.Length, endpoint);
+                    await this.inner.SendAsync(buffer, endpoint);
+                    this.OnEnd(activityId, null);
+                }
+                catch (Exception e)
+                {
+                    this.OnEnd(activityId, e);
+                    throw;
                 }
             }
 
@@ -57,6 +62,14 @@ namespace DhcpServer.Events
             public void Dispose()
             {
                 throw new NotImplementedException();
+            }
+
+            private void OnEnd(Guid activityId, Exception exception)
+            {
+                using (new ActivityScope(activityId))
+                {
+                    this.socketEvents.SendEnd(this.id, exception == null, exception);
+                }
             }
         }
     }

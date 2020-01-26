@@ -73,7 +73,9 @@ namespace DhcpServer.Events
 
             public void Dispose()
             {
-                throw new NotImplementedException();
+                this.socketEvents.DisposeStart(this.id);
+                this.inner.Dispose();
+                this.socketEvents.DisposeEnd(this.id);
             }
 
             private void OnEndSend(Guid activityId, Exception exception)

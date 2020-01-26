@@ -46,5 +46,19 @@ namespace DhcpServer.Events
         /// <param name="succeeded">Whether the operation succeeded or not.</param>
         /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
         void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception);
+
+        /// <summary>
+        /// Denotes the start of a call to
+        /// <see cref="IDisposable.Dispose"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        void DisposeStart(SocketId id);
+
+        /// <summary>
+        /// Denotes the end of a call to
+        /// <see cref="IDisposable.Dispose"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        void DisposeEnd(SocketId id);
     }
 }

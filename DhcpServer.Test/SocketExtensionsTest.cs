@@ -111,6 +111,21 @@ namespace DhcpServer.Test
                 "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException)");
         }
 
+        [TestMethod]
+        public void WithEventsDispose()
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = inner.WithEvents(3, new StubSocketEvents(events));
+
+            outer.Dispose();
+
+            inner.DisposeCount.Should().Be(1);
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "DisposeStart(3)",
+                "DisposeEnd(3)");
+        }
+
         private static string ActivityPrefix()
         {
             Guid id = ActivityScope.CurrentId;
@@ -125,6 +140,8 @@ namespace DhcpServer.Test
         private sealed class StubSocket : ISocket
         {
             private TaskCompletionSource<int> pending;
+
+            public int DisposeCount { get; private set; }
 
             public void Complete() => this.Complete(0);
 
@@ -145,10 +162,7 @@ namespace DhcpServer.Test
                 return new ValueTask<int>(this.pending.Task);
             }
 
-            public void Dispose()
-            {
-                throw new NotImplementedException();
-            }
+            public void Dispose() => ++this.DisposeCount;
         }
 
         private sealed class StubSocketEvents : ISocketEvents
@@ -184,6 +198,16 @@ namespace DhcpServer.Test
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
                 this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type})");
+            }
+
+            public void DisposeStart(SocketId id)
+            {
+                this.events.Add($"{nameof(this.DisposeStart)}({(int)id})");
+            }
+
+            public void DisposeEnd(SocketId id)
+            {
+                this.events.Add($"{nameof(this.DisposeEnd)}({(int)id})");
             }
         }
     }

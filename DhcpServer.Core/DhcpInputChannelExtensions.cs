@@ -50,7 +50,7 @@ namespace DhcpServer
                 try
                 {
                     var result = await this.inner.ReceiveAsync(token);
-                    this.channelEvents.ReceiveEnd(this.id, true, result.Item2, null);
+                    this.channelEvents.ReceiveEnd(this.id, result.Item2.Code == DhcpErrorCode.None, result.Item2, null);
                     return result;
                 }
                 catch (Exception e)

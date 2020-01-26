@@ -104,6 +104,24 @@ namespace DhcpServer.Test
                 "ReceiveEnd(1, False, None, OperationCanceledException)");
         }
 
+        [TestMethod]
+        public void WithEventsReceiveErrorWithException()
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events), new StubInputChannelEvents(events));
+
+            inner.Error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
+            events.Should().ContainInOrder(
+                "ReceiveStart(1)",
+                "ReceiveEnd(1, False, SocketError, <null>)");
+        }
+
         private sealed class StubInputChannelEvents : IDhcpInputChannelEvents
         {
             private readonly IList<string> events;

@@ -12,8 +12,7 @@ namespace DhcpServer
     /// </summary>
     public readonly struct TimePoint
     {
-        private static readonly double TimerTicksPerSecond = Stopwatch.Frequency;
-        private static readonly long SecondsPerTick = 10000000;
+        private static readonly double TicksPerTimerTick = 10000000.0 / Stopwatch.Frequency;
 
         private readonly long timerTicks;
 
@@ -31,7 +30,7 @@ namespace DhcpServer
         public static TimeSpan operator -(TimePoint x, TimePoint y)
         {
             long deltaTimerTicks = x.timerTicks - y.timerTicks;
-            double deltaTicks = SecondsPerTick * deltaTimerTicks / TimerTicksPerSecond;
+            double deltaTicks = TicksPerTimerTick * deltaTimerTicks;
             return new TimeSpan((long)deltaTicks);
         }
 

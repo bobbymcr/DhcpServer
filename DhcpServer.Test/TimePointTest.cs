@@ -22,5 +22,15 @@ namespace DhcpServer.Test
 
             elapsed.Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(1.0d));
         }
+
+        [TestMethod]
+        public void ElapsedSubMillisecond()
+        {
+            TimePoint start = TimePoint.Now();
+
+            TimeSpan elapsed = start.Elapsed();
+
+            elapsed.Should().BeGreaterThan(TimeSpan.Zero);
+        }
     }
 }

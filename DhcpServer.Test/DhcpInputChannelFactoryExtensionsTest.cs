@@ -38,16 +38,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsCreateChannelWithException()
         {
-            List<string> events = new List<string>();
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IList<string> events = TestWithEventsCreateChannelWithException((f, e) => f.WithEvents(new StubInputChannelFactoryEvents(e)));
 
-            Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
-
-            act.Should().Throw<ArgumentOutOfRangeException>();
             events.Should().HaveCount(2).And.ContainInOrder(
                 "CreateChannelStart(1, 0)",
                 "CreateChannelEnd(1, False, ArgumentOutOfRangeException)");
+        }
+
+        [TestMethod]
+        public void WithEventsCreateChannelWithExceptionState()
+        {
+            IList<string> events = TestWithEventsCreateChannelWithException((f, e) => f.WithEvents(new StubInputChannelFactoryEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "CreateChannelStart(1, 0)",
+                "CreateChannelEnd(1, False, ArgumentOutOfRangeException, State_1)");
         }
 
         [TestMethod]
@@ -153,6 +158,18 @@ namespace DhcpServer.Test
             (DhcpMessageBuffer buffer, DhcpError error) = task.Result;
             buffer.Should().BeSameAs(inner.Buffer);
             error.Code.Should().Be(DhcpErrorCode.None);
+            return events;
+        }
+
+        private static IList<string> TestWithEventsCreateChannelWithException(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner, events);
+
+            Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
             return events;
         }
 

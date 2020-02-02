@@ -33,11 +33,30 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsRestoresActivityIdOnEnd()
         {
+            IList<string> events = TestWithEventsRestoresActivityIdOnEnd((c, e) => c.WithEvents(1, new StubInputChannelEvents(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsRestoresActivityIdOnEndState()
+        {
+            IList<string> events = TestWithEventsRestoresActivityIdOnEnd((c, e) => c.WithEvents(1, new StubInputChannelEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>, State_1)");
+        }
+
+        private static IList<string> TestWithEventsRestoresActivityIdOnEnd(Func<IDhcpInputChannel, IList<string>, IDhcpInputChannel> init)
+        {
             List<string> events = new List<string>();
             DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(new byte[500]));
             DhcpError error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
             StubInputChannel inner = new StubInputChannel(buffer, error);
-            IDhcpInputChannel outer = inner.WithEvents(1, new StubInputChannelEvents(events));
+            IDhcpInputChannel outer = init(inner, events);
 
             using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-cccccccccccc"));
             inner.Pending = new TaskCompletionSource<(DhcpMessageBuffer, DhcpError)>();
@@ -51,9 +70,7 @@ namespace DhcpServer.Test
             task.IsCompleted.Should().BeTrue();
             task.Result.Item1.Should().BeSameAs(buffer);
             task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
-            events.Should().HaveCount(2).And.ContainInOrder(
-                "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
-                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>)");
+            return events;
         }
 
         private static string ActivityPrefix()
@@ -87,6 +104,30 @@ namespace DhcpServer.Test
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
                 this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type})");
+            }
+        }
+
+        private sealed class StubInputChannelEventsState : IDhcpInputChannelEvents<string>
+        {
+            private readonly IList<string> events;
+
+            public StubInputChannelEventsState(IList<string> events)
+            {
+                this.events = events;
+            }
+
+            public string ReceiveStart(DhcpChannelId id)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id})");
+                return "State_" + (int)id;
+            }
+
+            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type}, {state})");
             }
         }
 

@@ -88,7 +88,7 @@ namespace DhcpServer.Perf
         {
             // Send slightly more than the expected number of messages
             // in case some get dropped.
-            int n = (int)(this.N * 1.1);
+            int n = (int)(this.N * 1.15);
             for (int i = 0; i < n; ++i)
             {
                 await output.SendAsync(this.sendBuffer, this.endpoint);

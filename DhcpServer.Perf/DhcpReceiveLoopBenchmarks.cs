@@ -137,7 +137,7 @@ namespace DhcpServer.Perf
             }
 
             [NonEvent]
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception)
+            public void CreateChannelEnd(DhcpChannelId id, OperationStatus status)
             {
             }
 
@@ -147,7 +147,7 @@ namespace DhcpServer.Perf
             }
 
             [NonEvent]
-            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
+            public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status)
             {
             }
 
@@ -167,7 +167,7 @@ namespace DhcpServer.Perf
             }
 
             [NonEvent]
-            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception)
+            public void ReceiveEnd(SocketId id, int result, OperationStatus status)
             {
             }
 
@@ -177,7 +177,7 @@ namespace DhcpServer.Perf
             }
 
             [NonEvent]
-            public void SendEnd(SocketId id, bool succeeded, Exception exception)
+            public void SendEnd(SocketId id, OperationStatus status)
             {
             }
         }

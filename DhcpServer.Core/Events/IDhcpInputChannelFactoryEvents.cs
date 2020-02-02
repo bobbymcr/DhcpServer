@@ -4,8 +4,6 @@
 
 namespace DhcpServer.Events
 {
-    using System;
-
     /// <summary>
     /// Operational events for an <see cref="IDhcpInputChannelFactory"/>.
     /// </summary>
@@ -24,8 +22,7 @@ namespace DhcpServer.Events
         /// <see cref="IDhcpInputChannelFactory.CreateChannel(System.Memory{byte})"/>.
         /// </summary>
         /// <param name="id">The channel identifier.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
-        void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception);
+        /// <param name="status">The operation status.</param>
+        void CreateChannelEnd(DhcpChannelId id, OperationStatus status);
     }
 }

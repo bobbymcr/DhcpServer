@@ -77,22 +77,28 @@ namespace DhcpServer.Events
                 try
                 {
                     var result = await this.inner.ReceiveAsync(token);
-                    this.OnEnd(activityId, result.Item2, null, state);
+                    this.OnEnd(activityId, result.Item2, Status(result.Item2), state);
                     return result;
                 }
                 catch (Exception e)
                 {
-                    this.OnEnd(activityId, default, e, state);
+                    this.OnEnd(activityId, default, OperationStatus.Failure(e), state);
                     throw;
                 }
             }
 
-            private void OnEnd(Guid activityId, DhcpError error, Exception exception, TState state)
+            private static OperationStatus Status(DhcpError error)
+            {
+                return error.Code == DhcpErrorCode.None ?
+                    OperationStatus.Success() :
+                    OperationStatus.Failure(null);
+            }
+
+            private void OnEnd(Guid activityId, DhcpError error, OperationStatus status, TState state)
             {
                 using (new ActivityScope(activityId))
                 {
-                    bool succeeded = (error.Code == DhcpErrorCode.None) && (exception == null);
-                    this.channelEvents.ReceiveEnd(this.id, succeeded, error, exception, state);
+                    this.channelEvents.ReceiveEnd(this.id, error, status, state);
                 }
             }
         }

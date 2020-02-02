@@ -21,9 +21,9 @@ namespace DhcpServer.Events
             return false;
         }
 
-        public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, bool state)
+        public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status, bool state)
         {
-            this.inner.ReceiveEnd(id, succeeded, error, exception);
+            this.inner.ReceiveEnd(id, error, status);
         }
     }
 }

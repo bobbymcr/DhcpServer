@@ -4,8 +4,6 @@
 
 namespace DhcpServer.Events
 {
-    using System;
-
     /// <summary>
     /// Operational events for an <see cref="ISocket"/>.
     /// </summary>
@@ -25,13 +23,12 @@ namespace DhcpServer.Events
         /// <see cref="IOutputSocket.SendAsync(System.ReadOnlyMemory{byte}, IPEndpointV4)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
-        void SendEnd(SocketId id, bool succeeded, Exception exception);
+        /// <param name="status">The operation status.</param>
+        void SendEnd(SocketId id, OperationStatus status);
 
         /// <summary>
         /// Denotes the start of a call to
-        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// <see cref="IInputSocket.ReceiveAsync(System.Memory{byte}, System.Threading.CancellationToken)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <param name="bufferSize">The buffer size.</param>
@@ -39,24 +36,23 @@ namespace DhcpServer.Events
 
         /// <summary>
         /// Denotes the end of a call to
-        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// <see cref="IInputSocket.ReceiveAsync(System.Memory{byte}, System.Threading.CancellationToken)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <param name="result">The result.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
-        void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception);
+        /// <param name="status">The operation status.</param>
+        void ReceiveEnd(SocketId id, int result, OperationStatus status);
 
         /// <summary>
         /// Denotes the start of a call to
-        /// <see cref="IDisposable.Dispose"/>.
+        /// <see cref="System.IDisposable.Dispose"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         void DisposeStart(SocketId id);
 
         /// <summary>
         /// Denotes the end of a call to
-        /// <see cref="IDisposable.Dispose"/>.
+        /// <see cref="System.IDisposable.Dispose"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         void DisposeEnd(SocketId id);

@@ -23,7 +23,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000011110000/SendStart(1, 500, 0x04030201, 5566)",
-                "12345678-1234-5678-9abc-000011110000/SendEnd(1, True, <null>)");
+                "12345678-1234-5678-9abc-000011110000/SendEnd(1, Succeeded)");
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000011110000/SendStart(1, 500, 0x04030201, 5566)",
-                "12345678-1234-5678-9abc-000011110000/SendEnd(1, True, <null>, State_1)");
+                "12345678-1234-5678-9abc-000011110000/SendEnd(1, Succeeded, State_1)");
         }
 
         [TestMethod]
@@ -43,7 +43,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000022220000/SendStart(2, 499, 0x99887766, 443)",
-                "12345678-1234-5678-9abc-000022220000/SendEnd(2, False, DhcpException)");
+                "12345678-1234-5678-9abc-000022220000/SendEnd(2, Failed[DhcpException])");
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000022220000/SendStart(2, 499, 0x99887766, 443)",
-                "12345678-1234-5678-9abc-000022220000/SendEnd(2, False, DhcpException, State_2)");
+                "12345678-1234-5678-9abc-000022220000/SendEnd(2, Failed[DhcpException], State_2)");
         }
 
         [TestMethod]
@@ -63,7 +63,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000033330000/ReceiveStart(1, 500)",
-                "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, True, <null>)");
+                "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, Succeeded)");
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000033330000/ReceiveStart(1, 500)",
-                "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, True, <null>, State_1)");
+                "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, Succeeded, State_1)");
         }
 
         [TestMethod]
@@ -83,7 +83,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000044440000/ReceiveStart(2, 499)",
-                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException)");
+                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, Failed[TaskCanceledException])");
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000044440000/ReceiveStart(2, 499)",
-                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException, State_2)");
+                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, Failed[TaskCanceledException], State_2)");
         }
 
         [TestMethod]
@@ -222,6 +222,17 @@ namespace DhcpServer.Test
             return id.ToString("D") + "/";
         }
 
+        private static string StatusText(OperationStatus status)
+        {
+            if (status.Succeeded)
+            {
+                return "Succeeded";
+            }
+
+            string type = (status.Exception != null) ? status.Exception.GetType().Name : "<null>";
+            return $"Failed[{type}]";
+        }
+
         private sealed class StubSocket : ISocket
         {
             private TaskCompletionSource<int> pending;
@@ -267,12 +278,12 @@ namespace DhcpServer.Test
                 return "State_" + (int)id;
             }
 
-            public void SendEndBase(SocketId id, bool succeeded, Exception exception, string state)
+            public void SendEndBase(SocketId id, OperationStatus status, string state)
             {
                 string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string statusText = StatusText(status);
                 string suffix = (state != null) ? $", {state}" : string.Empty;
-                this.events.Add($"{prefix}{nameof(ISocketEvents.SendEnd)}({(int)id}, {succeeded}, {type}{suffix})");
+                this.events.Add($"{prefix}{nameof(ISocketEvents.SendEnd)}({(int)id}, {statusText}{suffix})");
             }
 
             public string ReceiveStartBase(SocketId id, int bufferSize)
@@ -282,12 +293,12 @@ namespace DhcpServer.Test
                 return "State_" + (int)id;
             }
 
-            public void ReceiveEndBase(SocketId id, int result, bool succeeded, Exception exception, string state)
+            public void ReceiveEndBase(SocketId id, int result, OperationStatus status, string state)
             {
                 string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string statusText = StatusText(status);
                 string suffix = (state != null) ? $", {state}" : string.Empty;
-                this.events.Add($"{prefix}{nameof(ISocketEvents.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type}{suffix})");
+                this.events.Add($"{prefix}{nameof(ISocketEvents.ReceiveEnd)}({(int)id}, {result}, {statusText}{suffix})");
             }
 
             public string DisposeStartBase(SocketId id)
@@ -315,16 +326,16 @@ namespace DhcpServer.Test
                 this.SendStartBase(id, bufferSize, endpoint);
             }
 
-            public void SendEnd(SocketId id, bool succeeded, Exception exception)
+            public void SendEnd(SocketId id, OperationStatus status)
             {
-                this.SendEndBase(id, succeeded, exception, null);
+                this.SendEndBase(id, status, null);
             }
 
             public void ReceiveStart(SocketId id, int bufferSize) => this.ReceiveStartBase(id, bufferSize);
 
-            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception)
+            public void ReceiveEnd(SocketId id, int result, OperationStatus status)
             {
-                this.ReceiveEndBase(id, result, succeeded, exception, null);
+                this.ReceiveEndBase(id, result, status, null);
             }
 
             public void DisposeStart(SocketId id) => this.DisposeStartBase(id);
@@ -344,16 +355,16 @@ namespace DhcpServer.Test
                 return this.SendStartBase(id, bufferSize, endpoint);
             }
 
-            public void SendEnd(SocketId id, bool succeeded, Exception exception, string state)
+            public void SendEnd(SocketId id, OperationStatus status, string state)
             {
-                this.SendEndBase(id, succeeded, exception, state);
+                this.SendEndBase(id, status, state);
             }
 
             public string ReceiveStart(SocketId id, int bufferSize) => this.ReceiveStartBase(id, bufferSize);
 
-            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, string state)
+            public void ReceiveEnd(SocketId id, int result, OperationStatus status, string state)
             {
-                this.ReceiveEndBase(id, result, succeeded, exception, state);
+                this.ReceiveEndBase(id, result, status, state);
             }
 
             public string DisposeStart(SocketId id) => this.DisposeStartBase(id);

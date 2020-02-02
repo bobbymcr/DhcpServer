@@ -4,8 +4,6 @@
 
 namespace DhcpServer.Events
 {
-    using System;
-
     /// <summary>
     /// Operational events for an <see cref="IDhcpInputChannel"/> with user-defined state..
     /// </summary>
@@ -25,10 +23,9 @@ namespace DhcpServer.Events
         /// <see cref="IDhcpInputChannel.ReceiveAsync(System.Threading.CancellationToken)"/>.
         /// </summary>
         /// <param name="id">The channel identifier.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
         /// <param name="error">The error returned from the operation.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        /// <param name="status">The operation status.</param>
         /// <param name="state">The user-defined state object from <see cref="ReceiveStart(DhcpChannelId)"/>.</param>
-        void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, TState state);
+        void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status, TState state);
     }
 }

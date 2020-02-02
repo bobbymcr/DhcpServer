@@ -53,10 +53,7 @@ namespace DhcpServer.Events
                 return false;
             }
 
-            public void SendEnd(SocketId id, bool succeeded, Exception exception, bool state)
-            {
-                this.inner.SendEnd(id, succeeded, exception);
-            }
+            public void SendEnd(SocketId id, OperationStatus status, bool state) => this.inner.SendEnd(id, status);
 
             public bool ReceiveStart(SocketId id, int bufferSize)
             {
@@ -64,10 +61,7 @@ namespace DhcpServer.Events
                 return false;
             }
 
-            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, bool state)
-            {
-                this.inner.ReceiveEnd(id, result, succeeded, exception);
-            }
+            public void ReceiveEnd(SocketId id, int result, OperationStatus status, bool state) => this.inner.ReceiveEnd(id, result, status);
 
             public bool DisposeStart(SocketId id)
             {
@@ -101,11 +95,11 @@ namespace DhcpServer.Events
                 try
                 {
                     await this.inner.SendAsync(buffer, endpoint);
-                    this.OnEndSend(activityId, null, state);
+                    this.OnEndSend(activityId, OperationStatus.Success(), state);
                 }
                 catch (Exception e)
                 {
-                    this.OnEndSend(activityId, e, state);
+                    this.OnEndSend(activityId, OperationStatus.Failure(e), state);
                     throw;
                 }
             }
@@ -117,12 +111,12 @@ namespace DhcpServer.Events
                 try
                 {
                     int result = await this.inner.ReceiveAsync(buffer, token);
-                    this.OnEndReceive(activityId, result, null, state);
+                    this.OnEndReceive(activityId, result, OperationStatus.Success(), state);
                     return result;
                 }
                 catch (Exception e)
                 {
-                    this.OnEndReceive(activityId, -1, e, state);
+                    this.OnEndReceive(activityId, -1, OperationStatus.Failure(e), state);
                     throw;
                 }
             }
@@ -134,19 +128,19 @@ namespace DhcpServer.Events
                 this.socketEvents.DisposeEnd(this.id, state);
             }
 
-            private void OnEndSend(Guid activityId, Exception exception, TState state)
+            private void OnEndSend(Guid activityId, OperationStatus status, TState state)
             {
                 using (new ActivityScope(activityId))
                 {
-                    this.socketEvents.SendEnd(this.id, exception == null, exception, state);
+                    this.socketEvents.SendEnd(this.id, status, state);
                 }
             }
 
-            private void OnEndReceive(Guid activityId, int result, Exception exception, TState state)
+            private void OnEndReceive(Guid activityId, int result, OperationStatus status, TState state)
             {
                 using (new ActivityScope(activityId))
                 {
-                    this.socketEvents.ReceiveEnd(this.id, result, exception == null, exception, state);
+                    this.socketEvents.ReceiveEnd(this.id, result, status, state);
                 }
             }
         }

@@ -74,9 +74,9 @@ namespace DhcpServer.Events
                 return false;
             }
 
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, bool state)
+            public void CreateChannelEnd(DhcpChannelId id, OperationStatus status, bool state)
             {
-                this.inner.CreateChannelEnd(id, succeeded, exception);
+                this.inner.CreateChannelEnd(id, status);
             }
         }
 
@@ -111,12 +111,12 @@ namespace DhcpServer.Events
                 {
                     IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer)
                         .WithEvents(id, this.channelEvents);
-                    this.factoryEvents?.CreateChannelEnd(id, true, null, state);
+                    this.factoryEvents?.CreateChannelEnd(id, OperationStatus.Success(), state);
                     return channel;
                 }
                 catch (Exception e)
                 {
-                    this.factoryEvents?.CreateChannelEnd(id, false, e, state);
+                    this.factoryEvents?.CreateChannelEnd(id, OperationStatus.Failure(e), state);
                     throw;
                 }
             }

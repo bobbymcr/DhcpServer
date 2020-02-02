@@ -4,8 +4,6 @@
 
 namespace DhcpServer.Events
 {
-    using System;
-
     /// <summary>
     /// Operational events for an <see cref="IDhcpInputChannelFactory"/> with user-defined state.
     /// </summary>
@@ -14,7 +12,7 @@ namespace DhcpServer.Events
     {
         /// <summary>
         /// Denotes the start of a call to
-        /// <see cref="IDhcpInputChannelFactory.CreateChannel(Memory{byte})"/>.
+        /// <see cref="IDhcpInputChannelFactory.CreateChannel(System.Memory{byte})"/>.
         /// </summary>
         /// <param name="id">The channel identifier.</param>
         /// <param name="bufferSize">The buffer size.</param>
@@ -23,12 +21,11 @@ namespace DhcpServer.Events
 
         /// <summary>
         /// Denotes the end of a call to
-        /// <see cref="IDhcpInputChannelFactory.CreateChannel(Memory{byte})"/>.
+        /// <see cref="IDhcpInputChannelFactory.CreateChannel(System.Memory{byte})"/>.
         /// </summary>
         /// <param name="id">The channel identifier.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        /// <param name="status">The operation status.</param>
         /// <param name="state">The user-defined state object from <see cref="CreateChannelStart(DhcpChannelId, int)"/>.</param>
-        void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, TState state);
+        void CreateChannelEnd(DhcpChannelId id, OperationStatus status, TState state);
     }
 }

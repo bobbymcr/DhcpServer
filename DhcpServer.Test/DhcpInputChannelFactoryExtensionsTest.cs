@@ -22,7 +22,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-ffffffffffff/CreateChannelStart(1, 500)",
-                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, True, <null>)");
+                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, Succeeded)");
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-ffffffffffff/CreateChannelStart(1, 500)",
-                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, True, <null>, State_1)");
+                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, Succeeded, State_1)");
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "CreateChannelStart(1, 0)",
-                "CreateChannelEnd(1, False, ArgumentOutOfRangeException)");
+                "CreateChannelEnd(1, Failed[ArgumentOutOfRangeException])");
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "CreateChannelStart(1, 0)",
-                "CreateChannelEnd(1, False, ArgumentOutOfRangeException, State_1)");
+                "CreateChannelEnd(1, Failed[ArgumentOutOfRangeException], State_1)");
         }
 
         [TestMethod]
@@ -62,9 +62,9 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(4).And.ContainInOrder(
                 "CreateChannelStart(1, 500)",
-                "CreateChannelEnd(1, True, <null>)",
+                "CreateChannelEnd(1, Succeeded)",
                 "CreateChannelStart(2, 499)",
-                "CreateChannelEnd(2, True, <null>)");
+                "CreateChannelEnd(2, Succeeded)");
         }
 
         [TestMethod]
@@ -74,9 +74,9 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(4).And.ContainInOrder(
                 "CreateChannelStart(1, 500)",
-                "CreateChannelEnd(1, True, <null>, State_1)",
+                "CreateChannelEnd(1, Succeeded, State_1)",
                 "CreateChannelStart(2, 499)",
-                "CreateChannelEnd(2, True, <null>, State_2)");
+                "CreateChannelEnd(2, Succeeded, State_2)");
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveStart(1)",
-                "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveEnd(1, True, None, <null>)");
+                "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveEnd(1, None, Succeeded)");
         }
 
         [TestMethod]
@@ -96,7 +96,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveStart(1)",
-                "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveEnd(1, True, None, <null>, State_1)");
+                "12345678-1234-5678-9abc-eeeeeeeeeeee/ReceiveEnd(1, None, Succeeded, State_1)");
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
-                "ReceiveEnd(1, False, None, OperationCanceledException)");
+                "ReceiveEnd(1, None, Failed[OperationCanceledException])");
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
-                "ReceiveEnd(1, False, None, OperationCanceledException, State_1)");
+                "ReceiveEnd(1, None, Failed[OperationCanceledException], State_1)");
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
-                "ReceiveEnd(1, False, SocketError, <null>)");
+                "ReceiveEnd(1, SocketError, Failed[<null>])");
         }
 
         [TestMethod]
@@ -136,7 +136,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
-                "ReceiveEnd(1, False, SocketError, <null>, State_1)");
+                "ReceiveEnd(1, SocketError, Failed[<null>], State_1)");
         }
 
         [TestMethod]
@@ -265,6 +265,17 @@ namespace DhcpServer.Test
             return id.ToString("D") + "/";
         }
 
+        private static string StatusText(OperationStatus status)
+        {
+            if (status.Succeeded)
+            {
+                return "Succeeded";
+            }
+
+            string type = (status.Exception != null) ? status.Exception.GetType().Name : "<null>";
+            return $"Failed[{type}]";
+        }
+
         private abstract class StubInputChannelEventsBase
         {
             private readonly IList<string> events;
@@ -281,12 +292,12 @@ namespace DhcpServer.Test
                 return "State_" + (int)id;
             }
 
-            public void ReceiveEndBase(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            public void ReceiveEndBase(DhcpChannelId id, DhcpError error, OperationStatus status, string state)
             {
                 string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string statusText = StatusText(status);
                 string suffix = (state != null) ? $", {state}" : string.Empty;
-                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type}{suffix})");
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveEnd)}({(int)id}, {error.Code}, {statusText}{suffix})");
             }
         }
 
@@ -299,9 +310,9 @@ namespace DhcpServer.Test
 
             public void ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
-            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
+            public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status)
             {
-                this.ReceiveEndBase(id, succeeded, error, exception, null);
+                this.ReceiveEndBase(id, error, status, null);
             }
         }
 
@@ -314,9 +325,9 @@ namespace DhcpServer.Test
 
             public string ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
-            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status, string state)
             {
-                this.ReceiveEndBase(id, succeeded, error, exception, state);
+                this.ReceiveEndBase(id, error, status, state);
             }
         }
 
@@ -336,12 +347,12 @@ namespace DhcpServer.Test
                 return "State_" + (int)id;
             }
 
-            public void CreateChannelEndBase(DhcpChannelId id, bool succeeded, Exception exception, string state)
+            public void CreateChannelEndBase(DhcpChannelId id, OperationStatus status, string state)
             {
                 string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string statusText = StatusText(status);
                 string suffix = (state != null) ? $", {state}" : string.Empty;
-                this.events.Add($"{prefix}{nameof(IDhcpInputChannelFactoryEvents.CreateChannelEnd)}({(int)id}, {succeeded}, {type}{suffix})");
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelFactoryEvents.CreateChannelEnd)}({(int)id}, {statusText}{suffix})");
             }
         }
 
@@ -354,9 +365,9 @@ namespace DhcpServer.Test
 
             public void CreateChannelStart(DhcpChannelId id, int bufferSize) => this.CreateChannelStartBase(id, bufferSize);
 
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception)
+            public void CreateChannelEnd(DhcpChannelId id, OperationStatus status)
             {
-                this.CreateChannelEndBase(id, succeeded, exception, null);
+                this.CreateChannelEndBase(id, status, null);
             }
         }
 
@@ -369,9 +380,9 @@ namespace DhcpServer.Test
 
             public string CreateChannelStart(DhcpChannelId id, int bufferSize) => this.CreateChannelStartBase(id, bufferSize);
 
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, string state)
+            public void CreateChannelEnd(DhcpChannelId id, OperationStatus status, string state)
             {
-                this.CreateChannelEndBase(id, succeeded, exception, state);
+                this.CreateChannelEndBase(id, status, state);
             }
         }
 

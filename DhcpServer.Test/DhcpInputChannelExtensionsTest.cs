@@ -34,7 +34,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
-                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>)");
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, SocketError, Failed[<null>])");
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace DhcpServer.Test
 
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
-                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>, State_1)");
+                "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, SocketError, Failed[<null>], State_1)");
         }
 
         private static void TestWithEventsNull(Func<IDhcpInputChannel, IDhcpInputChannel> init)
@@ -95,6 +95,17 @@ namespace DhcpServer.Test
             return id.ToString("D") + "/";
         }
 
+        private static string StatusText(OperationStatus status)
+        {
+            if (status.Succeeded)
+            {
+                return "Succeeded";
+            }
+
+            string type = (status.Exception != null) ? status.Exception.GetType().Name : "<null>";
+            return $"Failed[{type}]";
+        }
+
         private abstract class StubInputChannelEventsBase
         {
             private readonly IList<string> events;
@@ -111,12 +122,12 @@ namespace DhcpServer.Test
                 return "State_" + (int)id;
             }
 
-            public void ReceiveEndBase(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            public void ReceiveEndBase(DhcpChannelId id, DhcpError error, OperationStatus status, string state)
             {
                 string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string statusText = StatusText(status);
                 string suffix = (state != null) ? $", {state}" : string.Empty;
-                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type}{suffix})");
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveEnd)}({(int)id}, {error.Code}, {statusText}{suffix})");
             }
         }
 
@@ -129,9 +140,9 @@ namespace DhcpServer.Test
 
             public void ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
-            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
+            public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status)
             {
-                this.ReceiveEndBase(id, succeeded, error, exception, null);
+                this.ReceiveEndBase(id, error, status, null);
             }
         }
 
@@ -144,9 +155,9 @@ namespace DhcpServer.Test
 
             public string ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
-            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            public void ReceiveEnd(DhcpChannelId id, DhcpError error, OperationStatus status, string state)
             {
-                this.ReceiveEndBase(id, succeeded, error, exception, state);
+                this.ReceiveEndBase(id, error, status, state);
             }
         }
 

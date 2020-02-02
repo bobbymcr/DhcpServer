@@ -4,8 +4,6 @@
 
 namespace DhcpServer.Events
 {
-    using System;
-
     /// <summary>
     /// Operational events for an <see cref="ISocket"/> with user-defined state.
     /// </summary>
@@ -27,14 +25,13 @@ namespace DhcpServer.Events
         /// <see cref="IOutputSocket.SendAsync(System.ReadOnlyMemory{byte}, IPEndpointV4)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        /// <param name="status">The operation status.</param>
         /// <param name="state">The user-defined state object from <see cref="SendStart(SocketId, int, IPEndpointV4)"/>.</param>
-        void SendEnd(SocketId id, bool succeeded, Exception exception, TState state);
+        void SendEnd(SocketId id, OperationStatus status, TState state);
 
         /// <summary>
         /// Denotes the start of a call to
-        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// <see cref="IInputSocket.ReceiveAsync(System.Memory{byte}, System.Threading.CancellationToken)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <param name="bufferSize">The buffer size.</param>
@@ -43,18 +40,17 @@ namespace DhcpServer.Events
 
         /// <summary>
         /// Denotes the end of a call to
-        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// <see cref="IInputSocket.ReceiveAsync(System.Memory{byte}, System.Threading.CancellationToken)"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <param name="result">The result.</param>
-        /// <param name="succeeded">Whether the operation succeeded or not.</param>
-        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        /// <param name="status">The operation status.</param>
         /// <param name="state">The user-defined state object from <see cref="ReceiveStart(SocketId, int)"/>.</param>
-        void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, TState state);
+        void ReceiveEnd(SocketId id, int result, OperationStatus status, TState state);
 
         /// <summary>
         /// Denotes the start of a call to
-        /// <see cref="IDisposable.Dispose"/>.
+        /// <see cref="System.IDisposable.Dispose"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <returns>The user-defined state object.</returns>
@@ -62,7 +58,7 @@ namespace DhcpServer.Events
 
         /// <summary>
         /// Denotes the end of a call to
-        /// <see cref="IDisposable.Dispose"/>.
+        /// <see cref="System.IDisposable.Dispose"/>.
         /// </summary>
         /// <param name="id">The socket identifier.</param>
         /// <param name="state">The user-defined state object from <see cref="DisposeStart(SocketId)"/>.</param>

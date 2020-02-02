@@ -18,21 +18,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsCreateChannel()
         {
-            List<string> events = new List<string>();
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IList<string> events = TestWithEventsCreateChannel((f, e) => f.WithEvents(new StubInputChannelFactoryEvents(e)));
 
-            using ActivityScope scope = new ActivityScope(new Guid("12345678-1234-5678-9abc-ffffffffffff"));
-            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
-            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
-
-            task.IsCompleted.Should().BeTrue();
-            (DhcpMessageBuffer buffer, DhcpError error) = task.Result;
-            buffer.Should().BeSameAs(inner.Buffer);
-            error.Code.Should().Be(DhcpErrorCode.None);
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-ffffffffffff/CreateChannelStart(1, 500)",
                 "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsCreateChannelState()
+        {
+            IList<string> events = TestWithEventsCreateChannel((f, e) => f.WithEvents(new StubInputChannelFactoryEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelStart(1, 500)",
+                "12345678-1234-5678-9abc-ffffffffffff/CreateChannelEnd(1, True, <null>, State_1)");
         }
 
         [TestMethod]
@@ -139,6 +139,23 @@ namespace DhcpServer.Test
             task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
         }
 
+        private static IList<string> TestWithEventsCreateChannel(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner, events);
+
+            using ActivityScope scope = new ActivityScope(new Guid("12345678-1234-5678-9abc-ffffffffffff"));
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            (DhcpMessageBuffer buffer, DhcpError error) = task.Result;
+            buffer.Should().BeSameAs(inner.Buffer);
+            error.Code.Should().Be(DhcpErrorCode.None);
+            return events;
+        }
+
         private static string ActivityPrefix()
         {
             Guid id = ActivityScope.CurrentId;
@@ -193,6 +210,30 @@ namespace DhcpServer.Test
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
                 this.events.Add($"{prefix}{nameof(this.CreateChannelEnd)}({(int)id}, {succeeded}, {type})");
+            }
+        }
+
+        private sealed class StubInputChannelFactoryEventsState : IDhcpInputChannelFactoryEvents<string>
+        {
+            private readonly IList<string> events;
+
+            public StubInputChannelFactoryEventsState(IList<string> events)
+            {
+                this.events = events;
+            }
+
+            public string CreateChannelStart(DhcpChannelId id, int bufferSize)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(this.CreateChannelStart)}({(int)id}, {bufferSize})");
+                return "State_" + (int)id;
+            }
+
+            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{prefix}{nameof(this.CreateChannelEnd)}({(int)id}, {succeeded}, {type}, {state})");
             }
         }
 

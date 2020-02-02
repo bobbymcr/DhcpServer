@@ -50,7 +50,7 @@ namespace DhcpServer.Perf
         {
             this.buffer.WriteDhcpMsgTypeOption(DhcpMessageType.Discover);
             this.buffer.WriteClientIdOption(new MacAddress(0x000B8201FC42));
-            this.buffer.WriteAddressRequestOption(default(IPAddressV4));
+            this.buffer.WriteAddressRequestOption(default);
             this.buffer.WriteParameterListOption(
                 DhcpOptionTag.SubnetMask,
                 DhcpOptionTag.Router,

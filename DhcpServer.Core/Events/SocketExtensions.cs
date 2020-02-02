@@ -40,7 +40,7 @@ namespace DhcpServer.Events
 
         private sealed class SocketEventsAdapter : ISocketEvents<bool>
         {
-            private ISocketEvents inner;
+            private readonly ISocketEvents inner;
 
             public SocketEventsAdapter(ISocketEvents inner)
             {

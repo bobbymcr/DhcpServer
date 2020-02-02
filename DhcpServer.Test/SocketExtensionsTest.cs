@@ -99,16 +99,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsDispose()
         {
-            List<string> events = new List<string>();
-            StubSocket inner = new StubSocket();
-            ISocket outer = inner.WithEvents(3, new StubSocketEvents(events));
+            IList<string> events = TestWithEventsDispose((s, e) => s.WithEvents(3, new StubSocketEvents(e)));
 
-            outer.Dispose();
-
-            inner.DisposeCount.Should().Be(1);
             events.Should().HaveCount(2).And.ContainInOrder(
                 "DisposeStart(3)",
                 "DisposeEnd(3)");
+        }
+
+        [TestMethod]
+        public void WithEventsDisposeState()
+        {
+            IList<string> events = TestWithEventsDispose((s, e) => s.WithEvents(3, new StubSocketEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "DisposeStart(3)",
+                "DisposeEnd(3, State_3)");
         }
 
         private static IList<string> TestWithEventsSend(Func<ISocket, IList<string>, ISocket> init)
@@ -191,6 +196,18 @@ namespace DhcpServer.Test
             cts.Cancel();
 
             task.IsCanceled.Should().BeTrue();
+            return events;
+        }
+
+        private static IList<string> TestWithEventsDispose(Func<ISocket, IList<string>, ISocket> init)
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = init(inner, events);
+
+            outer.Dispose();
+
+            inner.DisposeCount.Should().Be(1);
             return events;
         }
 
@@ -314,6 +331,17 @@ namespace DhcpServer.Test
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
                 this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type}, {state})");
+            }
+
+            public string DisposeStart(SocketId id)
+            {
+                this.events.Add($"{nameof(this.DisposeStart)}({(int)id})");
+                return "State_" + (int)id;
+            }
+
+            public void DisposeEnd(SocketId id, string state)
+            {
+                this.events.Add($"{nameof(this.DisposeEnd)}({(int)id}, {state})");
             }
         }
     }

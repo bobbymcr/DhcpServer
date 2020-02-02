@@ -156,7 +156,9 @@ namespace DhcpServer.Events
 
             public void Dispose()
             {
-                throw new NotImplementedException();
+                TState state = this.socketEvents.DisposeStart(this.id);
+                this.inner.Dispose();
+                this.socketEvents.DisposeEnd(this.id, state);
             }
 
             private void OnEndSend(Guid activityId, Exception exception, TState state)

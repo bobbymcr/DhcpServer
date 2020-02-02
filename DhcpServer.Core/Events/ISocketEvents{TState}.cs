@@ -51,5 +51,21 @@ namespace DhcpServer.Events
         /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
         /// <param name="state">The user-defined state object from <see cref="ReceiveStart(SocketId, int)"/>.</param>
         void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, TState state);
+
+        /// <summary>
+        /// Denotes the start of a call to
+        /// <see cref="IDisposable.Dispose"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        /// <returns>The user-defined state object.</returns>
+        TState DisposeStart(SocketId id);
+
+        /// <summary>
+        /// Denotes the end of a call to
+        /// <see cref="IDisposable.Dispose"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        /// <param name="state">The user-defined state object from <see cref="DisposeStart(SocketId)"/>.</param>
+        void DisposeEnd(SocketId id, TState state);
     }
 }

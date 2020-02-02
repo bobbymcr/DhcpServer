@@ -18,16 +18,13 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsNull()
         {
-            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(new byte[500]));
-            DhcpError error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
-            StubInputChannel inner = new StubInputChannel(buffer, error);
-            IDhcpInputChannel outer = inner.WithEvents(1);
+            TestWithEventsNull(c => c.WithEvents(1));
+        }
 
-            Task<(DhcpMessageBuffer, DhcpError)> task = outer.ReceiveAsync(CancellationToken.None);
-
-            task.IsCompleted.Should().BeTrue();
-            task.Result.Item1.Should().BeSameAs(buffer);
-            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
+        [TestMethod]
+        public void WithEventsNullState()
+        {
+            TestWithEventsNull(c => c.WithEvents<string>(1));
         }
 
         [TestMethod]
@@ -48,6 +45,20 @@ namespace DhcpServer.Test
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-cccccccccccc/ReceiveStart(1)",
                 "12345678-1234-5678-9abc-cccccccccccc/ReceiveEnd(1, False, SocketError, <null>, State_1)");
+        }
+
+        private static void TestWithEventsNull(Func<IDhcpInputChannel, IDhcpInputChannel> init)
+        {
+            DhcpMessageBuffer buffer = new DhcpMessageBuffer(new Memory<byte>(new byte[500]));
+            DhcpError error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
+            StubInputChannel inner = new StubInputChannel(buffer, error);
+            IDhcpInputChannel outer = init(inner);
+
+            Task<(DhcpMessageBuffer, DhcpError)> task = outer.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Item1.Should().BeSameAs(buffer);
+            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
         }
 
         private static IList<string> TestWithEventsRestoresActivityIdOnEnd(Func<IDhcpInputChannel, IList<string>, IDhcpInputChannel> init)

@@ -265,97 +265,113 @@ namespace DhcpServer.Test
             return id.ToString("D") + "/";
         }
 
-        private sealed class StubInputChannelEvents : IDhcpInputChannelEvents
+        private abstract class StubInputChannelEventsBase
         {
             private readonly IList<string> events;
 
-            public StubInputChannelEvents(IList<string> events)
+            protected StubInputChannelEventsBase(IList<string> events)
             {
                 this.events = events;
             }
 
-            public void ReceiveStart(DhcpChannelId id)
+            public string ReceiveStartBase(DhcpChannelId id)
             {
                 string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id})");
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveStart)}({(int)id})");
+                return "State_" + (int)id;
             }
+
+            public void ReceiveEndBase(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string suffix = (state != null) ? $", {state}" : string.Empty;
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelEvents.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type}{suffix})");
+            }
+        }
+
+        private sealed class StubInputChannelEvents : StubInputChannelEventsBase, IDhcpInputChannelEvents
+        {
+            public StubInputChannelEvents(IList<string> events)
+                : base(events)
+            {
+            }
+
+            public void ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
             public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type})");
+                this.ReceiveEndBase(id, succeeded, error, exception, null);
             }
         }
 
-        private sealed class StubInputChannelEventsState : IDhcpInputChannelEvents<string>
+        private sealed class StubInputChannelEventsState : StubInputChannelEventsBase, IDhcpInputChannelEvents<string>
         {
-            private readonly IList<string> events;
-
             public StubInputChannelEventsState(IList<string> events)
+                : base(events)
             {
-                this.events = events;
             }
 
-            public string ReceiveStart(DhcpChannelId id)
-            {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id})");
-                return "State_" + (int)id;
-            }
+            public string ReceiveStart(DhcpChannelId id) => this.ReceiveStartBase(id);
 
             public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, string state)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {succeeded}, {error.Code}, {type}, {state})");
+                this.ReceiveEndBase(id, succeeded, error, exception, state);
             }
         }
 
-        private sealed class StubInputChannelFactoryEvents : IDhcpInputChannelFactoryEvents
+        private abstract class StubInputChannelFactoryEventsBase
         {
             private readonly IList<string> events;
 
-            public StubInputChannelFactoryEvents(IList<string> events)
+            protected StubInputChannelFactoryEventsBase(IList<string> events)
             {
                 this.events = events;
             }
 
-            public void CreateChannelStart(DhcpChannelId id, int bufferSize)
+            public string CreateChannelStartBase(DhcpChannelId id, int bufferSize)
             {
                 string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.CreateChannelStart)}({(int)id}, {bufferSize})");
-            }
-
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception)
-            {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.CreateChannelEnd)}({(int)id}, {succeeded}, {type})");
-            }
-        }
-
-        private sealed class StubInputChannelFactoryEventsState : IDhcpInputChannelFactoryEvents<string>
-        {
-            private readonly IList<string> events;
-
-            public StubInputChannelFactoryEventsState(IList<string> events)
-            {
-                this.events = events;
-            }
-
-            public string CreateChannelStart(DhcpChannelId id, int bufferSize)
-            {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.CreateChannelStart)}({(int)id}, {bufferSize})");
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelFactoryEvents.CreateChannelStart)}({(int)id}, {bufferSize})");
                 return "State_" + (int)id;
             }
 
-            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, string state)
+            public void CreateChannelEndBase(DhcpChannelId id, bool succeeded, Exception exception, string state)
             {
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.CreateChannelEnd)}({(int)id}, {succeeded}, {type}, {state})");
+                string suffix = (state != null) ? $", {state}" : string.Empty;
+                this.events.Add($"{prefix}{nameof(IDhcpInputChannelFactoryEvents.CreateChannelEnd)}({(int)id}, {succeeded}, {type}{suffix})");
+            }
+        }
+
+        private sealed class StubInputChannelFactoryEvents : StubInputChannelFactoryEventsBase, IDhcpInputChannelFactoryEvents
+        {
+            public StubInputChannelFactoryEvents(IList<string> events)
+                : base(events)
+            {
+            }
+
+            public void CreateChannelStart(DhcpChannelId id, int bufferSize) => this.CreateChannelStartBase(id, bufferSize);
+
+            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception)
+            {
+                this.CreateChannelEndBase(id, succeeded, exception, null);
+            }
+        }
+
+        private sealed class StubInputChannelFactoryEventsState : StubInputChannelFactoryEventsBase, IDhcpInputChannelFactoryEvents<string>
+        {
+            public StubInputChannelFactoryEventsState(IList<string> events)
+                : base(events)
+            {
+            }
+
+            public string CreateChannelStart(DhcpChannelId id, int bufferSize) => this.CreateChannelStartBase(id, bufferSize);
+
+            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, string state)
+            {
+                this.CreateChannelEndBase(id, succeeded, exception, state);
             }
         }
 

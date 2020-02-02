@@ -250,99 +250,115 @@ namespace DhcpServer.Test
             public void Dispose() => ++this.DisposeCount;
         }
 
-        private sealed class StubSocketEvents : ISocketEvents
+        private abstract class StubSocketEventsBase
         {
             private readonly IList<string> events;
 
-            public StubSocketEvents(IList<string> events)
+            protected StubSocketEventsBase(IList<string> events)
             {
                 this.events = events;
+            }
+
+            public string SendStartBase(SocketId id, int bufferSize, IPEndpointV4 endpoint)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add(
+                    $"{prefix}{nameof(ISocketEvents.SendStart)}({(int)id}, {bufferSize}, 0x{((uint)endpoint.Address).ToString("X8")}, {endpoint.Port})");
+                return "State_" + (int)id;
+            }
+
+            public void SendEndBase(SocketId id, bool succeeded, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string suffix = (state != null) ? $", {state}" : string.Empty;
+                this.events.Add($"{prefix}{nameof(ISocketEvents.SendEnd)}({(int)id}, {succeeded}, {type}{suffix})");
+            }
+
+            public string ReceiveStartBase(SocketId id, int bufferSize)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(ISocketEvents.ReceiveStart)}({(int)id}, {bufferSize})");
+                return "State_" + (int)id;
+            }
+
+            public void ReceiveEndBase(SocketId id, int result, bool succeeded, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                string suffix = (state != null) ? $", {state}" : string.Empty;
+                this.events.Add($"{prefix}{nameof(ISocketEvents.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type}{suffix})");
+            }
+
+            public string DisposeStartBase(SocketId id)
+            {
+                this.events.Add($"{nameof(ISocketEvents.DisposeStart)}({(int)id})");
+                return "State_" + (int)id;
+            }
+
+            public void DisposeEndBase(SocketId id, string state)
+            {
+                string suffix = (state != null) ? $", {state}" : string.Empty;
+                this.events.Add($"{nameof(ISocketEvents.DisposeEnd)}({(int)id}{suffix})");
+            }
+        }
+
+        private sealed class StubSocketEvents : StubSocketEventsBase, ISocketEvents
+        {
+            public StubSocketEvents(IList<string> events)
+                : base(events)
+            {
             }
 
             public void SendStart(SocketId id, int bufferSize, IPEndpointV4 endpoint)
             {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.SendStart)}({(int)id}, {bufferSize}, 0x{((uint)endpoint.Address).ToString("X8")}, {endpoint.Port})");
+                this.SendStartBase(id, bufferSize, endpoint);
             }
 
             public void SendEnd(SocketId id, bool succeeded, Exception exception)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.SendEnd)}({(int)id}, {succeeded}, {type})");
+                this.SendEndBase(id, succeeded, exception, null);
             }
 
-            public void ReceiveStart(SocketId id, int bufferSize)
-            {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id}, {bufferSize})");
-            }
+            public void ReceiveStart(SocketId id, int bufferSize) => this.ReceiveStartBase(id, bufferSize);
 
             public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type})");
+                this.ReceiveEndBase(id, result, succeeded, exception, null);
             }
 
-            public void DisposeStart(SocketId id)
-            {
-                this.events.Add($"{nameof(this.DisposeStart)}({(int)id})");
-            }
+            public void DisposeStart(SocketId id) => this.DisposeStartBase(id);
 
-            public void DisposeEnd(SocketId id)
-            {
-                this.events.Add($"{nameof(this.DisposeEnd)}({(int)id})");
-            }
+            public void DisposeEnd(SocketId id) => this.DisposeEndBase(id, null);
         }
 
-        private sealed class StubSocketEventsState : ISocketEvents<string>
+        private sealed class StubSocketEventsState : StubSocketEventsBase, ISocketEvents<string>
         {
-            private readonly IList<string> events;
-
             public StubSocketEventsState(IList<string> events)
+                : base(events)
             {
-                this.events = events;
             }
 
             public string SendStart(SocketId id, int bufferSize, IPEndpointV4 endpoint)
             {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.SendStart)}({(int)id}, {bufferSize}, 0x{((uint)endpoint.Address).ToString("X8")}, {endpoint.Port})");
-                return "State_" + (int)id;
+                return this.SendStartBase(id, bufferSize, endpoint);
             }
 
             public void SendEnd(SocketId id, bool succeeded, Exception exception, string state)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.SendEnd)}({(int)id}, {succeeded}, {type}, {state})");
+                this.SendEndBase(id, succeeded, exception, state);
             }
 
-            public string ReceiveStart(SocketId id, int bufferSize)
-            {
-                string prefix = ActivityPrefix();
-                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id}, {bufferSize})");
-                return "State_" + (int)id;
-            }
+            public string ReceiveStart(SocketId id, int bufferSize) => this.ReceiveStartBase(id, bufferSize);
 
             public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, string state)
             {
-                string prefix = ActivityPrefix();
-                string type = (exception != null) ? exception.GetType().Name : "<null>";
-                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type}, {state})");
+                this.ReceiveEndBase(id, result, succeeded, exception, state);
             }
 
-            public string DisposeStart(SocketId id)
-            {
-                this.events.Add($"{nameof(this.DisposeStart)}({(int)id})");
-                return "State_" + (int)id;
-            }
+            public string DisposeStart(SocketId id) => this.DisposeStartBase(id);
 
-            public void DisposeEnd(SocketId id, string state)
-            {
-                this.events.Add($"{nameof(this.DisposeEnd)}({(int)id}, {state})");
-            }
+            public void DisposeEnd(SocketId id, string state) => this.DisposeEndBase(id, state);
         }
     }
 }

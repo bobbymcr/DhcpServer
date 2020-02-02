@@ -22,7 +22,7 @@ namespace DhcpServer.Events
         /// <returns>A new socket instance wrapping the inner socket.</returns>
         public static ISocket WithEvents(this ISocket inner, SocketId id, ISocketEvents socketEvents)
         {
-            return new SocketWithEvents(id, inner, socketEvents);
+            return new SocketWithEvents<bool>(id, inner, new SocketEventsAdapter(socketEvents));
         }
 
         /// <summary>
@@ -38,73 +38,46 @@ namespace DhcpServer.Events
             return new SocketWithEvents<TState>(id, inner, socketEvents);
         }
 
-        private sealed class SocketWithEvents : ISocket
+        private sealed class SocketEventsAdapter : ISocketEvents<bool>
         {
-            private readonly SocketId id;
-            private readonly ISocket inner;
-            private readonly ISocketEvents socketEvents;
+            private ISocketEvents inner;
 
-            public SocketWithEvents(SocketId id, ISocket inner, ISocketEvents socketEvents)
+            public SocketEventsAdapter(ISocketEvents inner)
             {
-                this.id = id;
                 this.inner = inner;
-                this.socketEvents = socketEvents;
             }
 
-            public async Task SendAsync(ReadOnlyMemory<byte> buffer, IPEndpointV4 endpoint)
+            public bool SendStart(SocketId id, int bufferSize, IPEndpointV4 endpoint)
             {
-                Guid activityId = ActivityScope.CurrentId;
-                try
-                {
-                    this.socketEvents.SendStart(this.id, buffer.Length, endpoint);
-                    await this.inner.SendAsync(buffer, endpoint);
-                    this.OnEndSend(activityId, null);
-                }
-                catch (Exception e)
-                {
-                    this.OnEndSend(activityId, e);
-                    throw;
-                }
+                this.inner.SendStart(id, bufferSize, endpoint);
+                return false;
             }
 
-            public async ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
+            public void SendEnd(SocketId id, bool succeeded, Exception exception, bool state)
             {
-                Guid activityId = ActivityScope.CurrentId;
-                this.socketEvents.ReceiveStart(this.id, buffer.Length);
-                try
-                {
-                    int result = await this.inner.ReceiveAsync(buffer, token);
-                    this.OnEndReceive(activityId, result, null);
-                    return result;
-                }
-                catch (Exception e)
-                {
-                    this.OnEndReceive(activityId, -1, e);
-                    throw;
-                }
+                this.inner.SendEnd(id, succeeded, exception);
             }
 
-            public void Dispose()
+            public bool ReceiveStart(SocketId id, int bufferSize)
             {
-                this.socketEvents.DisposeStart(this.id);
-                this.inner.Dispose();
-                this.socketEvents.DisposeEnd(this.id);
+                this.inner.ReceiveStart(id, bufferSize);
+                return false;
             }
 
-            private void OnEndSend(Guid activityId, Exception exception)
+            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, bool state)
             {
-                using (new ActivityScope(activityId))
-                {
-                    this.socketEvents.SendEnd(this.id, exception == null, exception);
-                }
+                this.inner.ReceiveEnd(id, result, succeeded, exception);
             }
 
-            private void OnEndReceive(Guid activityId, int result, Exception exception)
+            public bool DisposeStart(SocketId id)
             {
-                using (new ActivityScope(activityId))
-                {
-                    this.socketEvents.ReceiveEnd(this.id, result, exception == null, exception);
-                }
+                this.inner.DisposeStart(id);
+                return false;
+            }
+
+            public void DisposeEnd(SocketId id, bool state)
+            {
+                this.inner.DisposeEnd(id);
             }
         }
 

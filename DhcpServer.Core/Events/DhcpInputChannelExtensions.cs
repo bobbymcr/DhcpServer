@@ -27,7 +27,7 @@ namespace DhcpServer.Events
         {
             if (channelEvents != null)
             {
-                return new DhcpInputChannelWithEvents(inner, id, channelEvents);
+                return new DhcpInputChannelWithEvents<bool>(inner, id, new DhcpInputChannelEventsAdapter(channelEvents));
             }
 
             return inner;
@@ -54,46 +54,24 @@ namespace DhcpServer.Events
             return inner;
         }
 
-        private sealed class DhcpInputChannelWithEvents : IDhcpInputChannel
+        private sealed class DhcpInputChannelEventsAdapter : IDhcpInputChannelEvents<bool>
         {
-            private readonly IDhcpInputChannel inner;
-            private readonly DhcpChannelId id;
-            private readonly IDhcpInputChannelEvents channelEvents;
+            private readonly IDhcpInputChannelEvents inner;
 
-            public DhcpInputChannelWithEvents(
-                IDhcpInputChannel inner,
-                DhcpChannelId id,
-                IDhcpInputChannelEvents channelEvents)
+            public DhcpInputChannelEventsAdapter(IDhcpInputChannelEvents inner)
             {
                 this.inner = inner;
-                this.id = id;
-                this.channelEvents = channelEvents;
             }
 
-            public async Task<(DhcpMessageBuffer, DhcpError)> ReceiveAsync(CancellationToken token)
+            public bool ReceiveStart(DhcpChannelId id)
             {
-                this.channelEvents.ReceiveStart(this.id);
-                Guid activityId = ActivityScope.CurrentId;
-                try
-                {
-                    var result = await this.inner.ReceiveAsync(token);
-                    this.OnEnd(activityId, result.Item2, null);
-                    return result;
-                }
-                catch (Exception e)
-                {
-                    this.OnEnd(activityId, default, e);
-                    throw;
-                }
+                this.inner.ReceiveStart(id);
+                return false;
             }
 
-            private void OnEnd(Guid activityId, DhcpError error, Exception exception)
+            public void ReceiveEnd(DhcpChannelId id, bool succeeded, DhcpError error, Exception exception, bool state)
             {
-                using (new ActivityScope(activityId))
-                {
-                    bool succeeded = (error.Code == DhcpErrorCode.None) && (exception == null);
-                    this.channelEvents.ReceiveEnd(this.id, succeeded, error, exception);
-                }
+                this.inner.ReceiveEnd(id, succeeded, error, exception);
             }
         }
 

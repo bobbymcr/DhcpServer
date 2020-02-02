@@ -24,9 +24,15 @@ namespace DhcpServer.Events
             IDhcpInputChannelFactoryEvents factoryEvents = null,
             IDhcpInputChannelEvents channelEvents = null)
         {
-            if ((factoryEvents != null) || (channelEvents != null))
+            IDhcpInputChannelFactoryEvents<bool> factoryEventsT = (factoryEvents != null) ?
+                new DhcpInputChannelFactoryEventsAdapter(factoryEvents) :
+                null;
+            IDhcpInputChannelEvents<bool> channelEventsT = (channelEvents != null) ?
+                new DhcpInputChannelEventsAdapter(channelEvents) :
+                null;
+            if ((factoryEventsT != null) || (channelEventsT != null))
             {
-                return new DhcpInputChannelFactoryWithEvents(inner, factoryEvents, channelEvents);
+                return new DhcpInputChannelFactoryWithEvents<bool>(inner, factoryEventsT, channelEventsT);
             }
 
             return inner;
@@ -53,40 +59,24 @@ namespace DhcpServer.Events
             return inner;
         }
 
-        private sealed class DhcpInputChannelFactoryWithEvents : IDhcpInputChannelFactory
+        private sealed class DhcpInputChannelFactoryEventsAdapter : IDhcpInputChannelFactoryEvents<bool>
         {
-            private readonly IDhcpInputChannelFactory inner;
-            private readonly IDhcpInputChannelFactoryEvents factoryEvents;
-            private readonly IDhcpInputChannelEvents channelEvents;
+            private readonly IDhcpInputChannelFactoryEvents inner;
 
-            private int lastId;
-
-            public DhcpInputChannelFactoryWithEvents(
-                IDhcpInputChannelFactory inner,
-                IDhcpInputChannelFactoryEvents factoryEvents,
-                IDhcpInputChannelEvents channelEvents)
+            public DhcpInputChannelFactoryEventsAdapter(IDhcpInputChannelFactoryEvents inner)
             {
                 this.inner = inner;
-                this.factoryEvents = factoryEvents;
-                this.channelEvents = channelEvents;
             }
 
-            public IDhcpInputChannel CreateChannel(Memory<byte> rawBuffer)
+            public bool CreateChannelStart(DhcpChannelId id, int bufferSize)
             {
-                int id = Interlocked.Increment(ref this.lastId);
-                this.factoryEvents?.CreateChannelStart(id, rawBuffer.Length);
-                try
-                {
-                    IDhcpInputChannel channel = this.inner.CreateChannel(rawBuffer)
-                        .WithEvents(id, this.channelEvents);
-                    this.factoryEvents?.CreateChannelEnd(id, true, null);
-                    return channel;
-                }
-                catch (Exception e)
-                {
-                    this.factoryEvents?.CreateChannelEnd(id, false, e);
-                    throw;
-                }
+                this.inner.CreateChannelStart(id, bufferSize);
+                return false;
+            }
+
+            public void CreateChannelEnd(DhcpChannelId id, bool succeeded, Exception exception, bool state)
+            {
+                this.inner.CreateChannelEnd(id, succeeded, exception);
             }
         }
 

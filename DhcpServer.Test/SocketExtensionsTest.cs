@@ -19,24 +19,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsSend()
         {
-            List<string> events = new List<string>();
-            StubSocket inner = new StubSocket();
-            ISocket outer = inner.WithEvents(1, new StubSocketEvents(events));
-            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(1, 2, 3, 4), 5566);
-            ReadOnlyMemory<byte> buffer = new ReadOnlyMemory<byte>(new byte[500]);
+            IList<string> events = TestWithEventsSend((s, e) => s.WithEvents(1, new StubSocketEvents(e)));
 
-            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000011110000"));
-            Task task = outer.SendAsync(buffer, endpoint);
-
-            task.IsCompleted.Should().BeFalse();
-
-            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
-            inner.Complete();
-
-            task.IsCompleted.Should().BeTrue();
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000011110000/SendStart(1, 500, 0x04030201, 5566)",
                 "12345678-1234-5678-9abc-000011110000/SendEnd(1, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsSendState()
+        {
+            IList<string> events = TestWithEventsSend((s, e) => s.WithEvents(1, new StubSocketEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-000011110000/SendStart(1, 500, 0x04030201, 5566)",
+                "12345678-1234-5678-9abc-000011110000/SendEnd(1, True, <null>, State_1)");
         }
 
         [TestMethod]
@@ -126,6 +123,26 @@ namespace DhcpServer.Test
                 "DisposeEnd(3)");
         }
 
+        private static IList<string> TestWithEventsSend(Func<ISocket, IList<string>, ISocket> init)
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = init(inner, events);
+            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(1, 2, 3, 4), 5566);
+            ReadOnlyMemory<byte> buffer = new ReadOnlyMemory<byte>(new byte[500]);
+
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000011110000"));
+            Task task = outer.SendAsync(buffer, endpoint);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
+            inner.Complete();
+
+            task.IsCompleted.Should().BeTrue();
+            return events;
+        }
+
         private static string ActivityPrefix()
         {
             Guid id = ActivityScope.CurrentId;
@@ -208,6 +225,30 @@ namespace DhcpServer.Test
             public void DisposeEnd(SocketId id)
             {
                 this.events.Add($"{nameof(this.DisposeEnd)}({(int)id})");
+            }
+        }
+
+        private sealed class StubSocketEventsState : ISocketEvents<string>
+        {
+            private readonly IList<string> events;
+
+            public StubSocketEventsState(IList<string> events)
+            {
+                this.events = events;
+            }
+
+            public string SendStart(SocketId id, int bufferSize, IPEndpointV4 endpoint)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(this.SendStart)}({(int)id}, {bufferSize}, 0x{((uint)endpoint.Address).ToString("X8")}, {endpoint.Port})");
+                return "State_" + (int)id;
+            }
+
+            public void SendEnd(SocketId id, bool succeeded, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{prefix}{nameof(this.SendEnd)}({(int)id}, {succeeded}, {type}, {state})");
             }
         }
     }

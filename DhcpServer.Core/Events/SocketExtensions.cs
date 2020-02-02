@@ -25,6 +25,19 @@ namespace DhcpServer.Events
             return new SocketWithEvents(id, inner, socketEvents);
         }
 
+        /// <summary>
+        /// Returns a new socket instance augmented with events with user-defined state.
+        /// </summary>
+        /// <typeparam name="TState">The user-defined state.</typeparam>
+        /// <param name="inner">The inner socket.</param>
+        /// <param name="id">The socket identifier.</param>
+        /// <param name="socketEvents">The events for the socket.</param>
+        /// <returns>A new socket instance wrapping the inner socket.</returns>
+        public static ISocket WithEvents<TState>(this ISocket inner, SocketId id, ISocketEvents<TState> socketEvents)
+        {
+            return new SocketWithEvents<TState>(id, inner, socketEvents);
+        }
+
         private sealed class SocketWithEvents : ISocket
         {
             private readonly SocketId id;
@@ -91,6 +104,54 @@ namespace DhcpServer.Events
                 using (new ActivityScope(activityId))
                 {
                     this.socketEvents.ReceiveEnd(this.id, result, exception == null, exception);
+                }
+            }
+        }
+
+        private sealed class SocketWithEvents<TState> : ISocket
+        {
+            private readonly SocketId id;
+            private readonly ISocket inner;
+            private readonly ISocketEvents<TState> socketEvents;
+
+            public SocketWithEvents(SocketId id, ISocket inner, ISocketEvents<TState> socketEvents)
+            {
+                this.id = id;
+                this.inner = inner;
+                this.socketEvents = socketEvents;
+            }
+
+            public async Task SendAsync(ReadOnlyMemory<byte> buffer, IPEndpointV4 endpoint)
+            {
+                Guid activityId = ActivityScope.CurrentId;
+                TState state = this.socketEvents.SendStart(this.id, buffer.Length, endpoint);
+                try
+                {
+                    await this.inner.SendAsync(buffer, endpoint);
+                    this.OnEndSend(activityId, null, state);
+                }
+                catch (Exception e)
+                {
+                    this.OnEndSend(activityId, e, state);
+                    throw;
+                }
+            }
+
+            public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            private void OnEndSend(Guid activityId, Exception exception, TState state)
+            {
+                using (new ActivityScope(activityId))
+                {
+                    this.socketEvents.SendEnd(this.id, exception == null, exception, state);
                 }
             }
         }

@@ -122,19 +122,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsReceiveErrorWithException()
         {
-            List<string> events = new List<string>();
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(null, new StubInputChannelEvents(events));
+            IList<string> events = TestWithEventsReceiveErrorWithException((f, e) => f.WithEvents(null, new StubInputChannelEvents(e)));
 
-            inner.Error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
-            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
-            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
-
-            task.IsCompleted.Should().BeTrue();
-            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
                 "ReceiveEnd(1, False, SocketError, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveErrorWithExceptionState()
+        {
+            IList<string> events = TestWithEventsReceiveErrorWithException((f, e) => f.WithEvents(null, new StubInputChannelEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "ReceiveStart(1)",
+                "ReceiveEnd(1, False, SocketError, <null>, State_1)");
         }
 
         [TestMethod]
@@ -223,6 +225,21 @@ namespace DhcpServer.Test
             Task task = channel.ReceiveAsync(cts.Token);
 
             task.IsCanceled.Should().BeTrue();
+            return events;
+        }
+
+        private static IList<string> TestWithEventsReceiveErrorWithException(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner, events);
+
+            inner.Error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
             return events;
         }
 

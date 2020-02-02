@@ -79,24 +79,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsReceiveException()
         {
-            List<string> events = new List<string>();
-            StubSocket inner = new StubSocket();
-            ISocket outer = inner.WithEvents(2, new StubSocketEvents(events));
-            Memory<byte> buffer = new Memory<byte>(new byte[499]);
+            IList<string> events = TestWithEventsReceiveException((s, e) => s.WithEvents(2, new StubSocketEvents(e)));
 
-            using CancellationTokenSource cts = new CancellationTokenSource();
-            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000044440000"));
-            ValueTask<int> task = outer.ReceiveAsync(buffer, cts.Token);
-
-            task.IsCompleted.Should().BeFalse();
-
-            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
-            cts.Cancel();
-
-            task.IsCanceled.Should().BeTrue();
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000044440000/ReceiveStart(2, 499)",
                 "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveExceptionState()
+        {
+            IList<string> events = TestWithEventsReceiveException((s, e) => s.WithEvents(2, new StubSocketEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-000044440000/ReceiveStart(2, 499)",
+                "12345678-1234-5678-9abc-000044440000/ReceiveEnd(2, -1, False, TaskCanceledException, State_2)");
         }
 
         [TestMethod]
@@ -174,6 +171,26 @@ namespace DhcpServer.Test
 
             task.IsCompleted.Should().BeTrue();
             task.Result.Should().Be(77);
+            return events;
+        }
+
+        private static IList<string> TestWithEventsReceiveException(Func<ISocket, IList<string>, ISocket> init)
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = init(inner, events);
+            Memory<byte> buffer = new Memory<byte>(new byte[499]);
+
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000044440000"));
+            ValueTask<int> task = outer.ReceiveAsync(buffer, cts.Token);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
+            cts.Cancel();
+
+            task.IsCanceled.Should().BeTrue();
             return events;
         }
 

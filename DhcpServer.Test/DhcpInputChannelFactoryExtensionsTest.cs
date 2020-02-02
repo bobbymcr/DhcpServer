@@ -102,19 +102,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsReceiveThrow()
         {
-            List<string> events = new List<string>();
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(null, new StubInputChannelEvents(events));
-            using CancellationTokenSource cts = new CancellationTokenSource();
+            IList<string> events = TestWithEventsReceiveThrow((f, e) => f.WithEvents(null, new StubInputChannelEvents(e)));
 
-            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
-            cts.Cancel();
-            Task task = channel.ReceiveAsync(cts.Token);
-
-            task.IsCanceled.Should().BeTrue();
             events.Should().HaveCount(2).And.ContainInOrder(
                 "ReceiveStart(1)",
                 "ReceiveEnd(1, False, None, OperationCanceledException)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveThrowState()
+        {
+            IList<string> events = TestWithEventsReceiveThrow((f, e) => f.WithEvents(null, new StubInputChannelEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "ReceiveStart(1)",
+                "ReceiveEnd(1, False, None, OperationCanceledException, State_1)");
         }
 
         [TestMethod]
@@ -206,6 +208,21 @@ namespace DhcpServer.Test
             task.IsCompleted.Should().BeTrue();
             (_, DhcpError error) = task.Result;
             error.Code.Should().Be(DhcpErrorCode.None);
+            return events;
+        }
+
+        private static IList<string> TestWithEventsReceiveThrow(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner, events);
+            using CancellationTokenSource cts = new CancellationTokenSource();
+
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            cts.Cancel();
+            Task task = channel.ReceiveAsync(cts.Token);
+
+            task.IsCanceled.Should().BeTrue();
             return events;
         }
 

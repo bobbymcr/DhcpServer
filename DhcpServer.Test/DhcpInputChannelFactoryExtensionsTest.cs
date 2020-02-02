@@ -58,21 +58,25 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsCreateTwoChannels()
         {
-            List<string> events = new List<string>();
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents(new StubInputChannelFactoryEvents(events));
+            IList<string> events = TestWithEventsCreateTwoChannels((f, e) => f.WithEvents(new StubInputChannelFactoryEvents(e)));
 
-            IDhcpInputChannel channel1 = outer.CreateChannel(new Memory<byte>(new byte[500]));
-            IDhcpInputChannel channel2 = outer.CreateChannel(new Memory<byte>(new byte[499]));
-
-            channel1.Should().NotBeNull();
-            channel2.Should().NotBeNull();
-            channel1.Should().NotBeSameAs(channel2);
             events.Should().HaveCount(4).And.ContainInOrder(
                 "CreateChannelStart(1, 500)",
                 "CreateChannelEnd(1, True, <null>)",
                 "CreateChannelStart(2, 499)",
                 "CreateChannelEnd(2, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsCreateTwoChannelsState()
+        {
+            IList<string> events = TestWithEventsCreateTwoChannels((f, e) => f.WithEvents(new StubInputChannelFactoryEventsState(e)));
+
+            events.Should().HaveCount(4).And.ContainInOrder(
+                "CreateChannelStart(1, 500)",
+                "CreateChannelEnd(1, True, <null>, State_1)",
+                "CreateChannelStart(2, 499)",
+                "CreateChannelEnd(2, True, <null>, State_2)");
         }
 
         [TestMethod]
@@ -170,6 +174,21 @@ namespace DhcpServer.Test
             Action act = () => outer.CreateChannel(new Memory<byte>(new byte[0]));
 
             act.Should().Throw<ArgumentOutOfRangeException>();
+            return events;
+        }
+
+        private static IList<string> TestWithEventsCreateTwoChannels(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
+        {
+            List<string> events = new List<string>();
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner, events);
+
+            IDhcpInputChannel channel1 = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            IDhcpInputChannel channel2 = outer.CreateChannel(new Memory<byte>(new byte[499]));
+
+            channel1.Should().NotBeNull();
+            channel2.Should().NotBeNull();
+            channel1.Should().NotBeSameAs(channel2);
             return events;
         }
 

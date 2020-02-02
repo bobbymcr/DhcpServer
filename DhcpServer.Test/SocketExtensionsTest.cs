@@ -39,27 +39,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsSendException()
         {
-            List<string> events = new List<string>();
-            StubSocket inner = new StubSocket();
-            ISocket outer = inner.WithEvents(2, new StubSocketEvents(events));
-            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(0x66, 0x77, 0x88, 0x99), 443);
-            ReadOnlyMemory<byte> buffer = new ReadOnlyMemory<byte>(new byte[499]);
-            Exception exception = new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner"));
+            IList<string> events = TestWithEventsSendException((s, e) => s.WithEvents(2, new StubSocketEvents(e)));
 
-            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000022220000"));
-            Task task = outer.SendAsync(buffer, endpoint);
-
-            task.IsCompleted.Should().BeFalse();
-
-            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
-            inner.Complete(exception);
-
-            task.IsFaulted.Should().BeTrue();
-            task.Exception.Should().NotBeNull();
-            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000022220000/SendStart(2, 499, 0x99887766, 443)",
                 "12345678-1234-5678-9abc-000022220000/SendEnd(2, False, DhcpException)");
+        }
+
+        [TestMethod]
+        public void WithEventsSendExceptionState()
+        {
+            IList<string> events = TestWithEventsSendException((s, e) => s.WithEvents(2, new StubSocketEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-000022220000/SendStart(2, 499, 0x99887766, 443)",
+                "12345678-1234-5678-9abc-000022220000/SendEnd(2, False, DhcpException, State_2)");
         }
 
         [TestMethod]
@@ -140,6 +134,29 @@ namespace DhcpServer.Test
             inner.Complete();
 
             task.IsCompleted.Should().BeTrue();
+            return events;
+        }
+
+        private static IList<string> TestWithEventsSendException(Func<ISocket, IList<string>, ISocket> init)
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = init(inner, events);
+            IPEndpointV4 endpoint = new IPEndpointV4(new IPAddressV4(0x66, 0x77, 0x88, 0x99), 443);
+            ReadOnlyMemory<byte> buffer = new ReadOnlyMemory<byte>(new byte[499]);
+            Exception exception = new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner"));
+
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000022220000"));
+            Task task = outer.SendAsync(buffer, endpoint);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
+            inner.Complete(exception);
+
+            task.IsFaulted.Should().BeTrue();
+            task.Exception.Should().NotBeNull();
+            task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
             return events;
         }
 

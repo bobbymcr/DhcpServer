@@ -43,7 +43,7 @@ namespace DhcpServer.Events
         public static IDhcpInputChannelFactory WithEvents<TState>(
             this IDhcpInputChannelFactory inner,
             IDhcpInputChannelFactoryEvents<TState> factoryEvents = null,
-            IDhcpInputChannelEvents channelEvents = null)
+            IDhcpInputChannelEvents<TState> channelEvents = null)
         {
             if ((factoryEvents != null) || (channelEvents != null))
             {
@@ -94,14 +94,14 @@ namespace DhcpServer.Events
         {
             private readonly IDhcpInputChannelFactory inner;
             private readonly IDhcpInputChannelFactoryEvents<TState> factoryEvents;
-            private readonly IDhcpInputChannelEvents channelEvents;
+            private readonly IDhcpInputChannelEvents<TState> channelEvents;
 
             private int lastId;
 
             public DhcpInputChannelFactoryWithEvents(
                 IDhcpInputChannelFactory inner,
                 IDhcpInputChannelFactoryEvents<TState> factoryEvents,
-                IDhcpInputChannelEvents channelEvents)
+                IDhcpInputChannelEvents<TState> channelEvents)
             {
                 this.inner = inner;
                 this.factoryEvents = factoryEvents;

@@ -142,15 +142,13 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsBothNull()
         {
-            StubInputChannelFactory inner = new StubInputChannelFactory();
-            IDhcpInputChannelFactory outer = inner.WithEvents();
+            TestWithEventsBothNull(f => f.WithEvents());
+        }
 
-            inner.Error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
-            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
-            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
-
-            task.IsCompleted.Should().BeTrue();
-            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
+        [TestMethod]
+        public void WithEventsBothNullState()
+        {
+            TestWithEventsBothNull(f => f.WithEvents<string>());
         }
 
         private static IList<string> TestWithEventsCreateChannel(Func<IDhcpInputChannelFactory, IList<string>, IDhcpInputChannelFactory> init)
@@ -241,6 +239,19 @@ namespace DhcpServer.Test
             task.IsCompleted.Should().BeTrue();
             task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
             return events;
+        }
+
+        private static void TestWithEventsBothNull(Func<IDhcpInputChannelFactory, IDhcpInputChannelFactory> init)
+        {
+            StubInputChannelFactory inner = new StubInputChannelFactory();
+            IDhcpInputChannelFactory outer = init(inner);
+
+            inner.Error = new DhcpError(new DhcpException(DhcpErrorCode.SocketError, new InvalidOperationException("inner")));
+            IDhcpInputChannel channel = outer.CreateChannel(new Memory<byte>(new byte[500]));
+            Task<(DhcpMessageBuffer, DhcpError)> task = channel.ReceiveAsync(CancellationToken.None);
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Item2.Code.Should().Be(DhcpErrorCode.SocketError);
         }
 
         private static string ActivityPrefix()

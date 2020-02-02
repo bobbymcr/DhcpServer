@@ -59,24 +59,21 @@ namespace DhcpServer.Test
         [TestMethod]
         public void WithEventsReceive()
         {
-            List<string> events = new List<string>();
-            StubSocket inner = new StubSocket();
-            ISocket outer = inner.WithEvents(1, new StubSocketEvents(events));
-            Memory<byte> buffer = new Memory<byte>(new byte[500]);
+            IList<string> events = TestWithEventsReceive((s, e) => s.WithEvents(1, new StubSocketEvents(e)));
 
-            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000033330000"));
-            ValueTask<int> task = outer.ReceiveAsync(buffer, CancellationToken.None);
-
-            task.IsCompleted.Should().BeFalse();
-
-            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
-            inner.Complete(77);
-
-            task.IsCompleted.Should().BeTrue();
-            task.Result.Should().Be(77);
             events.Should().HaveCount(2).And.ContainInOrder(
                 "12345678-1234-5678-9abc-000033330000/ReceiveStart(1, 500)",
                 "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, True, <null>)");
+        }
+
+        [TestMethod]
+        public void WithEventsReceiveState()
+        {
+            IList<string> events = TestWithEventsReceive((s, e) => s.WithEvents(1, new StubSocketEventsState(e)));
+
+            events.Should().HaveCount(2).And.ContainInOrder(
+                "12345678-1234-5678-9abc-000033330000/ReceiveStart(1, 500)",
+                "12345678-1234-5678-9abc-000033330000/ReceiveEnd(1, 77, True, <null>, State_1)");
         }
 
         [TestMethod]
@@ -157,6 +154,26 @@ namespace DhcpServer.Test
             task.IsFaulted.Should().BeTrue();
             task.Exception.Should().NotBeNull();
             task.Exception.InnerExceptions.Should().ContainSingle().Which.Should().BeSameAs(exception);
+            return events;
+        }
+
+        private static IList<string> TestWithEventsReceive(Func<ISocket, IList<string>, ISocket> init)
+        {
+            List<string> events = new List<string>();
+            StubSocket inner = new StubSocket();
+            ISocket outer = init(inner, events);
+            Memory<byte> buffer = new Memory<byte>(new byte[500]);
+
+            using ActivityScope scope1 = new ActivityScope(new Guid("12345678-1234-5678-9abc-000033330000"));
+            ValueTask<int> task = outer.ReceiveAsync(buffer, CancellationToken.None);
+
+            task.IsCompleted.Should().BeFalse();
+
+            using ActivityScope scope2 = new ActivityScope(new Guid("12345678-1234-5678-9abc-999999999999"));
+            inner.Complete(77);
+
+            task.IsCompleted.Should().BeTrue();
+            task.Result.Should().Be(77);
             return events;
         }
 
@@ -266,6 +283,20 @@ namespace DhcpServer.Test
                 string prefix = ActivityPrefix();
                 string type = (exception != null) ? exception.GetType().Name : "<null>";
                 this.events.Add($"{prefix}{nameof(this.SendEnd)}({(int)id}, {succeeded}, {type}, {state})");
+            }
+
+            public string ReceiveStart(SocketId id, int bufferSize)
+            {
+                string prefix = ActivityPrefix();
+                this.events.Add($"{prefix}{nameof(this.ReceiveStart)}({(int)id}, {bufferSize})");
+                return "State_" + (int)id;
+            }
+
+            public void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, string state)
+            {
+                string prefix = ActivityPrefix();
+                string type = (exception != null) ? exception.GetType().Name : "<null>";
+                this.events.Add($"{prefix}{nameof(this.ReceiveEnd)}({(int)id}, {result}, {succeeded}, {type}, {state})");
             }
         }
     }

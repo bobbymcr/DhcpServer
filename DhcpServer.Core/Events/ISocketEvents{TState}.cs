@@ -31,5 +31,25 @@ namespace DhcpServer.Events
         /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
         /// <param name="state">The user-defined state object from <see cref="SendStart(SocketId, int, IPEndpointV4)"/>.</param>
         void SendEnd(SocketId id, bool succeeded, Exception exception, TState state);
+
+        /// <summary>
+        /// Denotes the start of a call to
+        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        /// <param name="bufferSize">The buffer size.</param>
+        /// <returns>The user-defined state object.</returns>
+        TState ReceiveStart(SocketId id, int bufferSize);
+
+        /// <summary>
+        /// Denotes the end of a call to
+        /// <see cref="IInputSocket.ReceiveAsync(Memory{byte}, System.Threading.CancellationToken)"/>.
+        /// </summary>
+        /// <param name="id">The socket identifier.</param>
+        /// <param name="result">The result.</param>
+        /// <param name="succeeded">Whether the operation succeeded or not.</param>
+        /// <param name="exception">The exception that occurred during the operation, or <c>null</c>.</param>
+        /// <param name="state">The user-defined state object from <see cref="ReceiveStart(SocketId, int)"/>.</param>
+        void ReceiveEnd(SocketId id, int result, bool succeeded, Exception exception, TState state);
     }
 }

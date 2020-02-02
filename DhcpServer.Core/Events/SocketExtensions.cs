@@ -137,9 +137,21 @@ namespace DhcpServer.Events
                 }
             }
 
-            public ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
+            public async ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken token)
             {
-                throw new NotImplementedException();
+                Guid activityId = ActivityScope.CurrentId;
+                TState state = this.socketEvents.ReceiveStart(this.id, buffer.Length);
+                try
+                {
+                    int result = await this.inner.ReceiveAsync(buffer, token);
+                    this.OnEndReceive(activityId, result, null, state);
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    this.OnEndReceive(activityId, -1, e, state);
+                    throw;
+                }
             }
 
             public void Dispose()
@@ -152,6 +164,14 @@ namespace DhcpServer.Events
                 using (new ActivityScope(activityId))
                 {
                     this.socketEvents.SendEnd(this.id, exception == null, exception, state);
+                }
+            }
+
+            private void OnEndReceive(Guid activityId, int result, Exception exception, TState state)
+            {
+                using (new ActivityScope(activityId))
+                {
+                    this.socketEvents.ReceiveEnd(this.id, result, exception == null, exception, state);
                 }
             }
         }

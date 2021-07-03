@@ -10,7 +10,7 @@ namespace DhcpServer.Perf
     {
         private static void Main()
         {
-            BenchmarkRunner.Run<DhcpReceiveLoopBenchmarks>();
+            BenchmarkRunner.Run<StringBenchmarks>();
         }
     }
 }

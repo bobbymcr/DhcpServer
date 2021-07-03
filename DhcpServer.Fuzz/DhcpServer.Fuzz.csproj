@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SharpFuzz" Version="1.6.1" />
+    <PackageReference Include="SharpFuzz" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DhcpServer.Core\DhcpServer.Core.csproj" />

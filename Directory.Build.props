@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <StyleCopFileName>stylecop.json</StyleCopFileName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

@@ -8,7 +8,7 @@ namespace DhcpServer.Perf
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Jobs;
 
-    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
+    [SimpleJob(RuntimeMoniker.Net50)]
     [MemoryDiagnoser]
     public class DhcpMessageBufferBenchmarks
     {

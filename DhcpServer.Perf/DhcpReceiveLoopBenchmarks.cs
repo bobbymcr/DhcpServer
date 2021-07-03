@@ -13,7 +13,7 @@ namespace DhcpServer.Perf
     using DhcpServer;
     using DhcpServer.Events;
 
-    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
+    [SimpleJob(RuntimeMoniker.Net50)]
     [MemoryDiagnoser]
     public class DhcpReceiveLoopBenchmarks
     {

@@ -2,6 +2,5 @@
   <PropertyGroup>
     <RootNamespace>DhcpServer</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 </Project>

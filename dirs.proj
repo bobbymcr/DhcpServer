@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.Build.Traversal">
+  <ItemGroup>
+    <ProjectReference Include="DhcpServer.Core\DhcpServer.Core.csproj" />
+    <ProjectReference Include="DhcpServer.Fuzz\DhcpServer.Fuzz.csproj" />
+    <ProjectReference Include="DhcpServer.Perf\DhcpServer.Perf.csproj" />
+    <ProjectReference Include="DhcpServer.Test\DhcpServer.Test.csproj" />
+  </ItemGroup>
+</Project>

@@ -15,7 +15,9 @@
     </ContentWithTargetPath>
   </ItemGroup>
   <Target Name="InstrumentForFuzzing" AfterTargets="Build">
+    <Message Text="Restoring..." Importance="high" />
+    <Exec Command="dotnet tool restore" />
     <Message Text="Instrumenting code to be fuzzed..." Importance="high" />
-    <Exec Command="sharpfuzz $(OutputPath)DhcpServer.Core.dll" />
+    <Exec Command="dotnet tool run sharpfuzz $(OutputPath)DhcpServer.Core.dll" />
   </Target>
 </Project>
